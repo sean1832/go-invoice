@@ -13,6 +13,7 @@
 	import ProfileSelector from './profile-selector.svelte';
 	import DatePicker from '../date-picker/date-picker.svelte';
 	import { parseDate, type DateValue } from '@internationalized/date';
+	import { activeProvider } from '@/stores/provider';
 
 	interface Props {
 		invoice?: Invoice;
@@ -28,14 +29,15 @@
 		id: invoice?.id || generateInvoiceId(),
 		date: invoice?.date || new Date().toISOString().split('T')[0],
 		due: invoice?.due || getDefaultDueDate(),
-		provider: invoice?.provider || {
-			id: '',
-			name: '',
-			address: '',
-			email: '',
-			phone: '',
-			abn: ''
-		},
+		provider: invoice?.provider ||
+			$activeProvider || {
+				id: '',
+				name: '',
+				address: '',
+				email: '',
+				phone: '',
+				abn: ''
+			},
 		client: invoice?.client || {
 			id: '',
 			name: '',
@@ -51,7 +53,7 @@
 	// Mock data for providers and clients (these would come from API/storage later)
 	let providers = $state([
 		{
-			id: '1',
+			id: 'zeke_zhang',
 			name: 'Zeke Zhang',
 			email: 'zeke@example.com',
 			abn: '12 345 678 901',
@@ -63,7 +65,7 @@
 			}
 		},
 		{
-			id: '2',
+			id: 'lan_zhang',
 			name: 'Lan Zhang',
 			email: 'lan@example.com',
 			abn: '98 765 432 109',
@@ -87,16 +89,32 @@
 		}
 	]);
 
-	// Selected IDs for dropdowns
-	let selectedProviderId = $state<string | undefined>(undefined);
+	// Helper function to find matching provider ID
+	function getInitialProviderId(): string | undefined {
+		if (invoice?.provider?.id) return invoice.provider.id;
+		if ($activeProvider) {
+			// Try to find matching provider in mock data by name or email
+			const matchingProvider = providers.find(
+				(p) =>
+					p.id === $activeProvider.id ||
+					p.name === $activeProvider.name ||
+					p.email === $activeProvider.email
+			);
+			return matchingProvider?.id;
+		}
+		return undefined;
+	}
+
+	// Selected IDs for dropdowns - default to active provider
+	let selectedProviderId = $state<string | undefined>(getInitialProviderId());
 	let selectedClientId = $state<string | undefined>(undefined);
 
 	// Payment info from selected provider (read-only)
 	let paymentInfo = $state({
 		method: 'Bank Transfer',
-		accountName: '',
-		bsb: '',
-		accountNumber: ''
+		accountName: $activeProvider?.paymentInfo?.accountName || '',
+		bsb: $activeProvider?.paymentInfo?.bsb || '',
+		accountNumber: $activeProvider?.paymentInfo?.accountNumber || ''
 	});
 
 	// DateValue states for date pickers
@@ -175,6 +193,30 @@
 				lineItemDateValues[index] = safeParseDate(item.date);
 			}
 		});
+	});
+
+	// Initialize provider selection on mount
+	$effect(() => {
+		if (selectedProviderId && !invoice && mode === 'create') {
+			// Only auto-select if creating new invoice (not editing)
+			const provider = providers.find((p) => p.id === selectedProviderId);
+			if (provider) {
+				// Ensure formData and payment info are properly initialized
+				if (formData.provider.id !== selectedProviderId) {
+					formData.provider = {
+						id: provider.id,
+						name: provider.name,
+						email: provider.email,
+						abn: provider.abn,
+						address: '',
+						phone: ''
+					};
+				}
+				if (provider.payment) {
+					paymentInfo = { ...provider.payment };
+				}
+			}
+		}
 	});
 
 	// Computed values

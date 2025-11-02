@@ -41,7 +41,7 @@
 <div class="p-4">
 	<div class="container mx-auto flex justify-center">
 		<div class="w-full max-w-4xl">
-			<div class="mb-6 flex items-start justify-between gap-4">
+			<div class="mb-6 flex items-end justify-between gap-4">
 				<div>
 					<h1 class="text-3xl font-bold tracking-tight">Clients</h1>
 					<p class="text-muted-foreground">Manage and track your clients</p>

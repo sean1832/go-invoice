@@ -58,6 +58,9 @@
 	// Collapsed state
 	let isExpanded = $state(false);
 
+	// Track select open state
+	let selectOpen = $state(false);
+
 	function handleSelect(profileId: string) {
 		selectedProfileId = profileId;
 		onSelect?.(profileId);
@@ -87,7 +90,7 @@
 		</Item.Content>
 		<Item.Actions class="shrink-0">
 			<div class="flex flex-nowrap items-center gap-2">
-				<Select.Root type="single">
+				<Select.Root type="single" bind:open={selectOpen}>
 					<Select.Trigger class="w-[200px]">
 						<span>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span>
 					</Select.Trigger>
