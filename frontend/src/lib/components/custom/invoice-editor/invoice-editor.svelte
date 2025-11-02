@@ -42,27 +42,59 @@
 			abn: ''
 		},
 		items: invoice?.items || [createEmptyLineItem()],
-		taxRate: invoice?.pricing?.taxRate || 10,
-		paymentMethod: invoice?.payment?.method || 'Bank Transfer',
-		accountName: invoice?.payment?.accountName || '',
-		bsb: invoice?.payment?.bsb || '',
-		accountNumber: invoice?.payment?.accountNumber || ''
+		taxRate: invoice?.pricing?.taxRate || 10
 	});
 
 	// Mock data for providers and clients (these would come from API/storage later)
 	let providers = $state([
-		{ id: '1', name: 'Zeke Zhang', email: 'zeke@example.com', abn: '12 345 678 901' },
-		{ id: '2', name: 'Lan Zhang', email: 'lan@example.com', abn: '98 765 432 109' }
+		{
+			id: '1',
+			name: 'Zeke Zhang',
+			email: 'zeke@example.com',
+			abn: '12 345 678 901',
+			payment: {
+				method: 'Bank Transfer',
+				accountName: 'Zeke Zhang',
+				bsb: '123-456',
+				accountNumber: '12345678'
+			}
+		},
+		{
+			id: '2',
+			name: 'Lan Zhang',
+			email: 'lan@example.com',
+			abn: '98 765 432 109',
+			payment: {
+				method: 'Bank Transfer',
+				accountName: 'Lan Zhang',
+				bsb: '654-321',
+				accountNumber: '87654321'
+			}
+		}
 	]);
 
 	let clients = $state([
-		{ id: '1', name: 'Dingyu Xu', email: 'dingyu@example.com', abn: '11 222 333 444' },
-		{ id: '2', name: 'Client Corp', email: 'contact@clientcorp.com', abn: '55 666 777 888' }
+		{ id: '1', name: 'Dingyu Xu', email: 'dingyu@example.com', abn: '11 222 333 444', taxRate: 10 },
+		{
+			id: '2',
+			name: 'Client Corp',
+			email: 'contact@clientcorp.com',
+			abn: '55 666 777 888',
+			taxRate: 0
+		}
 	]);
 
 	// Selected IDs for dropdowns
 	let selectedProviderId = $state<string | undefined>(undefined);
 	let selectedClientId = $state<string | undefined>(undefined);
+
+	// Payment info from selected provider (read-only)
+	let paymentInfo = $state({
+		method: 'Bank Transfer',
+		accountName: '',
+		bsb: '',
+		accountNumber: ''
+	});
 
 	// Computed values
 	let subtotal = $derived(formData.items.reduce((sum, item) => sum + item.totalPrice, 0));
@@ -116,6 +148,10 @@
 				address: '', // These would come from full profile
 				phone: ''
 			};
+			// Update payment info from provider
+			if (provider.payment) {
+				paymentInfo = { ...provider.payment };
+			}
 		}
 	}
 
@@ -130,6 +166,10 @@
 				address: '', // These would come from full profile
 				phone: ''
 			};
+			// Update tax rate from client
+			if (client.taxRate !== undefined) {
+				formData.taxRate = client.taxRate;
+			}
 		}
 	}
 
@@ -193,12 +233,7 @@
 				taxRate: formData.taxRate,
 				total
 			},
-			payment: {
-				method: formData.paymentMethod,
-				accountName: formData.accountName,
-				bsb: formData.bsb,
-				accountNumber: formData.accountNumber
-			}
+			payment: paymentInfo
 		};
 		console.log('Save as draft:', invoiceData);
 		onSave?.(invoiceData);
@@ -219,21 +254,16 @@
 				taxRate: formData.taxRate,
 				total
 			},
-			payment: {
-				method: formData.paymentMethod,
-				accountName: formData.accountName,
-				bsb: formData.bsb,
-				accountNumber: formData.accountNumber
-			}
+			payment: paymentInfo
 		};
 		console.log('Send invoice:', invoiceData);
 		onSave?.(invoiceData);
 	}
 
 	function handleCancel() {
-		if (confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) {
-			onCancel?.();
-		}
+		// if (confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) {
+		// 	onCancel?.();
+		// }
 		window.location.href = '/';
 	}
 </script>
@@ -253,23 +283,9 @@
 		</Card.Header>
 		<Card.Content class="space-y-6">
 			<!-- Basic Info -->
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>Invoice Number</Label>
-					<Input bind:value={formData.id} placeholder="INV-25110301" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>Tax Rate (%)</Label>
-					<Input
-						type="number"
-						bind:value={formData.taxRate}
-						placeholder="10"
-						min="0"
-						max="100"
-						step="0.01"
-					/>
-				</div>
+			<div class="space-y-2">
+				<Label>Invoice Number</Label>
+				<Input bind:value={formData.id} placeholder="INV-25110301" />
 			</div>
 
 			<!-- Dates -->
@@ -288,30 +304,28 @@
 	</Card.Root>
 
 	<!-- Provider Information (Read-only) -->
-	<div class="flex gap-4">
-		<ProfileSelector
-			class="flex-1"
-			type="provider"
-			profiles={providers}
-			bind:selectedProfileId={selectedProviderId}
-			profileData={formData.provider}
-			onSelect={handleProviderSelect}
-			onConfigure={handleConfigureProvider}
-			onAddNew={handleAddNewProvider}
-		/>
+	<ProfileSelector
+		class="h-full"
+		type="provider"
+		profiles={providers}
+		bind:selectedProfileId={selectedProviderId}
+		profileData={formData.provider}
+		onSelect={handleProviderSelect}
+		onConfigure={handleConfigureProvider}
+		onAddNew={handleAddNewProvider}
+	/>
 
-		<!-- Client Information -->
-		<ProfileSelector
-			class="flex-1"
-			type="client"
-			profiles={clients}
-			bind:selectedProfileId={selectedClientId}
-			profileData={formData.client}
-			onSelect={handleClientSelect}
-			onConfigure={handleConfigureClient}
-			onAddNew={handleAddNewClient}
-		/>
-	</div>
+	<!-- Client Information -->
+	<ProfileSelector
+		class="h-full"
+		type="client"
+		profiles={clients}
+		bind:selectedProfileId={selectedClientId}
+		profileData={formData.client}
+		onSelect={handleClientSelect}
+		onConfigure={handleConfigureClient}
+		onAddNew={handleAddNewClient}
+	/>
 
 	<!-- Line Items -->
 	<Card.Root>
@@ -418,37 +432,6 @@
 						<span>Total:</span>
 						<span>{formatCurrency(total)}</span>
 					</div>
-				</div>
-			</div>
-		</Card.Content>
-	</Card.Root>
-
-	<!-- Payment Information -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>Payment Information</Card.Title>
-			<Card.Description>Bank account details for payment</Card.Description>
-		</Card.Header>
-		<Card.Content class="space-y-4">
-			<div class="space-y-2">
-				<Label>Payment Method</Label>
-				<Input bind:value={formData.paymentMethod} placeholder="Bank Transfer" />
-			</div>
-
-			<div class="space-y-2">
-				<Label>Account Name</Label>
-				<Input bind:value={formData.accountName} placeholder="Your Company Pty Ltd" />
-			</div>
-
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>BSB</Label>
-					<Input bind:value={formData.bsb} placeholder="123-456" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>Account Number</Label>
-					<Input bind:value={formData.accountNumber} placeholder="12345678" />
 				</div>
 			</div>
 		</Card.Content>
