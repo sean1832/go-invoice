@@ -1,0 +1,22 @@
+{
+  "name": "invoice-go",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Invoice management application with Go backend and Svelte frontend",
+  "scripts": {
+    "build": "node build.js",
+    "build:frontend": "node build.js frontend",
+    "build:backend": "node build.js backend",
+    "copy": "node build.js copy",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && go run .",
+    "install:frontend": "cd frontend && npm install"
+  },
+  "keywords": [
+    "invoice",
+    "go",
+    "svelte"
+  ],
+  "author": "",
+  "license": "MIT"
+}

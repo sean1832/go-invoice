@@ -1,26 +1,115 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "go",
-			"label": "go: build",
-			"command": "build",
-			"args": [
-				"-o",
-				"bin/",
-				"./..."
-			],
-			"problemMatcher": [
-				"$go"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"detail": "cd ${workspaceFolder}/backend; go build -o bin/ ./...",
-			"options": {
-				"cwd": "${workspaceFolder}/backend"
-			}
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "frontend: install dependencies",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "Install frontend dependencies"
+    },
+    {
+      "label": "frontend: build",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "Build the frontend static site"
+    },
+    {
+      "label": "frontend: dev",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^([^\\s].*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:.*http"
+        }
+      },
+      "detail": "Start frontend development server"
+    },
+    {
+      "label": "copy: frontend to backend",
+      "type": "shell",
+      "command": "node",
+      "args": ["${workspaceFolder}/build.js", "copy"],
+      "problemMatcher": [],
+      "detail": "Copy frontend build to backend for embedding (cross-platform)"
+    },
+    {
+      "type": "go",
+      "label": "go: build backend",
+      "command": "build",
+      "args": ["-o", "bin/invoice-app${command:pickArgs}", "."],
+      "problemMatcher": ["$go"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "detail": "Build the Go backend with embedded UI"
+    },
+    {
+      "label": "go: run backend",
+      "type": "shell",
+      "command": "go",
+      "args": ["run", "."],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Server listening"
+        }
+      },
+      "detail": "Run the Go backend server"
+    },
+    {
+      "label": "build: full application",
+      "dependsOrder": "sequence",
+      "dependsOn": ["frontend: build", "copy: frontend to backend", "go: build backend"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Build complete application (frontend + backend)"
+    },
+    {
+      "label": "dev: run all",
+      "dependsOrder": "parallel",
+      "dependsOn": ["frontend: dev", "go: run backend"],
+      "problemMatcher": [],
+      "detail": "Run frontend and backend dev servers in parallel"
+    }
+  ]
 }

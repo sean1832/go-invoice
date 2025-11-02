@@ -13,7 +13,7 @@ type Handler struct {
 
 func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	const prefix = "/api/v1"
-	mux.HandleFunc("/", h.Root)
+	mux.HandleFunc(prefix+"/", h.Root)
 	mux.HandleFunc(prefix+"/providers", h.handleProvidersCollection)
 	mux.HandleFunc(prefix+"/providers/{id}", h.handleProvidersItem)
 	mux.HandleFunc(prefix+"/clients", h.handleClientsCollection)
