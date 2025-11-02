@@ -1,7 +1,7 @@
 <script lang="ts">
 	import InvoiceShelf from '@/components/custom/shelf/invoice-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
-	import PlusIcon from '@lucide/svelte/icons/plus';
+
 	import type { Invoice } from '@/types/invoice';
 
 	function createNewInvoice() {
@@ -112,13 +112,5 @@
 		</div>
 	</div>
 
-	<!-- Floating Action Button -->
-	<Button
-		onclick={createNewInvoice}
-		size="lg"
-		class="fixed right-8 bottom-8 h-14 w-14 rounded-full shadow-lg transition-shadow hover:shadow-xl"
-		title="Create new invoice"
-	>
-		<PlusIcon class="h-6 w-6" />
-	</Button>
+	
 </div>

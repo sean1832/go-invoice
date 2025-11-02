@@ -41,19 +41,27 @@
 <div class="p-4">
 	<div class="container mx-auto flex justify-center">
 		<div class="w-full max-w-4xl">
-			<div class="mb-6">
-				<h1 class="text-3xl font-bold tracking-tight">Clients</h1>
-				<p class="text-muted-foreground">Manage and track your clients</p>
+			<div class="mb-6 flex items-start justify-between gap-4">
+				<div>
+					<h1 class="text-3xl font-bold tracking-tight">Clients</h1>
+					<p class="text-muted-foreground">Manage and track your clients</p>
+				</div>
+				<!-- Desktop Create Button -->
+				<Button onclick={createNewClient} class="hidden md:flex" size="default">
+					<PlusIcon class="mr-2 h-4 w-4" />
+					New Client
+				</Button>
 			</div>
+
 			<ProfileShelf data={mockupClients} />
 		</div>
 	</div>
 
-	<!-- Floating Action Button -->
+	<!-- Mobile Floating Action Button -->
 	<Button
 		onclick={createNewClient}
 		size="lg"
-		class="fixed right-8 bottom-8 h-14 w-14 rounded-full shadow-lg transition-shadow hover:shadow-xl"
+		class="fixed right-8 bottom-8 h-14 w-14 rounded-full shadow-lg transition-shadow hover:shadow-xl md:hidden"
 		title="Create new client"
 	>
 		<PlusIcon class="h-6 w-6" />
