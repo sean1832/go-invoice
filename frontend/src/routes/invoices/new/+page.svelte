@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InvoiceForm from '@/components/custom/invoice-form.svelte';
+	import InvoiceForm from '@/components/custom/invoice-editor/invoice-editor.svelte';
 
 	function handleSave(data: any) {
 		// TODO: Implement API call to save invoice

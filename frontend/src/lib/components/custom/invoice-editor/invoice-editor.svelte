@@ -11,6 +11,7 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import SaveIcon from '@lucide/svelte/icons/save';
 	import SendIcon from '@lucide/svelte/icons/send';
+	import ProfileSelector from './profile-selector.svelte';
 
 	interface Props {
 		invoice?: Invoice;
@@ -47,6 +48,21 @@
 		bsb: invoice?.payment?.bsb || '',
 		accountNumber: invoice?.payment?.accountNumber || ''
 	});
+
+	// Mock data for providers and clients (these would come from API/storage later)
+	let providers = $state([
+		{ id: '1', name: 'Zeke Zhang', email: 'zeke@example.com', abn: '12 345 678 901' },
+		{ id: '2', name: 'Lan Zhang', email: 'lan@example.com', abn: '98 765 432 109' }
+	]);
+
+	let clients = $state([
+		{ id: '1', name: 'Dingyu Xu', email: 'dingyu@example.com', abn: '11 222 333 444' },
+		{ id: '2', name: 'Client Corp', email: 'contact@clientcorp.com', abn: '55 666 777 888' }
+	]);
+
+	// Selected IDs for dropdowns
+	let selectedProviderId = $state<string | undefined>(undefined);
+	let selectedClientId = $state<string | undefined>(undefined);
 
 	// Computed values
 	let subtotal = $derived(formData.items.reduce((sum, item) => sum + item.totalPrice, 0));
@@ -86,6 +102,55 @@
 			style: 'currency',
 			currency: 'AUD'
 		}).format(amount);
+	}
+
+	// Profile selection handlers
+	function handleProviderSelect(providerId: string) {
+		const provider = providers.find((p) => p.id === providerId);
+		if (provider) {
+			selectedProviderId = providerId;
+			formData.provider = {
+				name: provider.name,
+				email: provider.email,
+				abn: provider.abn,
+				address: '', // These would come from full profile
+				phone: ''
+			};
+		}
+	}
+
+	function handleClientSelect(clientId: string) {
+		const client = clients.find((c) => c.id === clientId);
+		if (client) {
+			selectedClientId = clientId;
+			formData.client = {
+				name: client.name,
+				email: client.email,
+				abn: client.abn,
+				address: '', // These would come from full profile
+				phone: ''
+			};
+		}
+	}
+
+	function handleConfigureProvider() {
+		console.log('Navigate to provider settings');
+		// TODO: Navigate to settings page
+	}
+
+	function handleAddNewProvider() {
+		console.log('Navigate to add new provider');
+		// TODO: Navigate to add provider page
+	}
+
+	function handleConfigureClient() {
+		console.log('Navigate to client settings');
+		// TODO: Navigate to settings page
+	}
+
+	function handleAddNewClient() {
+		console.log('Navigate to add new client');
+		// TODO: Navigate to add client page
 	}
 
 	// Line item handlers
@@ -222,81 +287,27 @@
 		</Card.Content>
 	</Card.Root>
 
-	<!-- Provider Information -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>Provider (From)</Card.Title>
-			<Card.Description>Your business information</Card.Description>
-		</Card.Header>
-		<Card.Content class="space-y-4">
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>Name</Label>
-					<Input bind:value={formData.provider.name} placeholder="Your Company" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>ABN</Label>
-					<Input bind:value={formData.provider.abn} placeholder="12 345 678 901" />
-				</div>
-			</div>
-
-			<div class="space-y-2">
-				<Label>Address</Label>
-				<Input bind:value={formData.provider.address} placeholder="123 Business Street" />
-			</div>
-
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>Email</Label>
-					<Input type="email" bind:value={formData.provider.email} placeholder="contact@company.com" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>Phone</Label>
-					<Input type="tel" bind:value={formData.provider.phone} placeholder="+61 3 1234 5678" />
-				</div>
-			</div>
-		</Card.Content>
-	</Card.Root>
+	<!-- Provider Information (Read-only) -->
+	<ProfileSelector
+		type="provider"
+		profiles={providers}
+		bind:selectedProfileId={selectedProviderId}
+		profileData={formData.provider}
+		onSelect={handleProviderSelect}
+		onConfigure={handleConfigureProvider}
+		onAddNew={handleAddNewProvider}
+	/>	
 
 	<!-- Client Information -->
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>Client (Bill To)</Card.Title>
-			<Card.Description>Customer information</Card.Description>
-		</Card.Header>
-		<Card.Content class="space-y-4">
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>Name</Label>
-					<Input bind:value={formData.client.name} placeholder="Client Name" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>ABN</Label>
-					<Input bind:value={formData.client.abn} placeholder="98 765 432 109" />
-				</div>
-			</div>
-
-			<div class="space-y-2">
-				<Label>Address</Label>
-				<Input bind:value={formData.client.address} placeholder="456 Client Avenue" />
-			</div>
-
-			<div class="grid grid-cols-2 gap-4">
-				<div class="space-y-2">
-					<Label>Email</Label>
-					<Input type="email" bind:value={formData.client.email} placeholder="billing@client.com" />
-				</div>
-
-				<div class="space-y-2">
-					<Label>Phone</Label>
-					<Input type="tel" bind:value={formData.client.phone} placeholder="+61 2 9876 5432" />
-				</div>
-			</div>
-		</Card.Content>
-	</Card.Root>
+	<ProfileSelector
+		type="client"
+		profiles={clients}
+		bind:selectedProfileId={selectedClientId}
+		profileData={formData.client}
+		onSelect={handleClientSelect}
+		onConfigure={handleConfigureClient}
+		onAddNew={handleAddNewClient}
+	/>
 
 	<!-- Line Items -->
 	<Card.Root>
