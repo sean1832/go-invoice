@@ -20,6 +20,7 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	mux.HandleFunc(prefix+"/clients/{id}", h.handleClientsItem)
 	mux.HandleFunc(prefix+"/invoices", h.handleInvoicesCollection)
 	mux.HandleFunc(prefix+"/invoices/{id}", h.handleInvoicesItem)
+	mux.HandleFunc(prefix+"/invoices/count", h.handleInvoicesCount)
 }
 
 func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +69,8 @@ func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
 //                               // and profile info here.
 
 // // QUERY
+// GET /invoices/count	   // Get total count of invoices
+
 // GET	  /invoices?q={search} // Search invoices by client name, date, or invoice number
 // // Supported Query Parameters:
 // // -----------------------------------------------------------------

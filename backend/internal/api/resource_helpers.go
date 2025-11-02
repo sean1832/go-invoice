@@ -191,3 +191,12 @@ func createResource(
 
 	writeRespWithStatus(w, fmt.Sprintf("created %s '%s'", resourceType, id), resource, http.StatusCreated)
 }
+
+// countResources counts the number of resource files in the given storage directory
+func countResources(storageDir string) (int, error) {
+	jsonFiles, err := filepath.Glob(filepath.Join(storageDir, "*.json"))
+	if err != nil {
+		return 0, err
+	}
+	return len(jsonFiles), nil
+}
