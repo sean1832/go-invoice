@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Card from '@/components/ui/card';
-	import * as Select from '@/components/ui/select';
 	import Button from '@/components/ui/button/button.svelte';
 	import Input from '@/components/ui/input/input.svelte';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';

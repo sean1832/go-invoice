@@ -65,7 +65,7 @@
 </script>
 
 <Item.Root variant="outline" class="cursor-pointer transition-colors hover:bg-muted/50">
-	<Item.Content class="flex-1">
+	<Item.Content class="flex-1" onclick={viewInvoice}>
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex-1">
 				<div class="mb-1 flex items-center gap-2">
@@ -101,9 +101,6 @@
 	</Item.Content>
 
 	<Item.Actions class="flex gap-1">
-		<Button variant="ghost" size="sm" onclick={viewInvoice} title="View">
-			<EyeIcon class="h-4 w-4" />
-		</Button>
 		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit">
 			<EditIcon class="h-4 w-4" />
 		</Button>
