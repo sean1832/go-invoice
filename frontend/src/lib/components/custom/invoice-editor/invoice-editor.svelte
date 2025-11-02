@@ -12,6 +12,8 @@
 	import SaveIcon from '@lucide/svelte/icons/save';
 	import SendIcon from '@lucide/svelte/icons/send';
 	import ProfileSelector from './profile-selector.svelte';
+	import DatePicker from '../date-picker/date-picker.svelte';
+	import { parseDate, type DateValue } from '@internationalized/date';
 
 	interface Props {
 		invoice?: Invoice;
@@ -94,6 +96,84 @@
 		accountName: '',
 		bsb: '',
 		accountNumber: ''
+	});
+
+	// DateValue states for date pickers
+	let issueDateValue = $state<DateValue | undefined>(undefined);
+	let dueDateValue = $state<DateValue | undefined>(undefined);
+	let lineItemDateValues = $state<(DateValue | undefined)[]>([]);
+
+	// Helper to safely parse date strings
+	function safeParseDate(str: string | undefined | null): DateValue | undefined {
+		if (!str) return undefined;
+		try {
+			return parseDate(str);
+		} catch (e) {
+			console.warn(`Invalid date string: "${str}"`, e);
+			return undefined;
+		}
+	}
+
+	// Sync issue date: DateValue -> string
+	$effect(() => {
+		if (issueDateValue && issueDateValue.toString() !== formData.date) {
+			formData.date = issueDateValue.toString();
+		}
+	});
+
+	// Sync issue date: string -> DateValue
+	$effect(() => {
+		if (formData.date && formData.date !== issueDateValue?.toString()) {
+			issueDateValue = safeParseDate(formData.date);
+		} else if (!formData.date && issueDateValue) {
+			issueDateValue = undefined;
+		}
+	});
+
+	// Sync due date: DateValue -> string
+	$effect(() => {
+		if (dueDateValue && dueDateValue.toString() !== formData.due) {
+			formData.due = dueDateValue.toString();
+		}
+	});
+
+	// Sync due date: string -> DateValue
+	$effect(() => {
+		if (formData.due && formData.due !== dueDateValue?.toString()) {
+			dueDateValue = safeParseDate(formData.due);
+		} else if (!formData.due && dueDateValue) {
+			dueDateValue = undefined;
+		}
+	});
+
+	// Initialize and sync line item dates
+	$effect(() => {
+		// Ensure lineItemDateValues array matches items length
+		if (lineItemDateValues.length !== formData.items.length) {
+			lineItemDateValues = formData.items.map((item) => safeParseDate(item.date));
+		}
+	});
+
+	// Sync line item dates: DateValue -> string
+	$effect(() => {
+		lineItemDateValues.forEach((dateValue, index) => {
+			if (
+				dateValue &&
+				formData.items[index] &&
+				dateValue.toString() !== formData.items[index].date
+			) {
+				updateLineItem(index, 'date', dateValue.toString());
+			}
+		});
+	});
+
+	// Sync line item dates: string -> DateValue
+	$effect(() => {
+		formData.items.forEach((item, index) => {
+			if (item.date && item.date !== lineItemDateValues[index]?.toString()) {
+				lineItemDateValues[index] = safeParseDate(item.date);
+			}
+		});
 	});
 
 	// Computed values
@@ -292,12 +372,12 @@
 			<div class="grid grid-cols-2 gap-4">
 				<div class="space-y-2">
 					<Label>Issue Date</Label>
-					<Input type="date" bind:value={formData.date} />
+					<DatePicker bind:value={issueDateValue} placeholder="select an invoice date" />
 				</div>
 
 				<div class="space-y-2">
 					<Label>Due Date</Label>
-					<Input type="date" bind:value={formData.due} />
+					<DatePicker bind:value={dueDateValue} placeholder="select a due date" />
 				</div>
 			</div>
 		</Card.Content>
@@ -348,11 +428,7 @@
 						<div class="flex-1 space-y-4">
 							<div class="space-y-2">
 								<Label>Date</Label>
-								<Input
-									type="date"
-									value={item.date}
-									oninput={(e) => updateLineItem(index, 'date', e.currentTarget.value)}
-								/>
+								<DatePicker bind:value={lineItemDateValues[index]} placeholder="select a date" />
 							</div>
 
 							<div class="space-y-2">
