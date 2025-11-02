@@ -234,7 +234,7 @@
 		if (confirm('Are you sure you want to cancel? Unsaved changes will be lost.')) {
 			onCancel?.();
 		}
-    window.location.href = '/';
+		window.location.href = '/';
 	}
 </script>
 
@@ -288,26 +288,30 @@
 	</Card.Root>
 
 	<!-- Provider Information (Read-only) -->
-	<ProfileSelector
-		type="provider"
-		profiles={providers}
-		bind:selectedProfileId={selectedProviderId}
-		profileData={formData.provider}
-		onSelect={handleProviderSelect}
-		onConfigure={handleConfigureProvider}
-		onAddNew={handleAddNewProvider}
-	/>	
+	<div class="flex gap-4">
+		<ProfileSelector
+			class="flex-1"
+			type="provider"
+			profiles={providers}
+			bind:selectedProfileId={selectedProviderId}
+			profileData={formData.provider}
+			onSelect={handleProviderSelect}
+			onConfigure={handleConfigureProvider}
+			onAddNew={handleAddNewProvider}
+		/>
 
-	<!-- Client Information -->
-	<ProfileSelector
-		type="client"
-		profiles={clients}
-		bind:selectedProfileId={selectedClientId}
-		profileData={formData.client}
-		onSelect={handleClientSelect}
-		onConfigure={handleConfigureClient}
-		onAddNew={handleAddNewClient}
-	/>
+		<!-- Client Information -->
+		<ProfileSelector
+			class="flex-1"
+			type="client"
+			profiles={clients}
+			bind:selectedProfileId={selectedClientId}
+			profileData={formData.client}
+			onSelect={handleClientSelect}
+			onConfigure={handleConfigureClient}
+			onAddNew={handleAddNewClient}
+		/>
+	</div>
 
 	<!-- Line Items -->
 	<Card.Root>
@@ -318,14 +322,14 @@
 					<Card.Description>Add items and services for this invoice</Card.Description>
 				</div>
 				<Button variant="outline" size="sm" onclick={addLineItem}>
-					<PlusIcon class="h-4 w-4 mr-2" />
+					<PlusIcon class="mr-2 h-4 w-4" />
 					Add Item
 				</Button>
 			</div>
 		</Card.Header>
 		<Card.Content class="space-y-4">
 			{#each formData.items as item, index}
-				<div class="border rounded-lg p-4 space-y-4">
+				<div class="space-y-4 rounded-lg border p-4">
 					<div class="flex items-start gap-2">
 						<div class="flex-1 space-y-4">
 							<div class="space-y-2">
@@ -456,11 +460,11 @@
 
 		<div class="flex gap-2">
 			<Button variant="outline" onclick={handleSaveDraft}>
-				<SaveIcon class="h-4 w-4 mr-2" />
+				<SaveIcon class="mr-2 h-4 w-4" />
 				Save as Draft
 			</Button>
 			<Button variant="default" onclick={handleSend}>
-				<SendIcon class="h-4 w-4 mr-2" />
+				<SendIcon class="mr-2 h-4 w-4" />
 				Save & Send
 			</Button>
 		</div>

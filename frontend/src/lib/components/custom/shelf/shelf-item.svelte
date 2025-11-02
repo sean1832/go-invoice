@@ -64,11 +64,11 @@
 	}
 </script>
 
-<Item.Root variant="outline" class="cursor-pointer hover:bg-muted/50 transition-colors">
+<Item.Root variant="outline" class="cursor-pointer transition-colors hover:bg-muted/50">
 	<Item.Content class="flex-1">
 		<div class="flex items-start justify-between gap-4">
 			<div class="flex-1">
-				<div class="flex items-center gap-2 mb-1">
+				<div class="mb-1 flex items-center gap-2">
 					<Item.Title class="text-lg font-semibold">
 						{invoice.id}
 					</Item.Title>

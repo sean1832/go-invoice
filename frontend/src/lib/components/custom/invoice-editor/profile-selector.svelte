@@ -16,6 +16,7 @@
 	}
 
 	interface Props {
+		class?: string;
 		type: 'provider' | 'client';
 		profiles: Profile[];
 		selectedProfileId?: string;
@@ -26,6 +27,7 @@
 	}
 
 	let {
+		class: customClass = '',
 		type,
 		profiles,
 		selectedProfileId = $bindable(),
@@ -36,7 +38,7 @@
 	}: Props = $props();
 
 	// Title and description based on type
-	const title = type === 'provider' ? 'Provider (From)' : 'Client (Bill To)';
+	const title = type === 'provider' ? 'Provider' : 'Client';
 	const description =
 		type === 'provider'
 			? 'Select your business profile for this invoice'
@@ -57,19 +59,17 @@
 	}
 </script>
 
-<Item.Root variant="muted">
+<Item.Root variant="muted" class={customClass}>
 	<Item.Header>
 		<Item.Content>
 			<Item.Title>{title}</Item.Title>
 			<Item.Description>{description}</Item.Description>
 		</Item.Content>
 		<Item.Actions>
-			<div class="flex gap-2 items-center">
+			<div class="flex items-center gap-2">
 				<Select.Root type="single">
 					<Select.Trigger class="w-[200px]">
-						<span
-							>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span
-						>
+						<span>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span>
 					</Select.Trigger>
 					<Select.Content>
 						{#each profiles as profile}
@@ -96,23 +96,23 @@
 		<Item.Content class="pt-2">
 			<div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
 				<div>
-					<span class="text-muted-foreground font-medium">Name:</span>
+					<span class="font-medium text-muted-foreground">Name:</span>
 					<span class="ml-2">{profileData.name || 'Not configured'}</span>
 				</div>
 				<div>
-					<span class="text-muted-foreground font-medium">ABN:</span>
+					<span class="font-medium text-muted-foreground">ABN:</span>
 					<span class="ml-2">{profileData.abn || 'Not configured'}</span>
 				</div>
 				<div class="col-span-2">
-					<span class="text-muted-foreground font-medium">Address:</span>
+					<span class="font-medium text-muted-foreground">Address:</span>
 					<span class="ml-2">{profileData.address || 'Not configured'}</span>
 				</div>
 				<div>
-					<span class="text-muted-foreground font-medium">Email:</span>
+					<span class="font-medium text-muted-foreground">Email:</span>
 					<span class="ml-2">{profileData.email || 'Not configured'}</span>
 				</div>
 				<div>
-					<span class="text-muted-foreground font-medium">Phone:</span>
+					<span class="font-medium text-muted-foreground">Phone:</span>
 					<span class="ml-2">{profileData.phone || 'Not configured'}</span>
 				</div>
 			</div>

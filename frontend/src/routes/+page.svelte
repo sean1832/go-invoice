@@ -23,11 +23,9 @@
 	<Button
 		onclick={createNewInvoice}
 		size="lg"
-		class="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+		class="fixed right-8 bottom-8 h-14 w-14 rounded-full shadow-lg transition-shadow hover:shadow-xl"
 		title="Create new invoice"
 	>
 		<PlusIcon class="h-6 w-6" />
 	</Button>
 </div>
-
-

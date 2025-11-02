@@ -87,8 +87,8 @@
 				accountName: 'Your Company',
 				bsb: '123-456',
 				accountNumber: '12345678'
-      }
-    }
+			}
+		}
 	];
 
 	let searchQuery = '';
@@ -111,7 +111,7 @@
 <div class="flex w-full flex-col gap-4">
 	<!-- Search bar -->
 	<div class="relative">
-		<SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+		<SearchIcon class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 		<Input
 			type="text"
 			placeholder="Search invoices by number or client..."
@@ -143,4 +143,3 @@
 		</Tabs.Content>
 	</Tabs.Root>
 </div>
-

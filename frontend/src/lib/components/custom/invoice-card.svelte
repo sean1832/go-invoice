@@ -54,10 +54,10 @@
 <Card.Root>
 	<Card.Content class="p-4 sm:p-8">
 		<!-- Header Section -->
-		<div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 sm:mb-8 gap-6">
+		<div class="mb-6 flex flex-col gap-6 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
 			<!-- Left: Invoice Info -->
 			<div>
-				<h1 class="text-3xl sm:text-4xl font-bold text-foreground mb-2">INVOICE</h1>
+				<h1 class="mb-2 text-3xl font-bold text-foreground sm:text-4xl">INVOICE</h1>
 				<div class="space-y-1 text-sm sm:text-base">
 					<p class="text-muted-foreground">
 						Invoice Number: <span class="font-semibold text-foreground">{invoice.id}</span>
@@ -66,15 +66,17 @@
 						Date: <span class="font-semibold text-foreground">{formatDateShort(invoice.date)}</span>
 					</p>
 					<p class="text-muted-foreground">
-						Due Date: <span class="font-semibold text-foreground">{formatDateShort(invoice.due)}</span>
+						Due Date: <span class="font-semibold text-foreground"
+							>{formatDateShort(invoice.due)}</span
+						>
 					</p>
 				</div>
 			</div>
 
 			<!-- Right: Provider Info -->
 			<div class="sm:text-right">
-				<h2 class="text-xl sm:text-2xl font-bold text-foreground mb-2">{invoice.provider.name}</h2>
-				<div class="space-y-0.5 text-sm sm:text-base text-muted-foreground">
+				<h2 class="mb-2 text-xl font-bold text-foreground sm:text-2xl">{invoice.provider.name}</h2>
+				<div class="space-y-0.5 text-sm text-muted-foreground sm:text-base">
 					{#if invoice.provider.address}
 						<p class="whitespace-pre-line">{invoice.provider.address}</p>
 					{/if}
@@ -93,10 +95,10 @@
 
 		<!-- Bill To Section -->
 		<div class="mb-6 sm:mb-8">
-			<h3 class="text-base sm:text-lg font-semibold text-foreground mb-3">Bill To:</h3>
-			<div class="bg-muted p-3 sm:p-4 rounded-lg">
+			<h3 class="mb-3 text-base font-semibold text-foreground sm:text-lg">Bill To:</h3>
+			<div class="rounded-lg bg-muted p-3 sm:p-4">
 				<p class="font-semibold text-foreground">{invoice.client.name}</p>
-				<div class="space-y-0.5 text-sm sm:text-base text-muted-foreground mt-1">
+				<div class="mt-1 space-y-0.5 text-sm text-muted-foreground sm:text-base">
 					{#if invoice.client.address}
 						<p class="whitespace-pre-line">{invoice.client.address}</p>
 					{/if}
@@ -114,30 +116,33 @@
 		</div>
 
 		<!-- Invoice Items - Desktop Table View -->
-		<div class="hidden lg:block mb-8 overflow-hidden rounded-lg border-2 border-border">
+		<div class="mb-8 hidden overflow-hidden rounded-lg border-2 border-border lg:block">
 			<table class="w-full">
 				<thead>
 					<tr class="bg-primary text-primary-foreground">
-						<th class="py-4 px-6 text-left font-semibold w-36">Date</th>
-						<th class="py-4 px-6 text-left font-semibold">Description</th>
-						<th class="py-4 px-6 text-center font-semibold w-28">Qty</th>
-						<th class="py-4 px-6 text-right font-semibold w-36">Unit Price</th>
-						<th class="py-4 px-6 text-right font-semibold w-36">Amount</th>
+						<th class="w-36 px-6 py-4 text-left font-semibold">Date</th>
+						<th class="px-6 py-4 text-left font-semibold">Description</th>
+						<th class="w-28 px-6 py-4 text-center font-semibold">Qty</th>
+						<th class="w-36 px-6 py-4 text-right font-semibold">Unit Price</th>
+						<th class="w-36 px-6 py-4 text-right font-semibold">Amount</th>
 					</tr>
 				</thead>
 				<tbody class="bg-card">
 					{#each invoice.items as item}
-						<tr class="border-b-2 border-border hover:bg-muted/50 transition-colors">
-							<td class="py-4 px-6 text-left text-muted-foreground">{formatDateShort(item.date)}</td>
-							<td class="py-4 px-6">
+						<tr class="border-b-2 border-border transition-colors hover:bg-muted/50">
+							<td class="px-6 py-4 text-left text-muted-foreground">{formatDateShort(item.date)}</td
+							>
+							<td class="px-6 py-4">
 								<p class="font-semibold text-foreground">{item.description}</p>
 								{#if item.descriptionDetail}
-									<p class="text-muted-foreground text-sm mt-1">{item.descriptionDetail}</p>
+									<p class="mt-1 text-sm text-muted-foreground">{item.descriptionDetail}</p>
 								{/if}
 							</td>
-							<td class="py-4 px-6 text-center text-muted-foreground">{item.quantity}</td>
-							<td class="py-4 px-6 text-right text-muted-foreground">{formatCurrency(item.unitPrice)}</td>
-							<td class="py-4 px-6 text-right font-semibold text-foreground">
+							<td class="px-6 py-4 text-center text-muted-foreground">{item.quantity}</td>
+							<td class="px-6 py-4 text-right text-muted-foreground"
+								>{formatCurrency(item.unitPrice)}</td
+							>
+							<td class="px-6 py-4 text-right font-semibold text-foreground">
 								{formatCurrency(item.totalPrice)}
 							</td>
 						</tr>
@@ -147,15 +152,17 @@
 		</div>
 
 		<!-- Invoice Items - Mobile Card View -->
-		<div class="lg:hidden mb-6 sm:mb-8 space-y-4">
+		<div class="mb-6 space-y-4 sm:mb-8 lg:hidden">
 			{#each invoice.items as item}
-				<div class="border-2 border-border rounded-lg p-4 hover:border-primary/50 transition-colors bg-card">
+				<div
+					class="rounded-lg border-2 border-border bg-card p-4 transition-colors hover:border-primary/50"
+				>
 					<!-- Item Header -->
-					<div class="flex justify-between items-start mb-2">
+					<div class="mb-2 flex items-start justify-between">
 						<div class="flex-1">
-							<p class="font-semibold text-foreground mb-1">{item.description}</p>
+							<p class="mb-1 font-semibold text-foreground">{item.description}</p>
 							{#if item.descriptionDetail}
-								<p class="text-muted-foreground text-sm mb-2">{item.descriptionDetail}</p>
+								<p class="mb-2 text-sm text-muted-foreground">{item.descriptionDetail}</p>
 							{/if}
 							<p class="text-xs text-muted-foreground">{formatDateShort(item.date)}</p>
 						</div>
@@ -166,19 +173,19 @@
 					<!-- Item Details Grid -->
 					<div class="grid grid-cols-2 gap-3 text-sm">
 						<div>
-							<p class="text-muted-foreground text-xs mb-0.5">Quantity</p>
+							<p class="mb-0.5 text-xs text-muted-foreground">Quantity</p>
 							<p class="font-semibold text-foreground">{item.quantity}</p>
 						</div>
 						<div>
-							<p class="text-muted-foreground text-xs mb-0.5">Unit Price</p>
+							<p class="mb-0.5 text-xs text-muted-foreground">Unit Price</p>
 							<p class="font-semibold text-foreground">{formatCurrency(item.unitPrice)}</p>
 						</div>
 					</div>
 
 					<!-- Item Total -->
-					<div class="mt-3 pt-3 border-t border-border">
-						<div class="flex justify-between items-center">
-							<p class="text-muted-foreground font-medium">Amount</p>
+					<div class="mt-3 border-t border-border pt-3">
+						<div class="flex items-center justify-between">
+							<p class="font-medium text-muted-foreground">Amount</p>
 							<p class="text-lg font-bold text-foreground">{formatCurrency(item.totalPrice)}</p>
 						</div>
 					</div>
@@ -187,18 +194,20 @@
 		</div>
 
 		<!-- Totals Section -->
-		<div class="flex justify-end mb-6 sm:mb-8">
+		<div class="mb-6 flex justify-end sm:mb-8">
 			<div class="w-full sm:w-72">
-				<div class="flex justify-between py-2 border-b border-border text-sm sm:text-base">
+				<div class="flex justify-between border-b border-border py-2 text-sm sm:text-base">
 					<span class="text-muted-foreground">Subtotal:</span>
-					<span class="font-semibold text-foreground">{formatCurrency(invoice.pricing.subtotal)}</span>
+					<span class="font-semibold text-foreground"
+						>{formatCurrency(invoice.pricing.subtotal)}</span
+					>
 				</div>
-				<div class="flex justify-between py-2 border-b border-border text-sm sm:text-base">
+				<div class="flex justify-between border-b border-border py-2 text-sm sm:text-base">
 					<span class="text-muted-foreground">Tax ({invoice.pricing.taxRate}%):</span>
 					<span class="font-semibold text-foreground">{formatCurrency(invoice.pricing.tax)}</span>
 				</div>
 				<div
-					class="flex justify-between py-3 bg-primary text-primary-foreground px-4 rounded-lg mt-2 text-base sm:text-lg"
+					class="mt-2 flex justify-between rounded-lg bg-primary px-4 py-3 text-base text-primary-foreground sm:text-lg"
 				>
 					<span class="font-bold">Total:</span>
 					<span class="font-bold">{formatCurrency(invoice.pricing.total)}</span>
@@ -208,8 +217,8 @@
 
 		<!-- Payment Information -->
 		<div class="border-t border-border pt-4 sm:pt-6">
-			<h3 class="text-base sm:text-lg font-semibold text-foreground mb-3">Payment Information</h3>
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+			<h3 class="mb-3 text-base font-semibold text-foreground sm:text-lg">Payment Information</h3>
+			<div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
 				<div class="space-y-2">
 					<p class="text-muted-foreground">
 						<span class="font-semibold text-foreground">Payment Method:</span>
@@ -234,8 +243,8 @@
 		</div>
 
 		<!-- Notes/Terms -->
-		<div class="mt-6 sm:mt-8 border-t border-border pt-4 sm:pt-6">
-			<p class="text-xs sm:text-sm text-muted-foreground">
+		<div class="mt-6 border-t border-border pt-4 sm:mt-8 sm:pt-6">
+			<p class="text-xs text-muted-foreground sm:text-sm">
 				Payment is due within 30 days. Please include the invoice number with your payment. Thank
 				you for your business!
 			</p>

@@ -3,7 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { ModeWatcher } from 'mode-watcher';
 	let { children } = $props();
-	import Navbar from "@/components/custom/navbar.svelte";
+	import Navbar from '@/components/custom/navbar.svelte';
 </script>
 
 <svelte:head>

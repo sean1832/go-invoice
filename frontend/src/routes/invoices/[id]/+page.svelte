@@ -82,7 +82,7 @@
 	// Action handlers
 	function goBack() {
 		// window.history.back();
-    window.location.href = '/';
+		window.location.href = '/';
 	}
 
 	function editInvoice() {
@@ -100,19 +100,19 @@
 	}
 </script>
 
-<div class="container mx-auto p-4 max-w-5xl">
+<div class="container mx-auto max-w-5xl p-4">
 	<!-- Action Buttons Bar -->
-	<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<Button variant="ghost" size="sm" onclick={goBack} class="self-start">
-			<ArrowLeftIcon class="h-4 w-4 mr-2" />
+			<ArrowLeftIcon class="mr-2 h-4 w-4" />
 			Back
 		</Button>
 		<div class="flex flex-wrap gap-2">
-			<Badge variant={getStatusVariant(invoice.status)} class="text-sm px-3 py-1">
+			<Badge variant={getStatusVariant(invoice.status)} class="px-3 py-1 text-sm">
 				{getStatusLabel(invoice.status)}
 			</Badge>
 			<Button variant="default" size="sm" onclick={editInvoice}>
-				<EditIcon class="h-4 w-4 mr-2" />
+				<EditIcon class="mr-2 h-4 w-4" />
 				<span class="hidden sm:inline">Edit</span>
 			</Button>
 			<Button variant="outline" size="sm" onclick={downloadInvoice}>
