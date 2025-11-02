@@ -17,9 +17,9 @@
 				"kind": "build",
 				"isDefault": true
 			},
-			"detail": "cd ${workspaceFolder}; go build -o bin/ ./...",
+			"detail": "cd ${workspaceFolder}/backend; go build -o bin/ ./...",
 			"options": {
-				"cwd": "${workspaceFolder}"
+				"cwd": "${workspaceFolder}/backend"
 			}
 		}
 	]

@@ -1,15 +1,23 @@
 package invoice
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"go/format"
 	"time"
 )
 
+type InvoiceStatus string
+
+const (
+	StatusDraft InvoiceStatus = "draft"
+	StatusSend  InvoiceStatus = "send"
+)
+
 // Invoice represents the core invoice domain model
 type Invoice struct {
 	ID          string        `json:"id"`                     // invoice number/identifier
+	Status      InvoiceStatus `json:"status"`                 // invoice status (draft, sent)
 	Date        time.Time     `json:"date"`                   // invoice date
 	Due         time.Time     `json:"due"`                    // payment due date
 	Provider    Party         `json:"provider"`               // service provider
@@ -18,25 +26,40 @@ type Invoice struct {
 	Pricing     Pricing       `json:"pricing"`                // pricing details
 	Payment     PaymentInfo   `json:"payment"`                // payment information
 	EmailTarget string        `json:"email_target,omitempty"` // (optional) email target for sending the invoice
+	count       int           `json:"-"`                      // internal count, not serialized
 }
 
 // New creates a new invoice with the given provider, client, payment info, and tax rate
-func New(provider, client Party, payment PaymentInfo, taxRate float32) *Invoice {
+func New(provider, client Party, payment PaymentInfo, taxRate float32, count int) (*Invoice, error) {
+	pricing, err := NewPricing(0, taxRate)
+	if err != nil {
+		return nil, err
+	}
 	return &Invoice{
-		ID:       generateInvoiceID(),
+		ID:       generateInvoiceID(count),
+		Status:   StatusDraft,
 		Date:     time.Now(),
 		Due:      time.Now().AddDate(0, 0, 30), // due in 30 days
 		Provider: provider,
 		Client:   client,
 		Items:    []ServiceItem{},
-		Pricing:  NewPricing(0, taxRate),
+		Pricing:  *pricing,
 		Payment:  payment,
-	}
+		count:    count,
+	}, nil
 }
 
 // SetEmailTarget sets the email address to send the invoice to
 func (inv *Invoice) SetEmailTarget(email string) {
 	inv.EmailTarget = email
+}
+
+func (inv *Invoice) SetID(id string) {
+	inv.ID = id
+}
+
+func (inv *Invoice) HasRequiredFields() bool {
+	return inv.ID != "" && inv.Status != "" && inv.Provider.HasRequiredFields() && inv.Client.HasRequiredFields() && inv.Payment.HasRequiredFields()
 }
 
 // AddItem adds a service item to the invoice and updates the pricing
@@ -45,26 +68,11 @@ func (inv *Invoice) AddItem(item ServiceItem) {
 	inv.Pricing.Update(calculateSubtotal(inv.Items))
 }
 
-// ToJSON serializes the invoice to JSON
-func (inv *Invoice) ToJSON() ([]byte, error) {
-	return json.Marshal(inv)
-}
-
-// FromJSON deserializes an invoice from JSON
-func FromJSON(data []byte) (*Invoice, error) {
-	var inv Invoice
-	err := json.Unmarshal(data, &inv)
-	if err != nil {
-		return nil, err
-	}
-	return &inv, nil
-}
-
 // generateInvoiceID creates a unique invoice ID based on the current date
-func generateInvoiceID() string {
+func generateInvoiceID(count int) string {
 	today := time.Now()
-	formatted, _ := format.Source([]byte(today.Format("20060102")))
-	return fmt.Sprintf("INV-%s", string(formatted))
+	formatted, _ := format.Source([]byte(today.Format("060102")))
+	return fmt.Sprintf("INV-%s%03d", string(formatted), count)
 }
 
 // Party represents either the service provider or the client/customer
@@ -74,6 +82,10 @@ type Party struct {
 	Email   string `json:"email,omitempty"`   // (optional) email address
 	Phone   string `json:"phone,omitempty"`   // (optional) phone number
 	ABN     string `json:"abn,omitempty"`     // (optional) Australian Business Number
+}
+
+func (p *Party) HasRequiredFields() bool {
+	return p.Name != ""
 }
 
 // ServiceItem represents a single line item in the invoice
@@ -118,15 +130,22 @@ type Pricing struct {
 }
 
 // NewPricing creates a new pricing structure
-func NewPricing(subtotal, taxRate float32) Pricing {
+func NewPricing(subtotal, taxRate float32) (*Pricing, error) {
+	if subtotal < 0 {
+		return nil, errors.New("subtotal cannot be negative")
+	}
+	if taxRate < 0 {
+		return nil, errors.New("tax rate cannot be negative")
+	}
+
 	taxAmount := subtotal * taxRate / 100
 	total := subtotal + taxAmount
-	return Pricing{
+	return &Pricing{
 		Subtotal:  subtotal,
 		TaxAmount: taxAmount,
 		TaxRate:   taxRate,
 		Total:     total,
-	}
+	}, nil
 }
 
 // Update recalculates the pricing based on a new subtotal
@@ -151,4 +170,8 @@ type PaymentInfo struct {
 	AccountName   string `json:"account_name"`   // account holder name
 	BSB           string `json:"bsb"`            // bank state branch number
 	AccountNumber string `json:"account_number"` // bank account number
+}
+
+func (p *PaymentInfo) HasRequiredFields() bool {
+	return p.Method != "" && p.AccountName != "" && p.BSB != "" && p.AccountNumber != ""
 }
