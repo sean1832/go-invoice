@@ -10,16 +10,16 @@
 	import DownloadIcon from '@lucide/svelte/icons/download';
 
 	interface Props {
-		invoice: Invoice;
+		item: Invoice;
 	}
 
-	let { invoice }: Props = $props();
+	let { item: invoice }: Props = $props();
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
-		return new Intl.NumberFormat('en-US', {
+		return new Intl.NumberFormat('en-AU', {
 			style: 'currency',
-			currency: 'USD'
+			currency: 'AUD'
 		}).format(amount);
 	}
 

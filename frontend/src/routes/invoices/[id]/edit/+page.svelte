@@ -12,6 +12,7 @@
 		date: '2025-11-01',
 		due: '2025-11-30',
 		provider: {
+			id: 'your_company',
 			name: 'Your Company',
 			address: '123 Business Street',
 			email: 'contact@yourcompany.com',
@@ -19,6 +20,7 @@
 			abn: '12 345 678 901'
 		},
 		client: {
+			id: 'acme_corp',
 			name: 'Acme Corporation',
 			address: '456 Client Avenue',
 			email: 'billing@acme.com',

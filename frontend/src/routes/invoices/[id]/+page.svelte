@@ -16,6 +16,7 @@
 		date: '2025-11-01',
 		due: '2025-12-01',
 		provider: {
+			id: 'your_company',
 			name: 'Your Company',
 			address: '123 Business Street, Suite 100\nMelbourne, VIC 3000',
 			email: 'contact@yourcompany.com',
@@ -23,6 +24,7 @@
 			abn: '12 345 678 901'
 		},
 		client: {
+			id: 'acme_corporation',
 			name: 'Acme Corporation',
 			address: '456 Client Avenue\nSydney, NSW 2000',
 			email: 'billing@acme.com',

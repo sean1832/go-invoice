@@ -29,6 +29,7 @@
 		date: invoice?.date || new Date().toISOString().split('T')[0],
 		due: invoice?.due || getDefaultDueDate(),
 		provider: invoice?.provider || {
+			id: '',
 			name: '',
 			address: '',
 			email: '',
@@ -36,6 +37,7 @@
 			abn: ''
 		},
 		client: invoice?.client || {
+			id: '',
 			name: '',
 			address: '',
 			email: '',
@@ -221,6 +223,7 @@
 		if (provider) {
 			selectedProviderId = providerId;
 			formData.provider = {
+				id: provider.id,
 				name: provider.name,
 				email: provider.email,
 				abn: provider.abn,
@@ -239,6 +242,7 @@
 		if (client) {
 			selectedClientId = clientId;
 			formData.client = {
+				id: client.id,
 				name: client.name,
 				email: client.email,
 				abn: client.abn,

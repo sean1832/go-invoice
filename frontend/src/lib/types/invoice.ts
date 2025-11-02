@@ -1,8 +1,18 @@
 // Invoice status types - matching Go backend
 export type InvoiceStatus = 'draft' | 'send';
 
+export interface ClientData extends Party {
+	taxRate: number;
+	targetEmail?: string;
+}
+
+export interface ProviderData extends Party {
+	paymentInfo: PaymentInfo;
+}
+
 // Party represents either the service provider or the client/customer
 export interface Party {
+	id: string;
 	name: string;
 	address?: string;
 	email?: string;
