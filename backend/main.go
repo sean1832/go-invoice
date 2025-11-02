@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"invoice/internal/api"
-	"invoice/internal/storage"
-	"invoice/internal/ui"
+	"go-invoice/internal/api"
+	"go-invoice/internal/storage"
+	"go-invoice/internal/ui"
 	"log/slog"
 	"net/http"
 	"strconv"

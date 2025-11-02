@@ -1,8 +1,8 @@
 package api
 
 import (
-	"invoice/internal/invoice"
-	"invoice/internal/query"
+	"go-invoice/internal/invoice"
+	"go-invoice/internal/query"
 	"net/http"
 )
 

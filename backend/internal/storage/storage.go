@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"invoice/internal/invoice"
+	"go-invoice/internal/invoice"
 )
 
 type StorageDir struct {

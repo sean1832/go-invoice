@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"invoice/internal/storage"
+	"go-invoice/internal/storage"
 	"net/http"
 )
 

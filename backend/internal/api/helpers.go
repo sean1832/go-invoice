@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"invoice/internal/invoice"
+	"go-invoice/internal/invoice"
 	"os"
 	"path/filepath"
 	"strings"

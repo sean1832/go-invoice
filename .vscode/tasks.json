@@ -61,7 +61,7 @@
       "type": "go",
       "label": "go: build backend",
       "command": "build",
-      "args": ["-o", "bin/invoice-app${command:pickArgs}", "."],
+      "args": ["-o", "bin/go-invoice${command:pickArgs}", "."],
       "problemMatcher": ["$go"],
       "options": {
         "cwd": "${workspaceFolder}/backend"

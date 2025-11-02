@@ -1,3 +1,3 @@
-module invoice
+module go-invoice
 
 go 1.25.3

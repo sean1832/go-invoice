@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Cross-platform build script for invoice-go
+ * Cross-platform build script for go-invoice
  * Builds frontend, copies to backend, and builds Go binary
  *
  * Usage:
@@ -117,7 +117,7 @@ function copyFrontend(buildDir, distDir) {
 function buildBackend(backendDir) {
   logStep("Building Go backend...");
   const isWindows = process.platform === "win32";
-  const binaryName = isWindows ? "invoice-app.exe" : "invoice-app";
+  const binaryName = isWindows ? "go-invoice.exe" : "go-invoice";
   const buildCmd = `go build -o bin/${binaryName} .`;
 
   if (!exec(buildCmd, backendDir)) {
@@ -142,7 +142,7 @@ function build() {
 
   const command = process.argv[2] || "all";
 
-  log(`${colors.bright}${colors.green}Building invoice-go${colors.reset}\n`);
+  log(`${colors.bright}${colors.green}Building go-invoice${colors.reset}\n`);
 
   switch (command) {
     case "frontend":

@@ -1,5 +1,5 @@
 {
-  "name": "invoice-go",
+  "name": "go-invoice",
   "version": "1.0.0",
   "private": true,
   "description": "Invoice management application with Go backend and Svelte frontend",
@@ -16,7 +16,5 @@
     "invoice",
     "go",
     "svelte"
-  ],
-  "author": "",
-  "license": "MIT"
+  ]
 }

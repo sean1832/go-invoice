@@ -1,4 +1,4 @@
-# Invoice-Go
+# go-invoice
 
 Invoice management application with Go backend and Svelte frontend.
 

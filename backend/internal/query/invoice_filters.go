@@ -1,7 +1,7 @@
 package query
 
 import (
-	"invoice/internal/invoice"
+	"go-invoice/internal/invoice"
 	"strings"
 )
 

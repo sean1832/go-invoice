@@ -1,7 +1,7 @@
 package api
 
 import (
-	"invoice/internal/storage"
+	"go-invoice/internal/storage"
 	"net/http"
 )
 
