@@ -2,6 +2,7 @@ package api
 
 import (
 	"invoice/internal/invoice"
+	"invoice/internal/query"
 	"net/http"
 )
 
@@ -25,11 +26,23 @@ func (h *Handler) handleInvoicesItem(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		
+		// TODO: Optimize filtering for large datasets (sqlite)
+		// Parse query parameters
+		queryParams := query.ParseInvoiceQuery(r.URL.Query())
 
-		getAllResources(w, h.StorageDir.Invoices, "invoice", func(root string) (any, error) {
-			return getAllInvoices(root)
-		})
+		// Get all invoices
+		invoices, err := getAllInvoices(h.StorageDir.Invoices)
+		if err != nil {
+			writeRespErr(w, "failed to list invoice informations", http.StatusInternalServerError)
+			return
+		}
+
+		// Apply filters if any
+		if queryParams.HasFilters() {
+			invoices = query.FilterInvoices(invoices, queryParams)
+		}
+
+		writeRespOk(w, "list of invoices", invoices)
 	case http.MethodPost:
 		createResource(w, r, h.StorageDir.Invoices, "invoice", func() ResourceData {
 			return &invoice.Invoice{}
