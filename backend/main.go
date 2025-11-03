@@ -34,6 +34,6 @@ func main() {
 	}
 	mux.Handle("/", uiHandler)
 
-	slog.Info("Server listening", "port", port)
+	slog.Info("Server listening", "url", "http://localhost:"+strconv.Itoa(port))
 	http.ListenAndServe(":"+strconv.Itoa(port), api.WithCORS(mux, []string{"*"}))
 }
