@@ -50,6 +50,26 @@ npm run copy                     # Copy frontend/build/ → backend/internal/ui/
 
 ## Frontend Patterns
 
+### Store Architecture (Single Source of Truth)
+
+- **Centralized stores** in `src/lib/stores/`: All data operations (CRUD) go through Svelte stores
+- **Pattern**: Load data → Store updates → UI auto-reacts (no manual state management in components)
+- **Key stores**: `invoices`, `clients`, `providers`, `activeProvider` (all with loading states)
+- **API-ready**: Stores use localStorage now; swap with fetch calls to `/api/v1/` endpoints (same signatures)
+- **Derived stores**: `filteredInvoices` auto-filters based on `invoiceFilters` store
+- **Initialization**: Call `loadInvoices()`, `loadClients()`, `loadProviders()` in root layout/page
+- See `frontend/src/lib/stores/README.md` for complete store API reference
+
+### Component Structure (Atomic Design)
+
+- **Atoms** (`components/atoms/`): Smallest reusable pieces (date-display, status-badge, currency-display)
+- **Molecules** (`components/molecules/`): Combinations of atoms (form groups, cards)
+- **Organisms** (`components/organisms/`): Complete features (invoice-form, invoice-display, navbar, shelf, profile-form)
+- **UI Components** (`components/ui/`): bits-ui primitives + Tailwind styling (shadcn/ui patterns)
+  - Use `$props()` for all component props (never destructure)
+  - Use `$bindable()` for two-way binding (e.g., `ref`, `value`, `open`)
+  - Import from `bits-ui` (Tabs, Select, Popover, Dialog primitives)
+
 ### Date Handling (Svelte 5)
 
 - **String format**: ISO YYYY-MM-DD (e.g., `"2025-11-03"`) for API/storage
@@ -64,18 +84,14 @@ npm run copy                     # Copy frontend/build/ → backend/internal/ui/
   });
   ```
 - **Components**: `DatePicker` auto-closes after selection; `Calendar` for custom date picking
-
-### Component Structure
-
-- **UI Components**: `src/lib/components/ui/` (bits-ui wrapper + Tailwind)
-- **Custom Components**: `src/lib/components/custom/` (invoices, clients, date-pickers)
-- **All components**: Use `$props()` for reactive props, `$bindable()` for two-way binding
+- **CRITICAL**: NEVER import `@internationalized/date` in `.ts` utility files — only in `.svelte` files
 
 ### Type Safety
 
 - Core types in `src/lib/types/invoice.ts`: `Invoice`, `Party`, `ServiceItem`, `Pricing`, `InvoiceStatus`
 - API responses must match these types
 - Date fields: always `string` (ISO format)
+- Validators in `src/lib/utils/validators.ts`: `validateInvoice()`, `validateParty()`, `validateLineItem()`
 
 ## Backend Patterns
 
@@ -84,18 +100,24 @@ npm run copy                     # Copy frontend/build/ → backend/internal/ui/
 - Pattern: `Handler struct` with `Context` and `StorageDir` fields
 - Register routes in `RegisterRoutesV1()` using path patterns: `/api/v1/resource/{id}`
 - JSON serialization with Go's built-in `encoding/json`
+- Method routing: Check `r.Method` in handler functions (GET/POST/PUT/DELETE)
 
 ### Data Storage
 
 - **Path**: `db/{clients,providers,invoices,smtp}/` (relative to executable)
 - **Format**: JSON files with entity IDs as filenames (e.g., `INV-251103.json`)
-- **Initialization**: `storage.NewStorageDir()` creates directories if missing
+- **Initialization**: `storage.NewStorageDir()` creates directories if missing (auto-setup on first run)
+- **Read/Write**: Use `os.ReadFile()` and `os.WriteFile()` with JSON marshaling
+- **File operations**: `filepath.Join()` for cross-platform paths
 
 ### REST Conventions
 
 - Collection: `GET /api/v1/invoices`, `POST /api/v1/invoices`
 - Item: `GET /api/v1/invoices/{id}`, `PUT /api/v1/invoices/{id}`, `DELETE /api/v1/invoices/{id}`
 - Special: `GET /api/v1/invoices/count` (query operations)
+- Query params: Support filtering via `?client_id={id}`, `?status={status}`, `?q={search}`, `?sort={field}`, `?order={asc|desc}`
+  - Implemented in `internal/query/query_params.go` and `internal/query/invoice_filters.go`
+  - Example: `/api/v1/invoices?status=draft&sort=due_date&order=asc`
 
 ## Type System Notes
 
@@ -135,9 +157,11 @@ npm run copy                     # Copy frontend/build/ → backend/internal/ui/
 
 ## Testing & Debugging
 
-- **Backend Debug**: Press `F5` → "Launch Backend" (builds + debugger)
+- **Backend Debug**: Press `F5` → "Launch Backend with Full Build" (builds + debugger) or "Launch Backend (Quick)" (debug only)
 - **Frontend Hot Reload**: Active in dev mode; refresh browser after backend changes
 - **API Testing**: Use VS Code REST Client or test endpoints at http://localhost:8080/api/v1/
+- **Data inspection**: Check `backend/bin/db/` directory for JSON files during development
+- **Build verification**: Run `build: full application` task before testing production binary
 
 ## Common Pitfalls
 
