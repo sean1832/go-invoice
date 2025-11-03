@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { ClientForm } from '@/components/organisms/profile-form';
 	import type { ClientData } from '@/types/invoice';
+	import { page } from '$app/state';
+	import { mockClients } from '@/stores';
 
-	// Mock client data - in real app, this would be loaded from the API using the [id] param
-	const existingClient: ClientData = {
-		id: 'acme_corporation',
-		name: 'Acme Corporation',
-		email: 'contact@acme.com',
-		address: '123 Business St, Sydney NSW 2000',
-		phone: '+61 2 9876 5432',
-		abn: '98 765 432 109',
-		taxRate: 10,
-		targetEmail: 'billing@acme.com'
-	};
+	const clientId = page.params.id;
+	if (!clientId) {
+		throw new Error('Client ID is required for editing');
+	}
+	// In real app: Fetch client data from API
+	const client = mockClients.find((c) => c.id === clientId) || mockClients[0];
 
 	function handleSave(client: ClientData) {
 		console.log('Saving client:', client);
@@ -26,5 +23,5 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientForm client={existingClient} mode="edit" onSave={handleSave} onCancel={handleCancel} />
+	<ClientForm client={client} mode="edit" onSave={handleSave} onCancel={handleCancel} />
 </div>
