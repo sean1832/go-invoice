@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ClientEditor from '@/components/organisms/profile-form/client-editor.svelte';
+	import { ClientForm } from '@/components/organisms/profile-form';
 	import type { ClientData } from '@/types/invoice';
 
 	// Mock client data - in real app, this would be loaded from the API using the [id] param
@@ -26,5 +26,5 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientEditor client={existingClient} mode="edit" onSave={handleSave} onCancel={handleCancel} />
+	<ClientForm client={existingClient} mode="edit" onSave={handleSave} onCancel={handleCancel} />
 </div>

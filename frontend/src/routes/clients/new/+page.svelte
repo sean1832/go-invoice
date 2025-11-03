@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ClientEditor from '@/components/organisms/profile-form/client-editor.svelte';
+	import { ClientForm } from '@/components/organisms/profile-form';
 	import type { ClientData } from '@/types/invoice';
 
 	function handleSave(client: ClientData) {
@@ -14,5 +14,5 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientEditor mode="create" onSave={handleSave} onCancel={handleCancel} />
+	<ClientForm mode="create" onSave={handleSave} onCancel={handleCancel} />
 </div>

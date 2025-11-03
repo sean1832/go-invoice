@@ -1,11 +1,11 @@
 <script lang="ts">
-	import ProviderEditor from '@/components/organisms/profile-form/provider-editor.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
 	import { activeProvider, saveProvider, resetProvidersToMock, loadProviders } from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+	import { ProviderForm } from '@/components/organisms/profile-form';
 
 	// Use reactive reference to activeProvider
 	let currentProvider = $derived($activeProvider);
@@ -34,7 +34,7 @@
 	</div>
 
 	{#if currentProvider}
-		<ProviderEditor
+		<ProviderForm
 			provider={currentProvider}
 			mode="edit"
 			onSave={handleSave}

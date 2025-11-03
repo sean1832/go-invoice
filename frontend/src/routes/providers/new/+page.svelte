@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProviderEditor from '@/components/organisms/profile-form/provider-editor.svelte';
+	import { ProviderForm } from '@/components/organisms/profile-form';
 	import type { ProviderData } from '@/types/invoice';
 	import { saveProvider } from '@/stores/provider';
 
@@ -16,5 +16,5 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ProviderEditor mode="create" onSave={handleSave} onCancel={handleCancel} />
+	<ProviderForm mode="create" onSave={handleSave} onCancel={handleCancel} />
 </div>
