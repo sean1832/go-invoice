@@ -94,6 +94,10 @@
 			if ($activeProvider.paymentInfo) {
 				paymentInfo = { ...$activeProvider.paymentInfo };
 			}
+		} else if (mode === 'edit' && invoice) {
+			console.log('Edit mode - initializing selected IDs from invoice data');
+			selectedProviderId = invoice.provider.id;
+			selectedClientId = invoice.client.id;
 		} else {
 			console.log('Initialization skipped');
 		}
