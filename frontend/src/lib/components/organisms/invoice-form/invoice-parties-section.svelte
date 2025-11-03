@@ -26,7 +26,7 @@
 <script lang="ts">
 	import type { Party } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import ProfileSelector from '@/components/custom/invoice-editor/profile-selector.svelte';
+	import {ProfileSelector} from '@/components/molecules';
 
 	interface Profile {
 		id: string;
