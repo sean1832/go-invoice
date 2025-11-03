@@ -13,7 +13,8 @@
 	import ProfileSelector from './profile-selector.svelte';
 	import DatePicker from '../date-picker/date-picker.svelte';
 	import { parseDate, type DateValue } from '@internationalized/date';
-	import { activeProvider } from '@/stores/provider';
+	import { activeProvider, providers, clients } from '@/stores';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		invoice?: Invoice;
@@ -24,20 +25,23 @@
 
 	let { invoice, mode, onSave, onCancel }: Props = $props();
 
+	// Initialize selected IDs - will be updated when stores load
+	let selectedProviderId = $state<string | undefined>(undefined);
+	let selectedClientId = $state<string | undefined>(undefined);
+
 	// Form state
 	let formData = $state({
 		id: invoice?.id || generateInvoiceId(),
 		date: invoice?.date || new Date().toISOString().split('T')[0],
 		due: invoice?.due || getDefaultDueDate(),
-		provider: invoice?.provider ||
-			$activeProvider || {
-				id: '',
-				name: '',
-				address: '',
-				email: '',
-				phone: '',
-				abn: ''
-			},
+		provider: invoice?.provider || {
+			id: '',
+			name: '',
+			address: '',
+			email: '',
+			phone: '',
+			abn: ''
+		},
 		client: invoice?.client || {
 			id: '',
 			name: '',
@@ -50,61 +54,37 @@
 		taxRate: invoice?.pricing?.taxRate || 10
 	});
 
-	// Mock data for providers and clients (these would come from API/storage later)
-	let providers = $state([
-		{
-			id: 'zeke_zhang',
-			name: 'Zeke Zhang',
-			email: 'zeke@example.com',
-			abn: '12 345 678 901',
-			payment: {
-				method: 'Bank Transfer',
-				accountName: 'Zeke Zhang',
-				bsb: '123-456',
-				accountNumber: '12345678'
-			}
-		},
-		{
-			id: 'lan_zhang',
-			name: 'Lan Zhang',
-			email: 'lan@example.com',
-			abn: '98 765 432 109',
-			payment: {
-				method: 'Bank Transfer',
-				accountName: 'Lan Zhang',
-				bsb: '654-321',
-				accountNumber: '87654321'
-			}
-		}
-	]);
-
-	let clients = $state([
-		{
-			id: 'dingyu_xu',
-			name: 'Dingyu Xu',
-			email: 'dingyu@example.com',
-			abn: '11 222 333 444',
-			taxRate: 10
-		},
-		{
-			id: 'client_corp',
-			name: 'Client Corp',
-			email: 'contact@clientcorp.com',
-			abn: '55 666 777 888',
-			taxRate: 0
-		}
-	]);
-
-	// Selected IDs for dropdowns - default to active provider
-	let selectedProviderId = $state<string | undefined>($activeProvider?.id);
-	let selectedClientId = $state<string | undefined>(undefined);
-
 	// Payment info from selected provider (read-only)
 	let paymentInfo = $state({
 		method: 'Bank Transfer',
-		accountName: $activeProvider?.paymentInfo?.accountName || '',
-		bsb: $activeProvider?.paymentInfo?.bsb || '',
-		accountNumber: $activeProvider?.paymentInfo?.accountNumber || ''
+		accountName: '',
+		bsb: '',
+		accountNumber: ''
+	});
+
+	// Initialize from activeProvider when it's available
+	$effect(() => {
+		if ($activeProvider && !invoice && mode === 'create') {
+			// Set provider data from active provider
+			if (!formData.provider.id) {
+				formData.provider = {
+					id: $activeProvider.id,
+					name: $activeProvider.name,
+					email: $activeProvider.email || '',
+					abn: $activeProvider.abn || '',
+					address: $activeProvider.address || '',
+					phone: $activeProvider.phone || ''
+				};
+			}
+			// Set selected provider ID
+			if (!selectedProviderId) {
+				selectedProviderId = $activeProvider.id;
+			}
+			// Set payment info
+			if ($activeProvider.paymentInfo) {
+				paymentInfo = { ...$activeProvider.paymentInfo };
+			}
+		}
 	});
 
 	// DateValue states for date pickers
@@ -185,30 +165,6 @@
 		});
 	});
 
-	// Initialize provider selection on mount
-	$effect(() => {
-		if (selectedProviderId && !invoice && mode === 'create') {
-			// Only auto-select if creating new invoice (not editing)
-			const provider = providers.find((p) => p.id === selectedProviderId);
-			if (provider) {
-				// Ensure formData and payment info are properly initialized
-				if (formData.provider.id !== selectedProviderId) {
-					formData.provider = {
-						id: provider.id,
-						name: provider.name,
-						email: provider.email,
-						abn: provider.abn,
-						address: '',
-						phone: ''
-					};
-				}
-				if (provider.payment) {
-					paymentInfo = { ...provider.payment };
-				}
-			}
-		}
-	});
-
 	// Computed values
 	let subtotal = $derived(formData.items.reduce((sum, item) => sum + item.totalPrice, 0));
 	let tax = $derived(subtotal * (formData.taxRate / 100));
@@ -251,35 +207,35 @@
 
 	// Profile selection handlers
 	function handleProviderSelect(providerId: string) {
-		const provider = providers.find((p) => p.id === providerId);
+		const provider = $providers.find((p) => p.id === providerId);
 		if (provider) {
 			selectedProviderId = providerId;
 			formData.provider = {
 				id: provider.id,
 				name: provider.name,
-				email: provider.email,
-				abn: provider.abn,
-				address: '', // These would come from full profile
-				phone: ''
+				email: provider.email || '',
+				abn: provider.abn || '',
+				address: provider.address || '',
+				phone: provider.phone || ''
 			};
 			// Update payment info from provider
-			if (provider.payment) {
-				paymentInfo = { ...provider.payment };
+			if (provider.paymentInfo) {
+				paymentInfo = { ...provider.paymentInfo };
 			}
 		}
 	}
 
 	function handleClientSelect(clientId: string) {
-		const client = clients.find((c) => c.id === clientId);
+		const client = $clients.find((c) => c.id === clientId);
 		if (client) {
 			selectedClientId = clientId;
 			formData.client = {
 				id: client.id,
 				name: client.name,
-				email: client.email,
-				abn: client.abn,
-				address: '', // These would come from full profile
-				phone: ''
+				email: client.email || '',
+				abn: client.abn || '',
+				address: client.address || '',
+				phone: client.phone || ''
 			};
 			// Update tax rate from client
 			if (client.taxRate !== undefined) {
@@ -422,7 +378,7 @@
 	<ProfileSelector
 		class="h-full"
 		type="provider"
-		profiles={providers}
+		profiles={$providers}
 		bind:selectedProfileId={selectedProviderId}
 		profileData={formData.provider}
 		onSelect={handleProviderSelect}
@@ -434,7 +390,7 @@
 	<ProfileSelector
 		class="h-full"
 		type="client"
-		profiles={clients}
+		profiles={$clients}
 		bind:selectedProfileId={selectedClientId}
 		profileData={formData.client}
 		onSelect={handleClientSelect}

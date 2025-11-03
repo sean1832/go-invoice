@@ -1,38 +1,9 @@
 <script lang="ts">
 	import ProfileShelf from '@/components/custom/shelf/profile-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
-	import type { ClientData } from '@/types/invoice';
+	import { clients } from '@/stores';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
-	const mockupClients: ClientData[] = [
-		{
-			id: 'acme_corp',
-			name: 'Acme Corporation',
-			email: 'contact@acme.com',
-			address: '123 Business St',
-			phone: '+61 2 9876 5432',
-			abn: '98 765 432 109',
-			taxRate: 10
-		},
-		{
-			id: 'tech_startup',
-			name: 'Tech Startup Inc',
-			email: 'info@techstartup.com',
-			address: '456 Innovation Way',
-			phone: '+61 3 1234 5678',
-			abn: '12 345 678 901',
-			taxRate: 10
-		},
-		{
-			id: 'global_solutions',
-			name: 'Global Solutions Ltd',
-			email: 'contact@globalsolutions.com',
-			address: '789 Enterprise Rd',
-			phone: '+61 7 8765 4321',
-			abn: '23 456 789 012',
-			taxRate: 10
-		}
-	];
 	function createNewClient() {
 		window.location.href = '/clients/new';
 	}
@@ -53,7 +24,7 @@
 				</Button>
 			</div>
 
-			<ProfileShelf data={mockupClients} />
+			<ProfileShelf data={$clients} />
 		</div>
 	</div>
 

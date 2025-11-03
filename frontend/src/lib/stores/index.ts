@@ -1,0 +1,49 @@
+/**
+ * Store exports - Single point of import for all stores
+ *
+ * Usage:
+ * import { invoices, loadInvoices, saveInvoice } from '@/stores';
+ */
+
+// Provider store
+export {
+	providers,
+	activeProvider,
+	providersLoading,
+	loadProviders,
+	getProvider,
+	saveProvider,
+	deleteProvider,
+	setActiveProvider,
+	clearActiveProvider,
+	initializeProviders
+} from './provider';
+
+// Client store
+export {
+	clients,
+	clientsLoading,
+	loadClients,
+	getClient,
+	saveClient,
+	deleteClient,
+	searchClients
+} from './clients';
+
+// Invoice store
+export {
+	invoices,
+	invoicesLoading,
+	invoiceFilters,
+	filteredInvoices,
+	loadInvoices,
+	getInvoice,
+	saveInvoice,
+	deleteInvoice,
+	updateInvoiceStatus,
+	getInvoiceCount,
+	generateInvoiceId
+} from './invoices';
+
+// Mock data (for development only - delete when switching to API)
+export { mockProviders, mockClients, mockInvoices } from './mockup';

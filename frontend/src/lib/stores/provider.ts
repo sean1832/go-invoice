@@ -1,18 +1,43 @@
+/**
+ * Provider Store - Handles all provider data operations
+ * This is the single source of truth for provider data in the frontend
+ *
+ * When switching to API:
+ * 1. Replace localStorage operations with fetch calls to /api/v1/providers
+ * 2. Keep the same function signatures
+ * 3. Components won't need any changes
+ */
+
 import { writable } from 'svelte/store';
 import type { ProviderData } from '@/types/invoice';
+import { mockProviders } from './mockup';
 
-// Load active provider from localStorage
-function loadActiveProvider(): ProviderData | null {
-	if (typeof window === 'undefined') return null;
+// Provider cache - this is what components will subscribe to
+export const providers = writable<ProviderData[]>([]);
+
+// Active provider - the currently selected provider for creating invoices
+export const activeProvider = writable<ProviderData | null>(null);
+
+// Loading state
+export const providersLoading = writable<boolean>(false);
+
+// Initialize stores with localStorage data
+let initialized = false;
+
+function initializeActiveProvider(): void {
+	if (typeof window === 'undefined') return;
 
 	const stored = localStorage.getItem('activeProvider');
-	return stored ? JSON.parse(stored) : null;
+	if (stored) {
+		try {
+			activeProvider.set(JSON.parse(stored));
+		} catch (error) {
+			console.error('Failed to parse active provider from localStorage:', error);
+		}
+	}
 }
 
-// Create the store
-export const activeProvider = writable<ProviderData | null>(loadActiveProvider());
-
-// Subscribe to save changes to localStorage
+// Subscribe to save active provider changes to localStorage
 if (typeof window !== 'undefined') {
 	activeProvider.subscribe((value) => {
 		if (value) {
@@ -23,61 +48,198 @@ if (typeof window !== 'undefined') {
 	});
 }
 
-// Helper functions
-export function setActiveProvider(provider: ProviderData) {
-	activeProvider.set(provider);
-}
-
-export function clearActiveProvider() {
-	activeProvider.set(null);
-}
-
-// Load available providers (mock for now, will be from API later)
+/**
+ * Load all providers from storage/API
+ * Call this once when the app starts or when you need to refresh
+ */
 export async function loadProviders(): Promise<ProviderData[]> {
-	// TODO: Replace with actual API call
-	// For now, return mock data from localStorage or empty array
 	if (typeof window === 'undefined') return [];
 
-	const stored = localStorage.getItem('providers');
-	return stored ? JSON.parse(stored) : [];
+	providersLoading.set(true);
+
+	try {
+		// TODO: Replace with API call
+		// const response = await fetch('/api/v1/providers');
+		// const data = await response.json();
+
+		// Mock implementation using localStorage
+		const stored = localStorage.getItem('providers');
+		let providerList: ProviderData[];
+
+		if (stored) {
+			providerList = JSON.parse(stored);
+		} else {
+			// Initialize with mock data on first load
+			providerList = mockProviders;
+			localStorage.setItem('providers', JSON.stringify(providerList));
+		}
+
+		providers.set(providerList);
+
+		// If no active provider is set, set the first one
+		if (!initialized) {
+			initializeActiveProvider();
+			const current = await new Promise<ProviderData | null>((resolve) => {
+				const unsubscribe = activeProvider.subscribe((value) => {
+					resolve(value);
+					unsubscribe();
+				});
+			});
+
+			if (!current && providerList.length > 0) {
+				setActiveProvider(providerList[0]);
+			}
+			initialized = true;
+		}
+
+		return providerList;
+	} catch (error) {
+		console.error('Failed to load providers:', error);
+		return [];
+	} finally {
+		providersLoading.set(false);
+	}
 }
 
-// Save provider to available providers list
+/**
+ * Get a single provider by ID
+ */
+export async function getProvider(id: string): Promise<ProviderData | null> {
+	// Ensure providers are loaded
+	if (!initialized) {
+		await loadProviders();
+	}
+
+	// TODO: Replace with API call
+	// const response = await fetch(`/api/v1/providers/${id}`);
+	// return await response.json();
+
+	// Mock implementation
+	const stored = localStorage.getItem('providers');
+	if (!stored) return null;
+
+	const providerList: ProviderData[] = JSON.parse(stored);
+	return providerList.find((p) => p.id === id) || null;
+}
+
+/**
+ * Save a provider (create or update)
+ */
 export async function saveProvider(provider: ProviderData): Promise<void> {
 	if (typeof window === 'undefined') return;
 
-	const providers = await loadProviders();
-	const index = providers.findIndex((p) => p.id === provider.id);
+	providersLoading.set(true);
 
-	if (index >= 0) {
-		providers[index] = provider;
-	} else {
-		providers.push(provider);
-	}
+	try {
+		// TODO: Replace with API call
+		// const method = provider.id ? 'PUT' : 'POST';
+		// const url = provider.id ? `/api/v1/providers/${provider.id}` : '/api/v1/providers';
+		// await fetch(url, {
+		// 	method,
+		// 	headers: { 'Content-Type': 'application/json' },
+		// 	body: JSON.stringify(provider)
+		// });
 
-	localStorage.setItem('providers', JSON.stringify(providers));
+		// Mock implementation
+		const stored = localStorage.getItem('providers');
+		const providerList: ProviderData[] = stored ? JSON.parse(stored) : [];
 
-	// If this is the active provider or no active provider exists, update it
-	const current = loadActiveProvider();
-	if (!current || current.id === provider.id) {
-		setActiveProvider(provider);
+		const index = providerList.findIndex((p) => p.id === provider.id);
+		if (index >= 0) {
+			providerList[index] = provider;
+		} else {
+			providerList.push(provider);
+		}
+
+		localStorage.setItem('providers', JSON.stringify(providerList));
+
+		// Update the store
+		providers.set(providerList);
+
+		// If this is the active provider or no active provider exists, update it
+		const current = await new Promise<ProviderData | null>((resolve) => {
+			const unsubscribe = activeProvider.subscribe((value) => {
+				resolve(value);
+				unsubscribe();
+			});
+		});
+
+		if (!current || current.id === provider.id) {
+			setActiveProvider(provider);
+		}
+	} catch (error) {
+		console.error('Failed to save provider:', error);
+		throw error;
+	} finally {
+		providersLoading.set(false);
 	}
 }
 
-// Initialize with mock data if no providers exist
-export function initializeMockProviders(): void {
+/**
+ * Delete a provider
+ */
+export async function deleteProvider(id: string): Promise<void> {
 	if (typeof window === 'undefined') return;
 
-	const providers = localStorage.getItem('providers');
-	if (!providers) {
-		const mockProviders: ProviderData[] = [];
+	providersLoading.set(true);
 
-		localStorage.setItem('providers', JSON.stringify(mockProviders));
+	try {
+		// TODO: Replace with API call
+		// await fetch(`/api/v1/providers/${id}`, { method: 'DELETE' });
 
-		// Set the first one as active if no active provider
-		const current = loadActiveProvider();
-		if (!current) {
-			setActiveProvider(mockProviders[0]);
+		// Mock implementation
+		const stored = localStorage.getItem('providers');
+		if (!stored) return;
+
+		const providerList: ProviderData[] = JSON.parse(stored);
+		const filtered = providerList.filter((p) => p.id !== id);
+
+		localStorage.setItem('providers', JSON.stringify(filtered));
+
+		// Update the store
+		providers.set(filtered);
+
+		// If the deleted provider was active, clear or set a new one
+		const current = await new Promise<ProviderData | null>((resolve) => {
+			const unsubscribe = activeProvider.subscribe((value) => {
+				resolve(value);
+				unsubscribe();
+			});
+		});
+
+		if (current?.id === id) {
+			if (filtered.length > 0) {
+				setActiveProvider(filtered[0]);
+			} else {
+				clearActiveProvider();
+			}
 		}
+	} catch (error) {
+		console.error('Failed to delete provider:', error);
+		throw error;
+	} finally {
+		providersLoading.set(false);
 	}
+}
+
+/**
+ * Set the active provider (used for creating new invoices)
+ */
+export function setActiveProvider(provider: ProviderData): void {
+	activeProvider.set(provider);
+}
+
+/**
+ * Clear the active provider
+ */
+export function clearActiveProvider(): void {
+	activeProvider.set(null);
+}
+
+/**
+ * Initialize providers on app startup
+ * Call this from your root layout
+ */
+export async function initializeProviders(): Promise<void> {
+	await loadProviders();
 }

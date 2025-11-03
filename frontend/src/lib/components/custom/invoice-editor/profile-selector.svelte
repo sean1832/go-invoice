@@ -12,12 +12,12 @@
 	interface Profile {
 		id: string;
 		name: string;
-		email: string;
-		abn: string;
+		email?: string;
+		abn?: string;
 		address?: string;
 		phone?: string;
 		taxRate?: number;
-		payment?: {
+		paymentInfo?: {
 			method: string;
 			accountName: string;
 			bsb: string;
@@ -170,7 +170,7 @@
 
 					{#if type === 'provider'}
 						{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
-						{#if selectedProfile?.payment}
+						{#if selectedProfile?.paymentInfo}
 							<div class="col-span-2 mt-2 border-t pt-3">
 								<div
 									class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
@@ -180,19 +180,19 @@
 								<div class="grid grid-cols-2 gap-x-6 gap-y-2">
 									<div>
 										<span class="font-medium text-muted-foreground">Method:</span>
-										<span class="ml-2">{selectedProfile.payment.method}</span>
+										<span class="ml-2">{selectedProfile.paymentInfo.method}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">Account Name:</span>
-										<span class="ml-2">{selectedProfile.payment.accountName}</span>
+										<span class="ml-2">{selectedProfile.paymentInfo.accountName}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">BSB:</span>
-										<span class="ml-2">{selectedProfile.payment.bsb}</span>
+										<span class="ml-2">{selectedProfile.paymentInfo.bsb}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">Account #:</span>
-										<span class="ml-2">{selectedProfile.payment.accountNumber}</span>
+										<span class="ml-2">{selectedProfile.paymentInfo.accountNumber}</span>
 									</div>
 								</div>
 							</div>

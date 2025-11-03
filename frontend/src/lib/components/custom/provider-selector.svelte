@@ -8,34 +8,30 @@
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider, setActiveProvider, loadProviders } from '@/stores/provider';
+	import {
+		providers as providersStore,
+		activeProvider,
+		setActiveProvider,
+		loadProviders
+	} from '@/stores';
 	import { onMount } from 'svelte';
 
-	let providers = $state<ProviderData[]>([]);
-	let currentProvider = $state<ProviderData | null>(null);
 	let open = $state(false);
 
-	// Subscribe to active provider
-	$effect(() => {
-		const unsubscribe = activeProvider.subscribe((value) => {
-			currentProvider = value;
-		});
-		return unsubscribe;
-	});
+	// Use reactive references to stores
+	let currentProvider = $derived($activeProvider);
+	let providers = $derived($providersStore);
 
 	// Reload providers when popover opens
 	$effect(() => {
 		if (open) {
 			console.log('Reloading providers...');
-			loadProviders().then((data) => {
-				console.log('Loaded providers:', data);
-				providers = data;
-			});
+			loadProviders();
 		}
 	});
 
 	onMount(async () => {
-		providers = await loadProviders();
+		await loadProviders();
 	});
 
 	function handleProviderSelect(provider: ProviderData) {

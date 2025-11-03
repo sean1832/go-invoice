@@ -3,19 +3,11 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider, saveProvider } from '@/stores/provider';
-	import { onMount } from 'svelte';
+	import { activeProvider, saveProvider } from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 
-	let currentProvider = $state<ProviderData | null>(null);
-
-	// Subscribe to active provider and update when it changes
-	$effect(() => {
-		const unsubscribe = activeProvider.subscribe((value) => {
-			currentProvider = value;
-		});
-		return unsubscribe;
-	});
+	// Use reactive reference to activeProvider
+	let currentProvider = $derived($activeProvider);
 
 	async function handleSave(provider: ProviderData) {
 		console.log('Saving provider:', provider);
