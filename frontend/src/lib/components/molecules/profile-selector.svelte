@@ -49,10 +49,6 @@
 
 	// Title and description based on type
 	const title = type === 'provider' ? 'Provider' : 'Client';
-	const description =
-		type === 'provider'
-			? 'Select your business profile for this invoice'
-			: 'Select a client profile for this invoice';
 	const placeholder = type === 'provider' ? 'Select provider' : 'Select client';
 
 	// Collapsed state
@@ -87,7 +83,6 @@
 	<Item.Header class="w-full">
 		<Item.Content class="min-w-0 shrink">
 			<Item.Title>{title}</Item.Title>
-			<Item.Description>{description}</Item.Description>
 		</Item.Content>
 		<Item.Actions class="shrink-0">
 			<div class="flex flex-nowrap items-center gap-2">
