@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import InvoiceForm from '@/components/custom/invoice-editor/invoice-editor.svelte';
+	import InvoiceForm from '@/components/organisms/invoice-form/invoice-form.svelte';
 	import { mockInvoices } from '@/stores';
 
 	const invoiceId = page.params.id || 'INV-251103001';

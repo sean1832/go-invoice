@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
-	import InvoiceCard from '@/components/custom/invoice-card.svelte';
+	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
 	import type { Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
@@ -128,6 +128,6 @@
 		</div>
 	</div>
 
-	<!-- Invoice Card Component -->
-	<InvoiceCard {invoice} />
+	<!-- Invoice Display Component -->
+	<InvoiceDisplayCard {invoice} />
 </div>
