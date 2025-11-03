@@ -5,11 +5,11 @@
 	function handleSave(client: ClientData) {
 		console.log('Creating new client:', client);
 		// In real app: Save to API, then navigate to client list or detail page
-		window.location.href = '/clients';
+		window.history.back();
 	}
 
 	function handleCancel() {
-		window.location.href = '/clients';
+		window.history.back();
 	}
 </script>
 

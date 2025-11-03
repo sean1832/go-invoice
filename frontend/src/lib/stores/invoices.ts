@@ -26,6 +26,22 @@ export const invoiceFilters = writable<InvoiceFilters>({
 	sortOrder: 'desc'
 });
 
+// Initialize invoices synchronously from localStorage
+if (typeof window !== 'undefined') {
+	const stored = localStorage.getItem('invoices');
+	if (stored) {
+		try {
+			invoices.set(JSON.parse(stored));
+		} catch (error) {
+			console.error('Failed to parse invoices from localStorage:', error);
+		}
+	} else {
+		// Initialize with mock data if nothing in storage
+		invoices.set(mockInvoices);
+		localStorage.setItem('invoices', JSON.stringify(mockInvoices));
+	}
+}
+
 // Derived store for filtered invoices
 export const filteredInvoices = derived([invoices, invoiceFilters], ([$invoices, $filters]) => {
 	let result = [...$invoices];

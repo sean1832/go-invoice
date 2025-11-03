@@ -21,6 +21,22 @@ export const clientsLoading = writable<boolean>(false);
 // Initialize the store
 let initialized = false;
 
+// Initialize clients synchronously from localStorage
+if (typeof window !== 'undefined') {
+	const stored = localStorage.getItem('clients');
+	if (stored) {
+		try {
+			clients.set(JSON.parse(stored));
+		} catch (error) {
+			console.error('Failed to parse clients from localStorage:', error);
+		}
+	} else {
+		// Initialize with mock data if nothing in storage
+		clients.set(mockClients);
+		localStorage.setItem('clients', JSON.stringify(mockClients));
+	}
+}
+
 /**
  * Load all clients from storage/API
  * Call this once when the app starts or when you need to refresh

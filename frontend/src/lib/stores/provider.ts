@@ -24,6 +24,22 @@ export const providersLoading = writable<boolean>(false);
 // Initialize stores with localStorage data
 let initialized = false;
 
+// Initialize providers synchronously from localStorage
+if (typeof window !== 'undefined') {
+	const stored = localStorage.getItem('providers');
+	if (stored) {
+		try {
+			providers.set(JSON.parse(stored));
+		} catch (error) {
+			console.error('Failed to parse providers from localStorage:', error);
+		}
+	} else {
+		// Initialize with mock data if nothing in storage
+		providers.set(mockProviders);
+		localStorage.setItem('providers', JSON.stringify(mockProviders));
+	}
+}
+
 function initializeActiveProvider(): void {
 	if (typeof window === 'undefined') return;
 
@@ -35,6 +51,11 @@ function initializeActiveProvider(): void {
 			console.error('Failed to parse active provider from localStorage:', error);
 		}
 	}
+}
+
+// Initialize activeProvider immediately from localStorage (synchronous)
+if (typeof window !== 'undefined') {
+	initializeActiveProvider();
 }
 
 // Subscribe to save active provider changes to localStorage

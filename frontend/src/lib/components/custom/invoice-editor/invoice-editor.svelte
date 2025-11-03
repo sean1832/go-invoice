@@ -62,28 +62,40 @@
 		accountNumber: ''
 	});
 
+	// Debug: Log when activeProvider changes
+	$effect(() => {
+		console.log('Active provider changed:', $activeProvider);
+		console.log('Current conditions:', {
+			hasActiveProvider: !!$activeProvider,
+			noInvoice: !invoice,
+			isCreateMode: mode === 'create',
+			noProviderId: !formData.provider.id
+		});
+	});
+
 	// Initialize from activeProvider when it's available
 	$effect(() => {
-		if ($activeProvider && !invoice && mode === 'create') {
+		console.log('Effect triggered - checking initialization conditions');
+		if ($activeProvider && !invoice && mode === 'create' && !formData.provider.id) {
+			console.log('Initializing from active provider:', $activeProvider);
 			// Set provider data from active provider
-			if (!formData.provider.id) {
-				formData.provider = {
-					id: $activeProvider.id,
-					name: $activeProvider.name,
-					email: $activeProvider.email || '',
-					abn: $activeProvider.abn || '',
-					address: $activeProvider.address || '',
-					phone: $activeProvider.phone || ''
-				};
-			}
+			formData.provider = {
+				id: $activeProvider.id,
+				name: $activeProvider.name,
+				email: $activeProvider.email || '',
+				abn: $activeProvider.abn || '',
+				address: $activeProvider.address || '',
+				phone: $activeProvider.phone || ''
+			};
 			// Set selected provider ID
-			if (!selectedProviderId) {
-				selectedProviderId = $activeProvider.id;
-			}
+			selectedProviderId = $activeProvider.id;
+			console.log('Selected provider ID set to:', selectedProviderId);
 			// Set payment info
 			if ($activeProvider.paymentInfo) {
 				paymentInfo = { ...$activeProvider.paymentInfo };
 			}
+		} else {
+			console.log('Initialization skipped');
 		}
 	});
 
