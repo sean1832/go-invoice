@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProfileShelf from '@/components/custom/shelf/profile-shelf.svelte';
+	import ProfileShelf from '@/components/organisms/shelf/profile-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import { clients } from '@/stores';
 	import PlusIcon from '@lucide/svelte/icons/plus';

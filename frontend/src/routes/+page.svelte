@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InvoiceShelf from '@/components/custom/shelf/invoice-shelf.svelte';
+	import InvoiceShelf from '@/components/organisms/shelf/invoice-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import { filteredInvoices } from '@/stores';
 

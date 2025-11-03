@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ClientEditor from '@/components/custom/profile-editor/client-editor.svelte';
+	import ClientEditor from '@/components/organisms/profile-form/client-editor.svelte';
 	import type { ClientData } from '@/types/invoice';
 
 	// Mock client data - in real app, this would be loaded from the API using the [id] param

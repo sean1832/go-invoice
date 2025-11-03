@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Shelf from '@/components/custom/shelf/shelf.svelte';
-	import ShelfItem from '@/components/custom/shelf/shelf-item.svelte';
+	import Shelf from '@/components/organisms/shelf/shelf.svelte';
+	import ShelfItem from '@/components/organisms/shelf/shelf-item.svelte';
 	import * as Tabs from '@/components/ui/tabs';
 	import type { Invoice, InvoiceStatus } from '@/types/invoice';
 	import Button from '@/components/ui/button/button.svelte';

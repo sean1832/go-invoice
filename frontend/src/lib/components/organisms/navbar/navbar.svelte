@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProviderSelector from '@/components/custom/provider-selector.svelte';
+	import ProviderSelector from '@/components/molecules/provider-selector.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 </script>
 

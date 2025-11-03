@@ -11,10 +11,9 @@
 	import SaveIcon from '@lucide/svelte/icons/save';
 	import SendIcon from '@lucide/svelte/icons/send';
 	import ProfileSelector from './profile-selector.svelte';
-	import DatePicker from '../date-picker/date-picker.svelte';
+	import DatePicker from '../../atoms/date-picker.svelte';
 	import { parseDate, type DateValue } from '@internationalized/date';
 	import { activeProvider, providers, clients } from '@/stores';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		invoice?: Invoice;

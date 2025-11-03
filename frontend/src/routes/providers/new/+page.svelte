@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProviderEditor from '@/components/custom/profile-editor/provider-editor.svelte';
+	import ProviderEditor from '@/components/organisms/profile-form/provider-editor.svelte';
 	import type { ProviderData } from '@/types/invoice';
 	import { saveProvider } from '@/stores/provider';
 

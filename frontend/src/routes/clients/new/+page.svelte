@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ClientEditor from '@/components/custom/profile-editor/client-editor.svelte';
+	import ClientEditor from '@/components/organisms/profile-form/client-editor.svelte';
 	import type { ClientData } from '@/types/invoice';
 
 	function handleSave(client: ClientData) {

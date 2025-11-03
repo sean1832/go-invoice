@@ -24,7 +24,7 @@
 	import * as Card from '@/components/ui/card';
 	import Label from '@/components/ui/label/label.svelte';
 	import Input from '@/components/ui/input/input.svelte';
-	import DatePicker from '@/components/custom/date-picker/date-picker.svelte';
+	import DatePicker from '@/components/atoms/date-picker.svelte';
 
 	interface Props {
 		invoiceId: string;

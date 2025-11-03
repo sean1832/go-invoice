@@ -31,7 +31,7 @@
 	import Input from '@/components/ui/input/input.svelte';
 	import Textarea from '@/components/ui/textarea/textarea.svelte';
 	import Button from '@/components/ui/button/button.svelte';
-	import DatePicker from '@/components/custom/date-picker/date-picker.svelte';
+	import DatePicker from '@/components/atoms/date-picker.svelte';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 
 	interface Props {

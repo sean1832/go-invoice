@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Shelf from '@/components/custom/shelf/shelf.svelte';
-	import ProfileItem from '@/components/custom/shelf/profile-item.svelte';
+	import Shelf from '@/components/organisms/shelf/shelf.svelte';
+	import ProfileItem from '@/components/organisms/shelf/profile-item.svelte';
 	import type { Party } from '@/types/invoice';
 
 	interface Props {

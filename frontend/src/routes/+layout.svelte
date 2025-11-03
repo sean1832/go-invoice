@@ -5,7 +5,7 @@
 	import { initializeProviders, loadClients, loadInvoices } from '@/stores';
 	import { onMount } from 'svelte';
 	let { children } = $props();
-	import Navbar from '@/components/custom/navbar.svelte';
+	import Navbar from '@/components/organisms/navbar/navbar.svelte';
 
 	onMount(async () => {
 		// Initialize all stores when the app starts
