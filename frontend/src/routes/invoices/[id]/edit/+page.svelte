@@ -11,11 +11,11 @@
 		// TODO: Implement API call to update invoice
 		console.log('Updating invoice:', invoice.id, data);
 		// Redirect to invoice view after successful save
-		window.location.href = `/invoices/${invoice.id}`;
+		window.location.href = `/`;
 	}
 
 	function handleCancel() {
-		window.location.href = `/invoices/${invoice.id}`;
+		window.history.back();
 	}
 </script>
 
