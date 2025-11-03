@@ -100,7 +100,13 @@
 {#key updateKey}
 	<Popover.Root bind:open>
 		<Popover.Trigger
-			class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-input bg-background text-sm font-medium whitespace-nowrap shadow-sm ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+			class="inline-flex h-9 w-9 cursor-pointer 
+			items-center justify-center rounded-full border 
+			border-input bg-background text-sm font-medium 
+			whitespace-nowrap shadow-sm ring-offset-background transition-colors 
+			hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 
+			focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none 
+			disabled:pointer-events-none disabled:opacity-50"
 		>
 			<UserIcon class="h-6 w-6" />
 		</Popover.Trigger>

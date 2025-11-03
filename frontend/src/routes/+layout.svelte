@@ -15,6 +15,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>Go-Invoice</title>
 </svelte:head>
 
 <ModeWatcher />
