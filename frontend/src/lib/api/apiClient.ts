@@ -1,18 +1,89 @@
 const BASE_URL = '/api/v1';
 
+export interface ApiClientOptions extends RequestInit {
+	/**
+	 * Timeout in ms
+	 * @default 5000
+	 */
+	timeout?: number;
+}
+
 export async function apiClient<T>(
 	KitFetch: typeof fetch,
 	path: string,
-	options?: RequestInit
+	options: ApiClientOptions = {}
 ): Promise<T> {
 	const url = `${BASE_URL}${path}`;
 
-	const response = await KitFetch(url, options);
+	// destructure custom timeout with option
+	const { timeout = 5000, ...fetchOptions } = options;
+
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+	const mergedOptions: RequestInit = {
+		...fetchOptions,
+		signal: controller.signal
+	};
+
+	let response: Response;
+	try {
+		response = await KitFetch(url, mergedOptions);
+	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
+			throw new Error(`API Error: Request timed out after ${timeout}ms for ${url}`);
+		}
+		// unknown errors
+		throw error;
+	} finally {
+		clearTimeout(timeoutId);
+	}
 
 	// CRITICAL: HTTP Error (400, 500)
 	if (!response.ok) {
-		const errBody = await response.text();
-		throw new Error(`API Error [${response.status} ${response.statusText}] for ${url}: ${errBody}`);
+		let errBody = '';
+		let contentType: string | null = null;
+
+		try {
+			contentType = response.headers.get('Content-Type');
+		} catch (headerError) {
+			// In SSR context, if header isn't allowed by filterSerializedResponseHeaders,
+			// error will orrcure. Skip content-type checking in that case.
+			console.warn('Unable to access Content-Type header:', headerError);
+		}
+
+		if (contentType) {
+			if (contentType.includes('application/json')) {
+				try {
+					const errJson = await response.json();
+					errBody = JSON.stringify(errJson.error || errJson.message || errJson);
+				} catch {
+					errBody = '(failed to parse JSON response)';
+				}
+			} else if (contentType.includes('text/plain')) {
+				const text = await response.text();
+				// Truncate long text responses (e.g., HTML error pages)
+				errBody = text.length > 200 ? text.substring(0, 200) + '...' : text;
+			}
+		} else {
+			// If we can't get content-type, try to parse as text but truncate it
+			try {
+				const text = await response.text();
+				// Check if it looks like HTML (common for error pages)
+				if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+					errBody = '(HTML error page returned - check server logs)';
+				} else {
+					// Truncate long responses
+					errBody = text.length > 200 ? text.substring(0, 200) + '...' : text;
+				}
+			} catch {
+				// If even text parsing fails, leave errBody empty
+			}
+		}
+
+		const statusText = `[${response.status} ${response.statusText}]`;
+		const finalMessage = `API Error ${statusText} for ${url}${errBody ? `: ${errBody}` : ''}`;
+		throw new Error(finalMessage);
 	}
 
 	// 204: No Content
@@ -21,5 +92,12 @@ export async function apiClient<T>(
 		return {} as T;
 	}
 
-	return response.json() as Promise<T>;
+	// Backend wraps responses in { code, message, data } structure
+	// We need to unwrap the data field
+	const json = await response.json();
+	if (json && typeof json === 'object' && 'data' in json) {
+		return json.data as T;
+	}
+
+	return json as T;
 }

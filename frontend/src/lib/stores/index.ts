@@ -35,14 +35,9 @@ export {
 export {
 	invoices,
 	invoicesLoading,
+	invoicesError,
 	invoiceFilters,
 	filteredInvoices,
-	loadInvoices,
-	getInvoice,
-	saveInvoice,
-	deleteInvoice,
-	updateInvoiceStatus,
-	getInvoiceCount,
 	generateInvoiceId
 } from './invoices';
 
