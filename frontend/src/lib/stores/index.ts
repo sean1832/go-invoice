@@ -16,6 +16,7 @@ export {
 	deleteProvider,
 	setActiveProvider,
 	clearActiveProvider,
+	resetProvidersToMock,
 	initializeProviders
 } from './provider';
 
