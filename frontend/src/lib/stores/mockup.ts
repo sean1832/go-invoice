@@ -13,11 +13,11 @@ export const mockProviders: ProviderData[] = [
 		address: '123 Provider St',
 		phone: '+61 2 1234 5678',
 		abn: '12 345 678 901',
-		paymentInfo: {
+		payment_info: {
 			method: 'Bank Transfer',
-			accountName: 'Zeke Zhang',
+			account_name: 'Zeke Zhang',
 			bsb: '123-456',
-			accountNumber: '12345678'
+			account_number: '12345678'
 		}
 	},
 	{
@@ -27,11 +27,11 @@ export const mockProviders: ProviderData[] = [
 		address: '456 Business Ave',
 		phone: '+61 3 9876 5432',
 		abn: '98 765 432 109',
-		paymentInfo: {
+		payment_info: {
 			method: 'Bank Transfer',
-			accountName: 'Lan Zhang',
+			account_name: 'Lan Zhang',
 			bsb: '654-321',
-			accountNumber: '87654321'
+			account_number: '87654321'
 		}
 	}
 ];
@@ -44,8 +44,8 @@ export const mockClients: ClientData[] = [
 		address: '789 Client Rd',
 		phone: '+61 7 5555 1234',
 		abn: '11 222 333 444',
-		taxRate: 10,
-		targetEmail: 'dingyu@example.com'
+		tax_rate: 10,
+		target_email: 'dingyu@example.com'
 	},
 	{
 		id: 'acme_corp',
@@ -54,7 +54,7 @@ export const mockClients: ClientData[] = [
 		address: '123 Business St',
 		phone: '+61 2 9876 5432',
 		abn: '98 765 432 109',
-		taxRate: 10
+		tax_rate: 10
 	},
 	{
 		id: 'tech_startup',
@@ -63,7 +63,7 @@ export const mockClients: ClientData[] = [
 		address: '456 Innovation Way',
 		phone: '+61 3 1234 5678',
 		abn: '12 345 678 901',
-		taxRate: 10
+		tax_rate: 10
 	},
 	{
 		id: 'global_solutions',
@@ -72,7 +72,7 @@ export const mockClients: ClientData[] = [
 		address: '789 Enterprise Rd',
 		phone: '+61 7 8765 4321',
 		abn: '23 456 789 012',
-		taxRate: 10
+		tax_rate: 10
 	}
 ];
 
@@ -88,20 +88,20 @@ export const mockInvoices: Invoice[] = [
 			{
 				date: '2025-11-01',
 				description: 'Web Development Services',
-				descriptionDetail: 'Frontend development and UI/UX improvements',
+				description_detail: 'Frontend development and UI/UX improvements',
 				quantity: 40,
-				unitPrice: 125,
-				totalPrice: 5000
+				unit_price: 125,
+				total_price: 5000
 			}
 		],
 		pricing: {
 			subtotal: 5000,
 			tax: 500,
-			taxRate: 10,
+			tax_rate: 10,
 			total: 5500
 		},
-		payment: mockProviders[0].paymentInfo,
-		emailTarget: 'contact@acme.com'
+		payment: mockProviders[0].payment_info,
+		email_target: 'contact@acme.com'
 	},
 	{
 		id: 'INV-251103002',
@@ -114,20 +114,20 @@ export const mockInvoices: Invoice[] = [
 			{
 				date: '2025-10-28',
 				description: 'Consulting Services',
-				descriptionDetail: 'Technical architecture consultation',
+				description_detail: 'Technical architecture consultation',
 				quantity: 20,
-				unitPrice: 160,
-				totalPrice: 3200
+				unit_price: 160,
+				total_price: 3200
 			}
 		],
 		pricing: {
 			subtotal: 3200,
 			tax: 320,
-			taxRate: 10,
+			tax_rate: 10,
 			total: 3520
 		},
-		payment: mockProviders[0].paymentInfo,
-		emailTarget: 'billing@techstartup.com'
+		payment: mockProviders[0].payment_info,
+		email_target: 'billing@techstartup.com'
 	},
 	{
 		id: 'INV-251103003',
@@ -140,19 +140,19 @@ export const mockInvoices: Invoice[] = [
 			{
 				date: '2025-10-15',
 				description: 'API Development',
-				descriptionDetail: 'RESTful API design and implementation',
+				description_detail: 'RESTful API design and implementation',
 				quantity: 30,
-				unitPrice: 150,
-				totalPrice: 4500
+				unit_price: 150,
+				total_price: 4500
 			}
 		],
 		pricing: {
 			subtotal: 4500,
 			tax: 450,
-			taxRate: 10,
+			tax_rate: 10,
 			total: 4950
 		},
-		payment: mockProviders[1].paymentInfo,
-		emailTarget: 'accounts@global.com'
+		payment: mockProviders[1].payment_info,
+		email_target: 'accounts@global.com'
 	}
 ];

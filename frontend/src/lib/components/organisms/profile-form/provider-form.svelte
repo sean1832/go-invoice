@@ -25,11 +25,11 @@
 			address: '',
 			phone: '',
 			abn: '',
-			paymentInfo: {
+			payment_info: {
 				method: 'Bank Transfer',
-				accountName: '',
+				account_name: '',
 				bsb: '',
-				accountNumber: ''
+				account_number: ''
 			}
 		}
 	);
@@ -50,17 +50,17 @@
 			newErrors.email = 'Invalid email format';
 		}
 
-		if (!formData.paymentInfo.accountName?.trim()) {
+		if (!formData.payment_info.account_name?.trim()) {
 			newErrors.accountName = 'Account name is required';
 		}
 
-		if (!formData.paymentInfo.bsb?.trim()) {
+		if (!formData.payment_info.bsb?.trim()) {
 			newErrors.bsb = 'BSB is required';
-		} else if (!/^\d{3}-?\d{3}$/.test(formData.paymentInfo.bsb)) {
+		} else if (!/^\d{3}-?\d{3}$/.test(formData.payment_info.bsb)) {
 			newErrors.bsb = 'BSB must be in format XXX-XXX';
 		}
 
-		if (!formData.paymentInfo.accountNumber?.trim()) {
+		if (!formData.payment_info.account_number?.trim()) {
 			newErrors.accountNumber = 'Account number is required';
 		}
 
@@ -167,7 +167,7 @@
 					id="method"
 					type="text"
 					placeholder="Bank Transfer"
-					bind:value={formData.paymentInfo.method}
+					bind:value={formData.payment_info.method}
 				/>
 			</div>
 
@@ -177,7 +177,7 @@
 					id="accountName"
 					type="text"
 					placeholder="Your Company Pty Ltd"
-					bind:value={formData.paymentInfo.accountName}
+					bind:value={formData.payment_info.account_name}
 					class={errors.accountName ? 'border-destructive' : ''}
 				/>
 				{#if errors.accountName}
@@ -192,7 +192,7 @@
 						id="bsb"
 						type="text"
 						placeholder="123-456"
-						bind:value={formData.paymentInfo.bsb}
+						bind:value={formData.payment_info.bsb}
 						class={errors.bsb ? 'border-destructive' : ''}
 					/>
 					{#if errors.bsb}
@@ -206,7 +206,7 @@
 						id="accountNumber"
 						type="text"
 						placeholder="12345678"
-						bind:value={formData.paymentInfo.accountNumber}
+						bind:value={formData.payment_info.account_number}
 						class={errors.accountNumber ? 'border-destructive' : ''}
 					/>
 					{#if errors.accountNumber}

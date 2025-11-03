@@ -46,7 +46,7 @@
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
 	let client = $state<Party>(invoice?.client || createEmptyParty());
 	let items = $state<ServiceItem[]>(invoice?.items || [createEmptyLineItem()]);
-	let taxRate = $state(invoice?.pricing?.taxRate || 10);
+	let taxRate = $state(invoice?.pricing?.tax_rate || 10);
 
 	// Selected IDs for profile selectors
 	let selectedProviderId = $state<string | undefined>(undefined);
@@ -75,8 +75,8 @@
 				phone: $activeProvider.phone || ''
 			};
 			selectedProviderId = $activeProvider.id;
-			if ($activeProvider.paymentInfo) {
-				paymentInfo = { ...$activeProvider.paymentInfo };
+			if ($activeProvider.payment_info) {
+				paymentInfo = { ...$activeProvider.payment_info };
 			}
 		} else if (mode === 'edit' && invoice) {
 			selectedProviderId = invoice.provider.id;
@@ -100,8 +100,8 @@
 				address: selected.address || '',
 				phone: selected.phone || ''
 			};
-			if (selected.paymentInfo) {
-				paymentInfo = { ...selected.paymentInfo };
+			if (selected.payment_info) {
+				paymentInfo = { ...selected.payment_info };
 			}
 		}
 	}
@@ -118,8 +118,8 @@
 				address: selected.address || '',
 				phone: selected.phone || ''
 			};
-			if (selected.taxRate !== undefined) {
-				taxRate = selected.taxRate;
+			if (selected.tax_rate !== undefined) {
+				taxRate = selected.tax_rate;
 			}
 		}
 	}
@@ -158,7 +158,7 @@
 
 		// Recalculate totalPrice if quantity or unitPrice changed
 		if (field === 'quantity' || field === 'unitPrice') {
-			item.totalPrice = calculateLineItemTotal(item.quantity, item.unitPrice);
+			item.total_price = calculateLineItemTotal(item.quantity, item.unit_price);
 		}
 
 		items[index] = item;

@@ -35,8 +35,8 @@
 		<!-- Description -->
 		<div class="col-span-12 md:col-span-5">
 			<p class="font-semibold text-foreground">{item.description}</p>
-			{#if item.descriptionDetail}
-				<p class="mt-1 text-sm text-muted-foreground">{item.descriptionDetail}</p>
+			{#if item.description_detail}
+				<p class="mt-1 text-sm text-muted-foreground">{item.description_detail}</p>
 			{/if}
 		</div>
 
@@ -47,12 +47,12 @@
 
 		<!-- Unit Price -->
 		<div class="col-span-4 text-right md:col-span-2">
-			<CurrencyDisplay amount={item.unitPrice} class="text-sm text-muted-foreground" />
+			<CurrencyDisplay amount={item.unit_price} class="text-sm text-muted-foreground" />
 		</div>
 
 		<!-- Total Price -->
 		<div class="col-span-4 text-right md:col-span-2">
-			<CurrencyDisplay amount={item.totalPrice} class="font-semibold text-foreground" />
+			<CurrencyDisplay amount={item.total_price} class="font-semibold text-foreground" />
 		</div>
 	</div>
 </div>

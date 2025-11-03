@@ -29,10 +29,10 @@ export function createEmptyLineItem(): ServiceItem {
 	return {
 		date: getTodayISOString(),
 		description: '',
-		descriptionDetail: '',
+		description_detail: '',
 		quantity: 1,
-		unitPrice: 0,
-		totalPrice: 0
+		unit_price: 0,
+		total_price: 0
 	};
 }
 

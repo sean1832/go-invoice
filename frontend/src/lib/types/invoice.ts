@@ -2,12 +2,12 @@
 export type InvoiceStatus = 'draft' | 'send';
 
 export interface ClientData extends Party {
-	taxRate: number;
-	targetEmail?: string;
+	tax_rate: number;
+	target_email?: string;
 }
 
 export interface ProviderData extends Party {
-	paymentInfo: PaymentInfo;
+	payment_info: PaymentInfo;
 }
 
 // Party represents either the service provider or the client/customer
@@ -24,26 +24,26 @@ export interface Party {
 export interface ServiceItem {
 	date: string; // ISO date string
 	description: string;
-	descriptionDetail?: string;
+	description_detail?: string;
 	quantity: number;
-	unitPrice: number;
-	totalPrice: number; // quantity * unitPrice
+	unit_price: number;
+	total_price: number; // quantity * unitPrice
 }
 
 // Pricing holds the pricing breakdown of the invoice
 export interface Pricing {
 	subtotal: number;
 	tax: number; // renamed from taxAmount in display
-	taxRate: number;
+	tax_rate: number;
 	total: number;
 }
 
 // Payment information
 export interface PaymentInfo {
 	method: string; // e.g., "Bank Transfer"
-	accountName: string;
+	account_name: string;
 	bsb: string; // Bank State Branch number
-	accountNumber: string;
+	account_number: string;
 }
 
 // Main invoice type - matching Go backend
@@ -57,7 +57,7 @@ export interface Invoice {
 	items: ServiceItem[];
 	pricing: Pricing;
 	payment: PaymentInfo;
-	emailTarget?: string; // optional email target for sending
+	email_target?: string; // optional email target for sending
 }
 
 // Form data for creating/editing invoices
@@ -69,13 +69,13 @@ export interface InvoiceFormData {
 	due: string;
 	items: Omit<ServiceItem, 'totalPrice'>[];
 	payment: PaymentInfo;
-	taxRate: number;
+	tax_rate: number;
 }
 
 // Filter options for the shelf
 export interface InvoiceFilters {
 	status?: InvoiceStatus | 'all';
-	searchQuery?: string;
-	sortBy?: 'date' | 'amount' | 'client';
-	sortOrder?: 'asc' | 'desc';
+	search_query?: string;
+	sort_by?: 'date' | 'amount' | 'client';
+	sort_order?: 'asc' | 'desc';
 }
