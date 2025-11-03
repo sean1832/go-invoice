@@ -35,9 +35,7 @@
 	});
 
 	onMount(async () => {
-		console.log('Initial provider load');
 		providers = await loadProviders();
-		console.log('Initial providers:', providers);
 	});
 
 	function handleProviderSelect(provider: ProviderData) {

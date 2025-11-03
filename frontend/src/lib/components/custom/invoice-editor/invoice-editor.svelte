@@ -79,9 +79,15 @@
 	]);
 
 	let clients = $state([
-		{ id: '1', name: 'Dingyu Xu', email: 'dingyu@example.com', abn: '11 222 333 444', taxRate: 10 },
 		{
-			id: '2',
+			id: 'dingyu_xu',
+			name: 'Dingyu Xu',
+			email: 'dingyu@example.com',
+			abn: '11 222 333 444',
+			taxRate: 10
+		},
+		{
+			id: 'client_corp',
 			name: 'Client Corp',
 			email: 'contact@clientcorp.com',
 			abn: '55 666 777 888',
@@ -89,24 +95,8 @@
 		}
 	]);
 
-	// Helper function to find matching provider ID
-	function getInitialProviderId(): string | undefined {
-		if (invoice?.provider?.id) return invoice.provider.id;
-		if ($activeProvider) {
-			// Try to find matching provider in mock data by name or email
-			const matchingProvider = providers.find(
-				(p) =>
-					p.id === $activeProvider.id ||
-					p.name === $activeProvider.name ||
-					p.email === $activeProvider.email
-			);
-			return matchingProvider?.id;
-		}
-		return undefined;
-	}
-
 	// Selected IDs for dropdowns - default to active provider
-	let selectedProviderId = $state<string | undefined>(getInitialProviderId());
+	let selectedProviderId = $state<string | undefined>($activeProvider?.id);
 	let selectedClientId = $state<string | undefined>(undefined);
 
 	// Payment info from selected provider (read-only)
@@ -300,22 +290,22 @@
 
 	function handleConfigureProvider() {
 		console.log('Navigate to provider settings');
-		// TODO: Navigate to settings page
+		window.location.href = '/settings';
 	}
 
 	function handleAddNewProvider() {
 		console.log('Navigate to add new provider');
-		// TODO: Navigate to add provider page
+		window.location.href = '/providers/new';
 	}
 
 	function handleConfigureClient() {
 		console.log('Navigate to client settings');
-		// TODO: Navigate to settings page
+		window.location.href = `/clients/${selectedClientId}/edit`;
 	}
 
 	function handleAddNewClient() {
 		console.log('Navigate to add new client');
-		// TODO: Navigate to add client page
+		window.location.href = '/clients/new';
 	}
 
 	// Line item handlers

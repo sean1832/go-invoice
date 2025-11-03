@@ -63,6 +63,7 @@
 
 	function handleSelect(profileId: string) {
 		selectedProfileId = profileId;
+
 		onSelect?.(profileId);
 	}
 
@@ -90,23 +91,24 @@
 		</Item.Content>
 		<Item.Actions class="shrink-0">
 			<div class="flex flex-nowrap items-center gap-2">
-				<Select.Root type="single" bind:open={selectOpen}>
+				<Select.Root
+					type="single"
+					bind:open={selectOpen}
+					value={selectedProfileId}
+					onValueChange={(v) => v && handleSelect(v)}
+				>
 					<Select.Trigger class="w-[200px]">
 						<span>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span>
 					</Select.Trigger>
 					<Select.Content>
 						{#each profiles as profile}
-							<Select.Item
-								value={profile.id}
-								label={profile.name}
-								onclick={() => handleSelect(profile.id)}
-							>
+							<Select.Item value={profile.id} label={profile.name}>
 								{profile.name}
 							</Select.Item>
 						{/each}
 					</Select.Content>
 				</Select.Root>
-				<Button variant="outline" size="sm" onclick={handleConfigure}>
+				<Button variant="outline" size="sm" onclick={handleConfigure} disabled={!selectedProfileId}>
 					<SettingsIcon class="h-4 w-4" />
 				</Button>
 				<Button variant="outline" size="sm" onclick={handleAddNew}>
