@@ -8,11 +8,11 @@
 		// TODO: Implement API call to save invoice
 		console.log('Saving new invoice:', data);
 		// Redirect to invoice list after successful save
-		window.location.href = '/';
+		window.history.back();
 	}
 
 	function handleCancel() {
-		window.location.href = '/';
+		window.history.back();
 	}
 
 	// // TODO: optimize fetching

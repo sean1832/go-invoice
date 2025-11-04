@@ -54,8 +54,11 @@
 	{#if error || !invoice}
 		<ErrorAlert message={error || 'Invoice not found'} showBackButton={true} />
 	{:else}
+		<!-- Invoice Display Component -->
+		<InvoiceDisplayCard {invoice} />
+
 		<!-- Action Buttons Bar -->
-		<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<Button variant="ghost" size="sm" onclick={goBack} class="self-start">
 				<ArrowLeftIcon class="mr-2 h-4 w-4" />
 				Back
@@ -78,8 +81,5 @@
 				</Button>
 			</div>
 		</div>
-
-		<!-- Invoice Display Component -->
-		<InvoiceDisplayCard {invoice} />
 	{/if}
 </div>

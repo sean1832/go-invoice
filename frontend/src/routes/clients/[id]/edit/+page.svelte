@@ -16,12 +16,12 @@
 
 	function handleSave(client: ClientData) {
 		console.log('Saving client:', client);
-		// In real app: Save to API, then navigate back
-		window.location.href = '/clients';
+		// TODO: save API
+		window.history.back();
 	}
 
 	function handleCancel() {
-		window.location.href = '/clients';
+		window.history.back();
 	}
 </script>
 
