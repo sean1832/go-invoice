@@ -70,10 +70,6 @@
 
 	function handleSave() {
 		if (validateForm()) {
-			// Generate ID if creating new provider
-			if (mode === 'create' && !formData.id) {
-				formData.id = formData.name.toLowerCase().replace(/\s+/g, '_');
-			}
 			onSave?.(formData);
 			// Go back after save (the parent component handles navigation via onSave callback)
 		}

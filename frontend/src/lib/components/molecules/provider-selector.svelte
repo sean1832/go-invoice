@@ -9,6 +9,7 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ProviderData } from '@/types/invoice';
 	import { providers as providersStore, activeProvider, providers } from '@/stores';
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '@/services';
 
@@ -51,19 +52,32 @@
 	onMount(async () => {
 		await loadProviders();
 
-		// Only set default if there's no active provider already stored
-		// Check both the store value and localStorage to ensure we don't override
+		// Check if there's an active provider in localStorage
 		const storedActiveProvider = localStorage.getItem('activeProvider');
 
-		// Get current value from store
-		let currentStoreValue: ProviderData | null = null;
-		const unsubscribe = activeProvider.subscribe((value) => {
-			currentStoreValue = value;
-		});
-		unsubscribe();
+		// Get current value from store using get()
+		const currentStoreValue = get(activeProvider);
 
-		// Only set default if nothing is stored AND store is empty AND we have providers
-		if (!storedActiveProvider && !currentStoreValue && currentProviders.length > 0) {
+		// If we have a stored active provider, refresh it from backend to get latest data
+		if (storedActiveProvider || currentStoreValue) {
+			let providerId: string = '';
+			if (currentStoreValue && currentStoreValue.id) {
+				providerId = currentStoreValue.id;
+			} else if (storedActiveProvider) {
+				providerId = (JSON.parse(storedActiveProvider) as ProviderData).id;
+			}
+
+			if (providerId) {
+				try {
+					const freshProvider = await api.providers.getProvider(fetch, providerId);
+					activeProvider.set(freshProvider);
+				} catch (err) {
+					console.error('[provider selector] failed to refresh active provider:', err);
+					// Fall back to using stored data if fetch fails
+				}
+			}
+		} else if (currentProviders.length > 0) {
+			// Only set default if nothing is stored AND store is empty AND we have providers
 			activeProvider.set(currentProviders[0]); // default to first one
 		}
 	});

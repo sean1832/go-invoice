@@ -50,3 +50,10 @@ if (typeof window !== 'undefined') {
 export function removeProvider(id: string): void {
 	providers.update((items) => items.filter((inv) => inv.id !== id));
 }
+
+export function updateProvider(item: ProviderData): void {
+	providers.update((items) => {
+		return items.map((inv) => (inv.id === item.id ? { ...inv, ...item } : inv));
+	});
+	activeProvider.set(item);
+}
