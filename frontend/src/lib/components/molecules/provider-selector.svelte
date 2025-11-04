@@ -96,22 +96,27 @@
 		event.stopPropagation(); // Prevent selecting the provider
 
 		if (confirm(`Are you sure you want to delete ${provider.name}?`)) {
-			// Remove from localStorage
-			const updatedProviders = currentProviders.filter((p) => p.id !== provider.id);
-			localStorage.setItem('providers', JSON.stringify(updatedProviders));
+			try {
+				await api.providers.deleteProvider(fetch, provider.id);
 
-			// If this was the active provider, clear it or set another one
-			if (currentProvider?.id === provider.id) {
-				if (updatedProviders.length > 0) {
-					activeProvider.set(updatedProviders[0]);
-				} else {
-					localStorage.removeItem('activeProvider');
-					window.location.href = '/providers/new';
+				// Remove from store - UI updates automatically
+				providersStore.update((items) => items.filter((p) => p.id !== provider.id));
+
+				// If this was the active provider, clear it or set another one
+				const currentProviderValue = get(activeProvider);
+				if (currentProviderValue?.id === provider.id) {
+					const updatedProviders = get(providersStore);
+					if (updatedProviders.length > 0) {
+						activeProvider.set(updatedProviders[0]);
+					} else {
+						localStorage.removeItem('activeProvider');
+						window.location.href = '/providers/new';
+					}
 				}
+			} catch (err) {
+				console.error('Failed to delete provider:', err);
+				alert(err instanceof Error ? err.message : `Failed to delete provider ${provider.name}`);
 			}
-
-			// Reload the list
-			await loadProviders();
 		}
 	}
 
