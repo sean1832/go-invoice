@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import ProfileShelf from '@/components/organisms/shelf/profile-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import { api } from '@/services';
@@ -52,7 +53,19 @@
 				</Button>
 			</div>
 
-			<ProfileShelf data={loadedClients} />
+			{#if errorMessage}
+				<div class="mb-4">
+					<ErrorAlert
+						message={errorMessage}
+						title="Loading error"
+						onRetry={() => {
+							errorMessage = null;
+						}}
+					/>
+				</div>
+			{:else}
+				<ProfileShelf data={loadedClients} />
+			{/if}
 		</div>
 	</div>
 
