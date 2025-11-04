@@ -3,6 +3,7 @@ package invoice
 import (
 	"errors"
 	"fmt"
+	"go-invoice/internal/types"
 	"go/format"
 	"time"
 )
@@ -18,8 +19,8 @@ const (
 type Invoice struct {
 	ID          string        `json:"id"`                     // invoice number/identifier
 	Status      InvoiceStatus `json:"status"`                 // invoice status (draft, sent)
-	Date        time.Time     `json:"date"`                   // invoice date
-	Due         time.Time     `json:"due"`                    // payment due date
+	Date        types.Date    `json:"date"`                   // invoice date
+	Due         types.Date    `json:"due"`                    // payment due date
 	Provider    Party         `json:"provider"`               // service provider
 	Client      Party         `json:"client"`                 // client/customer
 	Items       []ServiceItem `json:"items"`                  // list of services/products
@@ -35,11 +36,12 @@ func New(provider, client Party, payment PaymentInfo, taxRate float32, count int
 	if err != nil {
 		return nil, err
 	}
+	today := types.Today()
 	return &Invoice{
 		ID:       generateInvoiceID(count),
 		Status:   StatusDraft,
-		Date:     time.Now(),
-		Due:      time.Now().AddDate(0, 0, 30), // due in 30 days
+		Date:     today,
+		Due:      today.AddDate(0, 0, 30), // due in 30 days
 		Provider: provider,
 		Client:   client,
 		Items:    []ServiceItem{},
@@ -91,16 +93,16 @@ func (p *Party) HasRequiredFields() bool {
 
 // ServiceItem represents a single line item in the invoice
 type ServiceItem struct {
-	Date              time.Time `json:"date"`                         // date of service/product
-	Description       string    `json:"description"`                  // description of service/product
-	DescriptionDetail string    `json:"description_detail,omitempty"` // (optional) detailed description
-	Quantity          float32   `json:"quantity"`                     // quantity provided
-	UnitPrice         float32   `json:"unit_price"`                   // price per unit
-	TotalPrice        float32   `json:"total_price"`                  // total price (Quantity * UnitPrice)
+	Date              types.Date `json:"date"`                         // date of service/product
+	Description       string     `json:"description"`                  // description of service/product
+	DescriptionDetail string     `json:"description_detail,omitempty"` // (optional) detailed description
+	Quantity          float32    `json:"quantity"`                     // quantity provided
+	UnitPrice         float32    `json:"unit_price"`                   // price per unit
+	TotalPrice        float32    `json:"total_price"`                  // total price (Quantity * UnitPrice)
 }
 
 // NewServiceItem creates a new service item
-func NewServiceItem(date time.Time, description string, quantity, unitPrice float32) ServiceItem {
+func NewServiceItem(date types.Date, description string, quantity, unitPrice float32) ServiceItem {
 	return ServiceItem{
 		Date:        date,
 		Description: description,
@@ -111,7 +113,7 @@ func NewServiceItem(date time.Time, description string, quantity, unitPrice floa
 }
 
 // NewServiceItemWithDetail creates a new service item with detailed description
-func NewServiceItemWithDetail(date time.Time, description, descriptionDetail string, quantity, unitPrice float32) ServiceItem {
+func NewServiceItemWithDetail(date types.Date, description, descriptionDetail string, quantity, unitPrice float32) ServiceItem {
 	return ServiceItem{
 		Date:              date,
 		Description:       description,
