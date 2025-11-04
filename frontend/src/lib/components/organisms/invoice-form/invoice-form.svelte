@@ -55,9 +55,9 @@
 	// Payment info from provider
 	let paymentInfo = $state({
 		method: 'Bank Transfer',
-		accountName: '',
+		account_name: '',
 		bsb: '',
-		accountNumber: ''
+		account_number: ''
 	});
 
 	// Loading state
@@ -157,7 +157,7 @@
 		(item as any)[field] = value;
 
 		// Recalculate totalPrice if quantity or unitPrice changed
-		if (field === 'quantity' || field === 'unitPrice') {
+		if (field === 'quantity' || field === 'unit_price') {
 			item.total_price = calculateLineItemTotal(item.quantity, item.unit_price);
 		}
 

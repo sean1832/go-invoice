@@ -42,17 +42,25 @@ export function getDefaultIssueDate(): string {
 
 /**
  * Safely parse an ISO date string to DateValue
- * @param dateString - ISO date string (YYYY-MM-DD)
+ * @param dateString - ISO date string (YYYY-MM-DD) or (YYYY-MM-DDTHH:mm:ssZ)
  * @returns DateValue or undefined if invalid
  */
 export function safeParseDate(dateString: string | undefined | null): DateValue | undefined {
 	if (!dateString) return undefined;
+
+	// Extract only date part (YYYY-MM-DD) before parsing
+	const dateOnlyString = dateString.split('T')[0];
 	try {
-		return parseDate(dateString);
+		return parseDate(dateOnlyString);
 	} catch (error) {
 		console.error('Failed to parse date:', dateString, error);
 		return undefined;
 	}
+}
+
+export function extractDateFromISO(isoString: string | undefined | null): string {
+	if (!isoString) return '';
+	return isoString.split('T')[0];
 }
 
 /**
