@@ -12,6 +12,7 @@
 		tabOptions?: { label: string; value: string }[]; // Tab configuration
 		emptyMessage?: string; // Message when no results
 		searchPlaceholder?: string;
+		onError?: (message: string) => void; // Error handler to pass to items
 	}
 
 	// Generic props with defaults
@@ -24,7 +25,8 @@
 		statusField = undefined,
 		tabOptions = [],
 		emptyMessage = 'No items found',
-		searchPlaceholder = 'Search...'
+		searchPlaceholder = 'Search...',
+		onError
 	} = $props();
 
 	let searchQuery = $state('');
@@ -65,7 +67,7 @@
 	{:else}
 		<div class="flex flex-col gap-3">
 			{#each filteredData as item, index (item[keyField] || index)}
-				<ItemComponent {item} />
+				<ItemComponent {item} {onError} />
 			{/each}
 		</div>
 	{/if}

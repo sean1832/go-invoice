@@ -7,7 +7,6 @@
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let loadedInvoices = $state<any[]>([]);
 
 	async function loadInvoices() {
 		isLoading = true;
@@ -16,7 +15,6 @@
 		try {
 			const data = await api.invoices.getAllInvoices(fetch);
 			invoices.set(data);
-			loadedInvoices = data;
 		} catch (error) {
 			console.error('Failed to load invoices:', error);
 			errorMessage =
@@ -24,6 +22,14 @@
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	function handleError(message: string) {
+		errorMessage = message;
+	}
+
+	function clearError() {
+		errorMessage = null;
 	}
 
 	// Load invoices on mount
@@ -40,20 +46,22 @@
 				<p class="text-muted-foreground">Manage and track your invoices</p>
 			</div>
 			<div class="flex flex-col gap-4">
+				{#if errorMessage}
+					<ErrorAlert
+						message={errorMessage}
+						title="Error"
+						showRetryButton={false}
+						onRetry={clearError}
+					/>
+				{/if}
+
 				{#if isLoading}
 					<div class="flex flex-col items-center justify-center gap-4 py-12">
 						<Spinner size={48} />
 						<p class="text-muted-foreground">Loading invoices...</p>
 					</div>
-				{:else if errorMessage}
-					<ErrorAlert
-						message={errorMessage}
-						title="Error Loading Invoices"
-						showRetryButton={true}
-						onRetry={loadInvoices}
-					/>
 				{:else}
-					<InvoiceShelf data={loadedInvoices} />
+					<InvoiceShelf data={$filteredInvoices} onError={handleError} />
 				{/if}
 			</div>
 		</div>

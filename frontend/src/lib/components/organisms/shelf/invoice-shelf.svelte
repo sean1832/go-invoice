@@ -8,9 +8,10 @@
 
 	interface Props {
 		data: Invoice[];
+		onError?: (message: string) => void;
 	}
 
-	const { data } = $props();
+	const { data, onError } = $props();
 
 	let activeTab = $state<InvoiceStatus | 'all'>('all');
 
@@ -46,6 +47,7 @@
 				searchFields={['id', 'client.name']}
 				emptyMessage="No invoices found"
 				searchPlaceholder="Search invoices by number or client..."
+				{onError}
 			/>
 		</Tabs.Content>
 	</Tabs.Root>

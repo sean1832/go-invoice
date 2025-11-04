@@ -16,12 +16,8 @@
 -->
 <script lang="ts">
 	import type { Invoice, Party, ServiceItem } from '@/types/invoice';
-	import { providers, clients, activeProvider } from '@/stores';
-	import {
-		generateInvoiceId,
-		createEmptyLineItem,
-		createEmptyParty
-	} from '@/utils/invoice-generators';
+	import { providers, clients, activeProvider, generateInvoiceId } from '@/stores';
+	import { createEmptyLineItem, createEmptyParty } from '@/utils/invoice-generators';
 	import { getDefaultIssueDate, getDefaultDueDate } from '@/utils/date-helpers';
 	import { calculateLineItemTotal, calculatePricing } from '@/utils/invoice-calculations';
 	import { validateInvoice } from '@/utils/validators';
