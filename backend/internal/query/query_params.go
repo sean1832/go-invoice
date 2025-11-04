@@ -1,6 +1,7 @@
 package query
 
 import (
+	"go-invoice/internal/types"
 	"net/url"
 	"time"
 )
@@ -10,10 +11,10 @@ type InvoiceQueryParams struct {
 	ClientID    string
 	ProviderID  string
 	Status      string
-	DueDateFrom time.Time
-	DueDateTo   time.Time
-	DateFrom    time.Time
-	DateTo      time.Time
+	DueDateFrom types.Date
+	DueDateTo   types.Date
+	DateFrom    types.Date
+	DateTo      types.Date
 }
 
 // ParseInvoiceQuery extracts and validates query parameters from URL
@@ -40,11 +41,11 @@ func (q *InvoiceQueryParams) HasFilters() bool {
 		!q.DateTo.IsZero())
 }
 
-func parseTimeParam(value string) time.Time {
+func parseTimeParam(value string) types.Date {
 	const format = "2006-01-02"
 	t, err := time.Parse(format, value)
 	if err != nil {
-		return time.Time{}
+		return types.Date{}
 	}
-	return t
+	return types.NewDate(t)
 }

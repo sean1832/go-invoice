@@ -16,12 +16,8 @@
 -->
 <script lang="ts">
 	import type { Invoice, Party, ServiceItem } from '@/types/invoice';
-	import { providers, clients, activeProvider } from '@/stores';
-	import {
-		generateInvoiceId,
-		createEmptyLineItem,
-		createEmptyParty
-	} from '@/utils/invoice-generators';
+	import { providers, clients, activeProvider, generateInvoiceId } from '@/stores';
+	import { createEmptyLineItem, createEmptyParty } from '@/utils/invoice-generators';
 	import { getDefaultIssueDate, getDefaultDueDate } from '@/utils/date-helpers';
 	import { calculateLineItemTotal, calculatePricing } from '@/utils/invoice-calculations';
 	import { validateInvoice } from '@/utils/validators';
@@ -33,11 +29,12 @@
 	interface Props {
 		invoice?: Invoice;
 		mode: 'create' | 'edit';
+		isSaving?: boolean;
 		onSave?: (data: any) => void;
 		onCancel?: () => void;
 	}
 
-	let { invoice, mode, onSave, onCancel }: Props = $props();
+	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
 	let invoiceId = $state(invoice?.id || generateInvoiceId());
@@ -46,7 +43,7 @@
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
 	let client = $state<Party>(invoice?.client || createEmptyParty());
 	let items = $state<ServiceItem[]>(invoice?.items || [createEmptyLineItem()]);
-	let taxRate = $state(invoice?.pricing?.taxRate || 10);
+	let taxRate = $state(invoice?.pricing?.tax_rate || 10);
 
 	// Selected IDs for profile selectors
 	let selectedProviderId = $state<string | undefined>(undefined);
@@ -55,13 +52,10 @@
 	// Payment info from provider
 	let paymentInfo = $state({
 		method: 'Bank Transfer',
-		accountName: '',
+		account_name: '',
 		bsb: '',
-		accountNumber: ''
+		account_number: ''
 	});
-
-	// Loading state
-	let isSaving = $state(false);
 
 	// Initialize from activeProvider in create mode
 	$effect(() => {
@@ -75,8 +69,8 @@
 				phone: $activeProvider.phone || ''
 			};
 			selectedProviderId = $activeProvider.id;
-			if ($activeProvider.paymentInfo) {
-				paymentInfo = { ...$activeProvider.paymentInfo };
+			if ($activeProvider.payment_info) {
+				paymentInfo = { ...$activeProvider.payment_info };
 			}
 		} else if (mode === 'edit' && invoice) {
 			selectedProviderId = invoice.provider.id;
@@ -100,8 +94,8 @@
 				address: selected.address || '',
 				phone: selected.phone || ''
 			};
-			if (selected.paymentInfo) {
-				paymentInfo = { ...selected.paymentInfo };
+			if (selected.payment_info) {
+				paymentInfo = { ...selected.payment_info };
 			}
 		}
 	}
@@ -118,8 +112,8 @@
 				address: selected.address || '',
 				phone: selected.phone || ''
 			};
-			if (selected.taxRate !== undefined) {
-				taxRate = selected.taxRate;
+			if (selected.tax_rate !== undefined) {
+				taxRate = selected.tax_rate;
 			}
 		}
 	}
@@ -157,8 +151,8 @@
 		(item as any)[field] = value;
 
 		// Recalculate totalPrice if quantity or unitPrice changed
-		if (field === 'quantity' || field === 'unitPrice') {
-			item.totalPrice = calculateLineItemTotal(item.quantity, item.unitPrice);
+		if (field === 'quantity' || field === 'unit_price') {
+			item.total_price = calculateLineItemTotal(item.quantity, item.unit_price);
 		}
 
 		items[index] = item;
@@ -202,7 +196,6 @@
 		}
 
 		// Submit
-		isSaving = true;
 		onSave?.(invoiceData);
 	}
 </script>

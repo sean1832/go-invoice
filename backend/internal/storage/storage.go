@@ -63,7 +63,6 @@ func ensurePathExist(path string) error {
 
 // ClientData represents client/customer data as stored on disk
 type ClientData struct {
-	Id string `json:"id,omitempty"`
 	invoice.Party
 	TaxRate     float32 `json:"tax_rate"`
 	EmailTarget string  `json:"email_target"`
@@ -88,7 +87,6 @@ func (c *ClientData) HasRequiredFields() bool {
 
 // ProviderData represents service provider data as stored on disk
 type ProviderData struct {
-	Id string `json:"id,omitempty"`
 	invoice.Party
 	Payment invoice.PaymentInfo `json:"payment_info"`
 }

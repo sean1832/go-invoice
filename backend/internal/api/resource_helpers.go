@@ -42,7 +42,6 @@ func getResourceByID(
 		return
 	}
 
-	resource.SetID(id)
 	writeRespOk(w, fmt.Sprintf("%s '%s'", resourceType, id), resource)
 }
 

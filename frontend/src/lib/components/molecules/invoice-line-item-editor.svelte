@@ -108,8 +108,8 @@
 					<Label>Unit Price</Label>
 					<Input
 						type="number"
-						value={item.unitPrice}
-						oninput={(e) => onUpdate('unitPrice', parseFloat(e.currentTarget.value) || 0)}
+						value={item.unit_price}
+						oninput={(e) => onUpdate('unit_price', parseFloat(e.currentTarget.value) || 0)}
 						min="0"
 						step="0.01"
 					/>
@@ -117,7 +117,7 @@
 
 				<div class="space-y-2">
 					<Label>Amount</Label>
-					<Input value={formatCurrency(item.totalPrice)} disabled class="bg-muted font-semibold" />
+					<Input value={formatCurrency(item.total_price)} disabled class="bg-muted font-semibold" />
 				</div>
 			</div>
 		</div>

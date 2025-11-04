@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Shelf from '@/components/organisms/shelf/shelf.svelte';
-	import ShelfItem from '@/components/organisms/shelf/shelf-item.svelte';
+	import ShelfItem from '@/components/organisms/shelf/invoice-item.svelte';
 	import * as Tabs from '@/components/ui/tabs';
 	import type { Invoice, InvoiceStatus } from '@/types/invoice';
 	import Button from '@/components/ui/button/button.svelte';
@@ -8,9 +8,13 @@
 
 	interface Props {
 		data: Invoice[];
+		onError?: (message: string) => void;
+		onEdit: (item: Invoice) => void;
+		onDelete: (item: Invoice) => void;
+		deletingInvoiceId?: string | null;
 	}
 
-	const { data } = $props();
+	const { data, onError, onEdit, onDelete, deletingInvoiceId = null } = $props();
 
 	let activeTab = $state<InvoiceStatus | 'all'>('all');
 
@@ -46,6 +50,10 @@
 				searchFields={['id', 'client.name']}
 				emptyMessage="No invoices found"
 				searchPlaceholder="Search invoices by number or client..."
+				{onError}
+				{onEdit}
+				{onDelete}
+				deletingItemId={deletingInvoiceId}
 			/>
 		</Tabs.Content>
 	</Tabs.Root>

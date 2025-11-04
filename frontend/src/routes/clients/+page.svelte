@@ -1,11 +1,64 @@
 <script lang="ts">
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import ProfileShelf from '@/components/organisms/shelf/profile-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
+	import { api } from '@/services';
 	import { clients } from '@/stores';
+	import { removeClient } from '@/stores/clients';
+	import type { ClientData } from '@/types/invoice';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
 	function createNewClient() {
 		window.location.href = '/clients/new';
+	}
+
+	let isLoading = $state(false);
+	let errorMessage = $state<string | null>(null);
+	let hasLoaded = $state(false);
+
+	async function loadClients() {
+		isLoading = true;
+		errorMessage = null;
+
+		try {
+			const data = await api.clients.getAllClients(fetch);
+			console.log(data);
+			clients.set(data);
+			hasLoaded = true;
+		} catch (error) {
+			console.error('Failed to load clients:', error);
+			errorMessage =
+				error instanceof Error ? error.message : 'Failed to load clients. Please try again.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	// Load clients on mount only
+	$effect(() => {
+		if (!hasLoaded) {
+			loadClients();
+		}
+	});
+
+	let deletingClientId = $state<string | null>(null);
+
+	async function handleDelete(item: ClientData) {
+		deletingClientId = item.id;
+		try {
+			await api.clients.deleteClient(fetch, item.id);
+			// Remove from store - UI updates automatically
+			removeClient(item.id);
+		} catch (err) {
+			console.error('failed to delete client: ', err);
+			errorMessage = err instanceof Error ? err.message : 'Unknown error deleting client.';
+		} finally {
+			deletingClientId = null;
+		}
+	}
+
+	function handleEdit(item: ClientData) {
+		window.location.href = `/clients/${item.id}/edit`;
 	}
 </script>
 
@@ -24,7 +77,24 @@
 				</Button>
 			</div>
 
-			<ProfileShelf data={$clients} />
+			{#if errorMessage}
+				<div class="mb-4">
+					<ErrorAlert
+						message={errorMessage}
+						title="Loading error"
+						onRetry={() => {
+							errorMessage = null;
+						}}
+					/>
+				</div>
+			{:else}
+				<ProfileShelf
+					data={$clients}
+					onEdit={handleEdit}
+					onDelete={handleDelete}
+					deletingProfileId={deletingClientId}
+				/>
+			{/if}
 		</div>
 	</div>
 

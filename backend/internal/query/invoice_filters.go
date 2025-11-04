@@ -36,16 +36,16 @@ func matchesFilters(inv invoice.Invoice, params *InvoiceQueryParams) bool {
 	if params.Status != "" && !matchesStatus(inv, params.Status) {
 		return false
 	}
-	if !params.DueDateFrom.IsZero() && inv.Due.Before(params.DueDateFrom) {
+	if !params.DueDateFrom.IsZero() && inv.Due.Before(params.DueDateFrom.Time) {
 		return false
 	}
-	if !params.DueDateTo.IsZero() && inv.Due.After(params.DueDateTo) {
+	if !params.DueDateTo.IsZero() && inv.Due.After(params.DueDateTo.Time) {
 		return false
 	}
-	if !params.DateFrom.IsZero() && inv.Date.Before(params.DateFrom) {
+	if !params.DateFrom.IsZero() && inv.Date.Before(params.DateFrom.Time) {
 		return false
 	}
-	if !params.DateTo.IsZero() && inv.Date.After(params.DateTo) {
+	if !params.DateTo.IsZero() && inv.Date.After(params.DateTo.Time) {
 		return false
 	}
 	return true

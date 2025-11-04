@@ -2,19 +2,35 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider, saveProvider, resetProvidersToMock, loadProviders } from '@/stores';
+	import { activeProvider } from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-	import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
 	import { ProviderForm } from '@/components/organisms/profile-form';
+	import { api } from '@/services';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
+	import { updateProvider } from '@/stores/provider';
 
 	// Use reactive reference to activeProvider
 	let currentProvider = $derived($activeProvider);
 
+	let errorMessage = $state<string | null>(null);
+	let isSaving = $state(false);
+
 	async function handleSave(provider: ProviderData) {
-		console.log('Saving provider:', provider);
-		await saveProvider(provider);
-		// Go back after saving
-		window.history.back();
+		isSaving = true;
+		try {
+			await api.providers.updateProvider(fetch, provider.id, provider);
+
+			// Update both the providers list AND the activeProvider
+			updateProvider(provider);
+
+			// Go back after saving
+			window.history.back();
+		} catch (err) {
+			console.error('failed to update provider data: ', err);
+			errorMessage = err instanceof Error ? err.message : 'Unknown error updating provider data.';
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function handleCancel() {
@@ -33,7 +49,16 @@
 		<p class="text-muted-foreground">Manage your provider profile and business information</p>
 	</div>
 
-	{#if currentProvider}
+	{#if errorMessage}
+		<ErrorAlert
+			message={errorMessage}
+			title="Error"
+			showRetryButton={false}
+			onRetry={() => {
+				errorMessage = null;
+			}}
+		/>
+	{:else if currentProvider}
 		<ProviderForm
 			provider={currentProvider}
 			mode="edit"

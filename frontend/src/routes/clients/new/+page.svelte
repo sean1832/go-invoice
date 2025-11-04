@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { ClientForm } from '@/components/organisms/profile-form';
+	import { api } from '@/services';
 	import type { ClientData } from '@/types/invoice';
 
-	function handleSave(client: ClientData) {
-		console.log('Creating new client:', client);
-		// In real app: Save to API, then navigate to client list or detail page
-		window.history.back();
+	let isSaving = $state(false);
+	let saveError = $state<string | null>(null);
+
+	async function handleSave(client: ClientData) {
+		isSaving = false;
+		saveError = null;
+
+		try {
+			await api.clients.createClient(fetch, client);
+			window.history.back();
+		} catch (err) {
+			console.error('failed to save client: ', err);
+			saveError = err instanceof Error ? err.message : 'An unknown error occurred while saving.';
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function handleCancel() {
@@ -14,5 +27,5 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientForm mode="create" onSave={handleSave} onCancel={handleCancel} />
+	<ClientForm mode="create" disable={isSaving} onSave={handleSave} onCancel={handleCancel} />
 </div>

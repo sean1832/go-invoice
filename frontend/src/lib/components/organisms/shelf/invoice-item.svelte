@@ -8,12 +8,18 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import CopyIcon from '@lucide/svelte/icons/copy';
 	import DownloadIcon from '@lucide/svelte/icons/download';
+	import { api } from '@/services';
+	import { removeInvoice } from '@/stores/invoices';
 
 	interface Props {
 		item: Invoice;
+		onError?: (message: string) => void;
+		onEdit: (item: Invoice) => void;
+		onDelete: (item: Invoice) => void;
+		isDeleting?: boolean;
 	}
 
-	let { item: invoice }: Props = $props();
+	let { item: invoice, onError, onEdit, onDelete, isDeleting = false }: Props = $props();
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
@@ -43,14 +49,14 @@
 	}
 
 	function editInvoice() {
-		window.location.href = `/invoices/${invoice.id}/edit`;
+		onEdit(invoice);
 	}
 
-	function deleteInvoice() {
+	async function deleteInvoice() {
 		if (confirm(`Are you sure you want to delete ${invoice.id}?`)) {
-			// TODO: Implement delete logic
-			console.log('Delete invoice:', invoice.id);
+			onDelete(invoice);
 		}
+		return;
 	}
 
 	function duplicateInvoice() {
@@ -101,17 +107,34 @@
 	</Item.Content>
 
 	<Item.Actions class="flex gap-1">
-		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit">
+		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit" disabled={isDeleting}>
 			<EditIcon class="h-4 w-4" />
 		</Button>
-		<Button variant="ghost" size="sm" onclick={duplicateInvoice} title="Duplicate">
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={duplicateInvoice}
+			title="Duplicate"
+			disabled={isDeleting}
+		>
 			<CopyIcon class="h-4 w-4" />
 		</Button>
-		<Button variant="ghost" size="sm" onclick={downloadInvoice} title="Download">
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={downloadInvoice}
+			title="Download"
+			disabled={isDeleting}
+		>
 			<DownloadIcon class="h-4 w-4" />
 		</Button>
-		<Button variant="ghost" size="sm" onclick={deleteInvoice} title="Delete">
-			<TrashIcon class="h-4 w-4 text-destructive" />
+		<Button variant="ghost" size="sm" onclick={deleteInvoice} title="Delete" disabled={isDeleting}>
+			{#if isDeleting}
+				<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+				></span>
+			{:else}
+				<TrashIcon class="h-4 w-4 text-destructive" />
+			{/if}
 		</Button>
 	</Item.Actions>
 </Item.Root>

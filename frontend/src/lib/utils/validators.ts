@@ -89,7 +89,7 @@ export function validateLineItem(item: ServiceItem, index: number): ValidationRe
 		errors.push(`Item ${index + 1}: Quantity must be greater than 0`);
 	}
 
-	if (item.unitPrice < 0) {
+	if (item.unit_price < 0) {
 		errors.push(`Item ${index + 1}: Unit price cannot be negative`);
 	}
 

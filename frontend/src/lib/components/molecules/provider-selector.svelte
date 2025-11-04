@@ -8,13 +8,10 @@
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ProviderData } from '@/types/invoice';
-	import {
-		providers as providersStore,
-		activeProvider,
-		setActiveProvider,
-		loadProviders
-	} from '@/stores';
+	import { providers as providersStore, activeProvider, providers } from '@/stores';
+	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import { api } from '@/services';
 
 	let open = $state(false);
 	let currentProvider = $state<ProviderData | null>(null);
@@ -25,7 +22,6 @@
 	$effect(() => {
 		const unsubProvider = activeProvider.subscribe((value) => {
 			currentProvider = value;
-			console.log('[Provider Selector] Provider updated via $effect:', value?.name || 'null');
 		});
 		return unsubProvider;
 	});
@@ -33,30 +29,63 @@
 	$effect(() => {
 		const unsubProviders = providersStore.subscribe((value) => {
 			currentProviders = value;
-			console.log('[Provider Selector] Providers list updated via $effect:', value.length);
 		});
 		return unsubProviders;
 	});
 
-	// Reload providers when popover opens
-	$effect(() => {
-		if (open) {
-			console.log('[Provider Selector] Popover opened, reloading providers...');
-			loadProviders();
+	let isLoading = $state(true);
+	let loadError = $state<string | null>(null);
+
+	async function loadProviders() {
+		try {
+			isLoading = true;
+			const data = await api.providers.getAllProviders(fetch);
+			providers.set(data);
+		} catch (err) {
+			console.error(`[profile selector] failed to load data: `, err);
+			loadError = err instanceof Error ? err.message : 'Failed to load data. Please try again.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	onMount(async () => {
+		await loadProviders();
+
+		// Check if there's an active provider in localStorage
+		const storedActiveProvider = localStorage.getItem('activeProvider');
+
+		// Get current value from store using get()
+		const currentStoreValue = get(activeProvider);
+
+		// If we have a stored active provider, refresh it from backend to get latest data
+		if (storedActiveProvider || currentStoreValue) {
+			let providerId: string = '';
+			if (currentStoreValue && currentStoreValue.id) {
+				providerId = currentStoreValue.id;
+			} else if (storedActiveProvider) {
+				providerId = (JSON.parse(storedActiveProvider) as ProviderData).id;
+			}
+
+			if (providerId) {
+				try {
+					const freshProvider = await api.providers.getProvider(fetch, providerId);
+					activeProvider.set(freshProvider);
+				} catch (err) {
+					console.error('[provider selector] failed to refresh active provider:', err);
+					// Fall back to using stored data if fetch fails
+				}
+			}
+		} else if (currentProviders.length > 0) {
+			// Only set default if nothing is stored AND store is empty AND we have providers
+			activeProvider.set(currentProviders[0]); // default to first one
 		}
 	});
 
-	onMount(async () => {
-		console.log('[Provider Selector] Component mounted');
-		await loadProviders();
-	});
-
 	function handleProviderSelect(provider: ProviderData) {
-		console.log('[Provider Selector] Selecting provider:', provider.name);
-		setActiveProvider(provider);
+		activeProvider.set(provider);
 		currentProvider = provider; // Force immediate update
 		updateKey++; // Force re-render
-		console.log('[Provider Selector] Provider set, closing popover...');
 		// Give the state time to update before closing
 		setTimeout(() => {
 			open = false;
@@ -67,22 +96,27 @@
 		event.stopPropagation(); // Prevent selecting the provider
 
 		if (confirm(`Are you sure you want to delete ${provider.name}?`)) {
-			// Remove from localStorage
-			const updatedProviders = currentProviders.filter((p) => p.id !== provider.id);
-			localStorage.setItem('providers', JSON.stringify(updatedProviders));
+			try {
+				await api.providers.deleteProvider(fetch, provider.id);
 
-			// If this was the active provider, clear it or set another one
-			if (currentProvider?.id === provider.id) {
-				if (updatedProviders.length > 0) {
-					setActiveProvider(updatedProviders[0]);
-				} else {
-					localStorage.removeItem('activeProvider');
-					window.location.href = '/providers/new';
+				// Remove from store - UI updates automatically
+				providersStore.update((items) => items.filter((p) => p.id !== provider.id));
+
+				// If this was the active provider, clear it or set another one
+				const currentProviderValue = get(activeProvider);
+				if (currentProviderValue?.id === provider.id) {
+					const updatedProviders = get(providersStore);
+					if (updatedProviders.length > 0) {
+						activeProvider.set(updatedProviders[0]);
+					} else {
+						localStorage.removeItem('activeProvider');
+						window.location.href = '/providers/new';
+					}
 				}
+			} catch (err) {
+				console.error('Failed to delete provider:', err);
+				alert(err instanceof Error ? err.message : `Failed to delete provider ${provider.name}`);
 			}
-
-			// Reload the list
-			await loadProviders();
 		}
 	}
 

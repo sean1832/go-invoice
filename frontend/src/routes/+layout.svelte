@@ -2,14 +2,13 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { ModeWatcher } from 'mode-watcher';
-	import { initializeProviders, loadClients, loadInvoices } from '@/stores';
 	import { onMount } from 'svelte';
 	let { children } = $props();
 	import Navbar from '@/components/organisms/navbar/navbar.svelte';
 
 	onMount(async () => {
 		// Initialize all stores when the app starts
-		await Promise.all([initializeProviders(), loadClients(), loadInvoices()]);
+		//await Promise.all([initializeProviders()]);
 	});
 </script>
 

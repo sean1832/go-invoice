@@ -5,16 +5,18 @@
 	import * as Card from '@/components/ui/card';
 	import type { ClientData } from '@/types/invoice';
 	import SaveIcon from '@lucide/svelte/icons/save';
+	import Spinner from '@/components/atoms/spinner.svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 
 	interface Props {
 		client?: ClientData;
 		onSave?: (client: ClientData) => void;
 		onCancel?: () => void;
+		disable?: boolean;
 		mode?: 'create' | 'edit';
 	}
 
-	const { client = undefined, onSave, onCancel, mode = 'create' } = $props();
+	const { client = undefined, onSave, onCancel, disable = false, mode = 'create' } = $props();
 
 	// Form state
 	let formData = $state<ClientData>(
@@ -25,8 +27,8 @@
 			address: '',
 			phone: '',
 			abn: '',
-			taxRate: 10,
-			targetEmail: ''
+			tax_rate: 10,
+			target_email: ''
 		}
 	);
 
@@ -46,11 +48,11 @@
 			newErrors.email = 'Invalid email format';
 		}
 
-		if (formData.taxRate < 0 || formData.taxRate > 100) {
+		if (formData.tax_rate < 0 || formData.tax_rate > 100) {
 			newErrors.taxRate = 'Tax rate must be between 0 and 100';
 		}
 
-		if (formData.targetEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.targetEmail)) {
+		if (formData.target_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.target_email)) {
 			newErrors.targetEmail = 'Invalid email format';
 		}
 
@@ -95,6 +97,7 @@
 					type="text"
 					placeholder="Acme Corporation"
 					bind:value={formData.name}
+					disabled={disable}
 					class={errors.name ? 'border-destructive' : ''}
 				/>
 				{#if errors.name}
@@ -109,6 +112,7 @@
 					type="email"
 					placeholder="contact@acme.com"
 					bind:value={formData.email}
+					disabled={disable}
 					class={errors.email ? 'border-destructive' : ''}
 				/>
 				{#if errors.email}
@@ -119,12 +123,24 @@
 			<div class="grid gap-4 md:grid-cols-2">
 				<div class="space-y-2">
 					<Label for="phone">Phone</Label>
-					<Input id="phone" type="tel" placeholder="+61 2 1234 5678" bind:value={formData.phone} />
+					<Input
+						id="phone"
+						type="tel"
+						placeholder="+61 2 1234 5678"
+						bind:value={formData.phone}
+						disabled={disable}
+					/>
 				</div>
 
 				<div class="space-y-2">
 					<Label for="abn">ABN</Label>
-					<Input id="abn" type="text" placeholder="12 345 678 901" bind:value={formData.abn} />
+					<Input
+						id="abn"
+						type="text"
+						placeholder="12 345 678 901"
+						bind:value={formData.abn}
+						disabled={disable}
+					/>
 				</div>
 			</div>
 
@@ -134,6 +150,7 @@
 					id="address"
 					type="text"
 					placeholder="123 Business Street, Sydney NSW 2000"
+					disabled={disable}
 					bind:value={formData.address}
 				/>
 			</div>
@@ -153,7 +170,8 @@
 						max="100"
 						step="0.1"
 						placeholder="10"
-						bind:value={formData.taxRate}
+						bind:value={formData.tax_rate}
+						disabled={disable}
 						class={errors.taxRate ? 'border-destructive' : ''}
 					/>
 					{#if errors.taxRate}
@@ -169,7 +187,8 @@
 						id="targetEmail"
 						type="email"
 						placeholder="billing@acme.com"
-						bind:value={formData.targetEmail}
+						bind:value={formData.target_email}
+						disabled={disable}
 						class={errors.targetEmail ? 'border-destructive' : ''}
 					/>
 					{#if errors.targetEmail}
@@ -183,12 +202,16 @@
 	</Card.Content>
 
 	<Card.Footer class="flex justify-end gap-3">
-		<Button variant="outline" onclick={handleCancel}>
+		<Button variant="outline" onclick={handleCancel} disabled={disable}>
 			<XIcon class="mr-2 h-4 w-4" />
 			Cancel
 		</Button>
-		<Button onclick={handleSave}>
-			<SaveIcon class="mr-2 h-4 w-4" />
+		<Button onclick={handleSave} disabled={disable}>
+			{#if disable}
+				<Spinner class="mr-2 h-4 w-4" />
+			{:else}
+				<SaveIcon class="mr-2 h-4 w-4" />
+			{/if}
 			{mode === 'create' ? 'Create Client' : 'Save Changes'}
 		</Button>
 	</Card.Footer>

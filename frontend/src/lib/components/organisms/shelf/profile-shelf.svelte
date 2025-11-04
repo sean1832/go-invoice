@@ -7,12 +7,20 @@
 		data: Party[];
 		searchPlaceholder?: string;
 		emptyMessage?: string;
+		onError?: (error: Error) => void;
+		onEdit: (item: Party) => void;
+		onDelete: (item: Party) => void;
+		deletingInvoiceId?: string | null;
 	}
 
 	const {
 		data,
 		searchPlaceholder = 'Search profiles...',
-		emptyMessage = 'No profiles found'
+		emptyMessage = 'No profiles found',
+		onError = (error: Error) => console.error('Profile shelf error:', error),
+		onEdit,
+		onDelete,
+		deletingProfileId: deletingInvoiceId
 	} = $props();
 </script>
 
@@ -23,4 +31,8 @@
 	keyField="id"
 	{searchPlaceholder}
 	{emptyMessage}
+	{onError}
+	{onEdit}
+	{onDelete}
+	deletingItemId={deletingInvoiceId}
 />

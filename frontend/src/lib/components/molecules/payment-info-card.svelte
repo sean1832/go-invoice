@@ -33,7 +33,7 @@
 			</p>
 			<p class="text-muted-foreground">
 				<span class="font-semibold text-foreground">Account Name:</span>
-				{payment.accountName}
+				{payment.account_name}
 			</p>
 		</div>
 		<div class="space-y-2">
@@ -43,7 +43,7 @@
 			</p>
 			<p class="text-muted-foreground">
 				<span class="font-semibold text-foreground">Account Number:</span>
-				{payment.accountNumber}
+				{payment.account_number}
 			</p>
 		</div>
 	</div>

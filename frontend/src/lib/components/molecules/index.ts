@@ -6,3 +6,4 @@ export { default as InvoiceLineItemDisplay } from './invoice-line-item-display.s
 export { default as PaymentInfoCard } from './payment-info-card.svelte';
 export { default as ProviderSelector } from './provider-selector.svelte';
 export { default as ProfileSelector } from './profile-selector.svelte';
+export { default as ErrorAlert } from './error-alert.svelte';

@@ -21,7 +21,7 @@ export function calculateLineItemTotal(quantity: number, unitPrice: number): num
  * @returns Sum of all item total prices
  */
 export function calculateSubtotal(items: ServiceItem[]): number {
-	return items.reduce((sum, item) => sum + item.totalPrice, 0);
+	return items.reduce((sum, item) => sum + item.total_price, 0);
 }
 
 /**
@@ -58,7 +58,7 @@ export function calculatePricing(items: ServiceItem[], taxRate: number): Pricing
 	return {
 		subtotal,
 		tax,
-		taxRate,
+		tax_rate: taxRate,
 		total
 	};
 }

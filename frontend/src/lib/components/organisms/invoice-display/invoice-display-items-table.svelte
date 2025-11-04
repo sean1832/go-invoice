@@ -44,18 +44,18 @@
 					</td>
 					<td class="px-6 py-4">
 						<p class="font-semibold text-foreground">{item.description}</p>
-						{#if item.descriptionDetail}
-							<p class="mt-1 text-sm text-muted-foreground">{item.descriptionDetail}</p>
+						{#if item.description_detail}
+							<p class="mt-1 text-sm text-muted-foreground">{item.description_detail}</p>
 						{/if}
 					</td>
 					<td class="px-6 py-4 text-center text-muted-foreground">
 						{item.quantity}
 					</td>
 					<td class="px-6 py-4 text-right">
-						<CurrencyDisplay amount={item.unitPrice} class="text-muted-foreground" />
+						<CurrencyDisplay amount={item.unit_price} class="text-muted-foreground" />
 					</td>
 					<td class="px-6 py-4 text-right">
-						<CurrencyDisplay amount={item.totalPrice} class="font-semibold text-foreground" />
+						<CurrencyDisplay amount={item.total_price} class="font-semibold text-foreground" />
 					</td>
 				</tr>
 			{/each}

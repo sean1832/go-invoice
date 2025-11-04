@@ -1,27 +1,58 @@
 <script lang="ts">
 	import { ClientForm } from '@/components/organisms/profile-form';
 	import type { ClientData } from '@/types/invoice';
-	import { page } from '$app/state';
-	import { mockClients } from '@/stores';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
+	import { api } from '@/services';
 
-	const clientId = page.params.id;
-	if (!clientId) {
-		throw new Error('Client ID is required for editing');
+	interface Props {
+		data: {
+			client: ClientData | null;
+			error?: string;
+		};
 	}
-	// In real app: Fetch client data from API
-	const client = mockClients.find((c) => c.id === clientId) || mockClients[0];
 
-	function handleSave(client: ClientData) {
+	let { data }: Props = $props();
+	let client = $derived(data.client);
+	let error = $derived(data.error);
+
+	let isSaving = $state(false);
+	let saveError = $state<string | null>(null);
+
+	async function handleSave(client: ClientData) {
 		console.log('Saving client:', client);
-		// In real app: Save to API, then navigate back
-		window.location.href = '/clients';
+		isSaving = true;
+		saveError = null;
+		try {
+			await api.clients.updateClient(fetch, client.id, client);
+			window.history.back();
+		} catch (err) {
+			console.error('failed to save client: ', err);
+			saveError = err instanceof Error ? err.message : 'An unknown error occurred while saving.';
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function handleCancel() {
-		window.location.href = '/clients';
+		window.history.back();
 	}
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientForm client={client} mode="edit" onSave={handleSave} onCancel={handleCancel} />
+	{#if error || !client}
+		<ErrorAlert message={error || 'Client not found'} showBackButton={true} />
+	{:else}
+		{#if saveError}
+			<div class="mb-4">
+				<ErrorAlert message={saveError} title="Save Failed" onRetry={() => (saveError = null)} />
+			</div>
+		{/if}
+		<ClientForm
+			{client}
+			disable={isSaving}
+			mode="edit"
+			onSave={handleSave}
+			onCancel={handleCancel}
+		/>
+	{/if}
 </div>
