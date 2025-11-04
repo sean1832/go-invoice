@@ -1,12 +1,40 @@
 <script lang="ts">
 	import ProfileShelf from '@/components/organisms/shelf/profile-shelf.svelte';
 	import Button from '@/components/ui/button/button.svelte';
+	import { api } from '@/services';
 	import { clients } from '@/stores';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
 	function createNewClient() {
 		window.location.href = '/clients/new';
 	}
+
+	let isLoading = $state(false);
+	let errorMessage = $state<string | null>(null);
+	let loadedClients = $state<any[]>([]);
+
+	async function loadClients() {
+		isLoading = true;
+		errorMessage = null;
+
+		try {
+			const data = await api.clients.getAllClients(fetch);
+			console.log(data);
+			clients.set(data);
+			loadedClients = data;
+		} catch (error) {
+			console.error('Failed to load invoices:', error);
+			errorMessage =
+				error instanceof Error ? error.message : 'Failed to load invoices. Please try again.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	// Load invoices on mount
+	$effect(() => {
+		loadClients();
+	});
 </script>
 
 <div class="p-4">
@@ -24,7 +52,7 @@
 				</Button>
 			</div>
 
-			<ProfileShelf data={$clients} />
+			<ProfileShelf data={loadedClients} />
 		</div>
 	</div>
 

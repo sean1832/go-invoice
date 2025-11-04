@@ -16,12 +16,12 @@
 		abn?: string;
 		address?: string;
 		phone?: string;
-		taxRate?: number;
-		paymentInfo?: {
+		tax_rate?: number;
+		payment_info?: {
 			method: string;
-			accountName: string;
+			account_name: string;
 			bsb: string;
-			accountNumber: string;
+			account_number: string;
 		};
 	}
 
@@ -148,7 +148,7 @@
 
 					{#if type === 'client'}
 						{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
-						{#if selectedProfile?.taxRate !== undefined}
+						{#if selectedProfile?.tax_rate !== undefined}
 							<div class="col-span-2 mt-2 border-t pt-3">
 								<div
 									class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
@@ -157,7 +157,7 @@
 								</div>
 								<div>
 									<span class="font-medium text-muted-foreground">Tax Rate:</span>
-									<span class="ml-2">{selectedProfile.taxRate}%</span>
+									<span class="ml-2">{selectedProfile.tax_rate}%</span>
 								</div>
 							</div>
 						{/if}
@@ -165,7 +165,7 @@
 
 					{#if type === 'provider'}
 						{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
-						{#if selectedProfile?.paymentInfo}
+						{#if selectedProfile?.payment_info}
 							<div class="col-span-2 mt-2 border-t pt-3">
 								<div
 									class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
@@ -175,19 +175,19 @@
 								<div class="grid grid-cols-2 gap-x-6 gap-y-2">
 									<div>
 										<span class="font-medium text-muted-foreground">Method:</span>
-										<span class="ml-2">{selectedProfile.paymentInfo.method}</span>
+										<span class="ml-2">{selectedProfile.payment_info.method}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">Account Name:</span>
-										<span class="ml-2">{selectedProfile.paymentInfo.accountName}</span>
+										<span class="ml-2">{selectedProfile.payment_info.account_name}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">BSB:</span>
-										<span class="ml-2">{selectedProfile.paymentInfo.bsb}</span>
+										<span class="ml-2">{selectedProfile.payment_info.bsb}</span>
 									</div>
 									<div>
 										<span class="font-medium text-muted-foreground">Account #:</span>
-										<span class="ml-2">{selectedProfile.paymentInfo.accountNumber}</span>
+										<span class="ml-2">{selectedProfile.payment_info.account_number}</span>
 									</div>
 								</div>
 							</div>

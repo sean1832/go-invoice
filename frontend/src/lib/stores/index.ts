@@ -24,10 +24,6 @@ export {
 export {
 	clients,
 	clientsLoading,
-	loadClients,
-	getClient,
-	saveClient,
-	deleteClient,
 	searchClients
 } from './clients';
 

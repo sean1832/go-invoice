@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { ClientForm } from '@/components/organisms/profile-form';
 	import type { ClientData } from '@/types/invoice';
-	import { page } from '$app/state';
-	import { mockClients } from '@/stores';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 
-	const clientId = page.params.id;
-	if (!clientId) {
-		throw new Error('Client ID is required for editing');
+	interface Props {
+		data: {
+			client: ClientData | null;
+			error?: string;
+		};
 	}
-	// In real app: Fetch client data from API
-	const client = mockClients.find((c) => c.id === clientId) || mockClients[0];
+
+	let { data }: Props = $props();
+	let client = $derived(data.client);
+	let error = $derived(data.error);
 
 	function handleSave(client: ClientData) {
 		console.log('Saving client:', client);
@@ -23,5 +26,9 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
-	<ClientForm client={client} mode="edit" onSave={handleSave} onCancel={handleCancel} />
+	{#if error || !client}
+		<ErrorAlert message={error || 'Client not found'} showBackButton={true} />
+	{:else}
+		<ClientForm {client} mode="edit" onSave={handleSave} onCancel={handleCancel} />
+	{/if}
 </div>
