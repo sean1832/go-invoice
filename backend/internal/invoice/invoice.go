@@ -77,6 +77,7 @@ func generateInvoiceID(count int) string {
 
 // Party represents either the service provider or the client/customer
 type Party struct {
+	Id      string `json:"id"`                // (optional) unique identifier
 	Name    string `json:"name"`              // party name
 	Address string `json:"address,omitempty"` // (optional) address
 	Email   string `json:"email,omitempty"`   // (optional) email address
@@ -85,7 +86,7 @@ type Party struct {
 }
 
 func (p *Party) HasRequiredFields() bool {
-	return p.Name != ""
+	return p.Name != "" && p.Id != ""
 }
 
 // ServiceItem represents a single line item in the invoice
