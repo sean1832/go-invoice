@@ -1,9 +1,10 @@
 <script lang="ts">
 	import InvoiceShelf from '@/components/organisms/shelf/invoice-shelf.svelte';
-	import { invoices, filteredInvoices } from '$lib/stores/invoices';
+	import { invoices, filteredInvoices, removeInvoice } from '$lib/stores/invoices';
 	import { api } from '$lib/services';
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
+	import type { Invoice } from '@/types/invoice';
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -30,6 +31,27 @@
 
 	function clearError() {
 		errorMessage = null;
+	}
+
+	let deletingInvoiceId = $state<string | null>(null);
+	async function handleDelete(invoice: Invoice) {
+		deletingInvoiceId = invoice.id;
+
+		try {
+			await api.invoices.deleteInvoice(fetch, invoice.id);
+			// Remove from store - UI updates automatically
+			removeInvoice(invoice.id);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : `Failed to delete invoice ${invoice.id}`;
+			console.error('Failed to delete invoice:', err);
+			handleError(message);
+		} finally {
+			deletingInvoiceId = null;
+		}
+	}
+
+	async function handleEdit(invoice: Invoice) {
+		window.location.href = `/invoices/${invoice.id}/edit`;
 	}
 
 	// Load invoices on mount
@@ -61,7 +83,13 @@
 						<p class="text-muted-foreground">Loading invoices...</p>
 					</div>
 				{:else}
-					<InvoiceShelf data={$filteredInvoices} onError={handleError} />
+					<InvoiceShelf
+						data={$filteredInvoices}
+						onError={handleError}
+						onDelete={handleDelete}
+						onEdit={handleEdit}
+						{deletingInvoiceId}
+					/>
 				{/if}
 			</div>
 		</div>

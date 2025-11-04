@@ -14,10 +14,12 @@
 	interface Props {
 		item: Invoice;
 		onError?: (message: string) => void;
+		onEdit: (item: Invoice) => void;
+		onDelete: (item: Invoice) => void;
+		isDeleting?: boolean;
 	}
 
-	let { item: invoice, onError }: Props = $props();
-	let isDeleting = $state(false);
+	let { item: invoice, onError, onEdit, onDelete, isDeleting = false }: Props = $props();
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
@@ -47,27 +49,14 @@
 	}
 
 	function editInvoice() {
-		window.location.href = `/invoices/${invoice.id}/edit`;
+		onEdit(invoice);
 	}
 
 	async function deleteInvoice() {
-		if (!confirm(`Are you sure you want to delete ${invoice.id}?`)) {
-			return;
+		if (confirm(`Are you sure you want to delete ${invoice.id}?`)) {
+			onDelete(invoice);
 		}
-
-		isDeleting = true;
-
-		try {
-			await api.invoices.deleteInvoice(fetch, invoice.id);
-			// Remove from store - UI updates automatically
-			removeInvoice(invoice.id);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : `Failed to delete invoice ${invoice.id}`;
-			console.error('Failed to delete invoice:', err);
-			onError?.(message);
-		} finally {
-			isDeleting = false;
-		}
+		return;
 	}
 
 	function duplicateInvoice() {

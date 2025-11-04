@@ -4,6 +4,8 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import { api } from '@/services';
 	import { clients } from '@/stores';
+	import { removeClient } from '@/stores/clients';
+	import type { ClientData } from '@/types/invoice';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
 	function createNewClient() {
@@ -12,7 +14,7 @@
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let loadedClients = $state<any[]>([]);
+	let hasLoaded = $state(false);
 
 	async function loadClients() {
 		isLoading = true;
@@ -22,20 +24,42 @@
 			const data = await api.clients.getAllClients(fetch);
 			console.log(data);
 			clients.set(data);
-			loadedClients = data;
+			hasLoaded = true;
 		} catch (error) {
-			console.error('Failed to load invoices:', error);
+			console.error('Failed to load clients:', error);
 			errorMessage =
-				error instanceof Error ? error.message : 'Failed to load invoices. Please try again.';
+				error instanceof Error ? error.message : 'Failed to load clients. Please try again.';
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	// Load invoices on mount
+	// Load clients on mount only
 	$effect(() => {
-		loadClients();
+		if (!hasLoaded) {
+			loadClients();
+		}
 	});
+
+	let deletingClientId = $state<string | null>(null);
+
+	async function handleDelete(item: ClientData) {
+		deletingClientId = item.id;
+		try {
+			await api.clients.deleteClient(fetch, item.id);
+			// Remove from store - UI updates automatically
+			removeClient(item.id);
+		} catch (err) {
+			console.error('failed to delete client: ', err);
+			errorMessage = err instanceof Error ? err.message : 'Unknown error deleting client.';
+		} finally {
+			deletingClientId = null;
+		}
+	}
+
+	function handleEdit(item: ClientData) {
+		window.location.href = `/clients/${item.id}/edit`;
+	}
 </script>
 
 <div class="p-4">
@@ -64,7 +88,12 @@
 					/>
 				</div>
 			{:else}
-				<ProfileShelf data={loadedClients} />
+				<ProfileShelf
+					data={$clients}
+					onEdit={handleEdit}
+					onDelete={handleDelete}
+					deletingProfileId={deletingClientId}
+				/>
 			{/if}
 		</div>
 	</div>

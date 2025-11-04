@@ -16,6 +16,10 @@ export const clientsLoading = writable<boolean>(false);
 // Initialize the store
 export const initialized = writable<boolean>(false);
 
+export function removeClient(id: string): void {
+	clients.update((items) => items.filter((inv) => inv.id !== id));
+}
+
 /**
  * Search clients by query
  */
