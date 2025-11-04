@@ -109,7 +109,7 @@
 					<Input
 						type="number"
 						value={item.unit_price}
-						oninput={(e) => onUpdate('unitPrice', parseFloat(e.currentTarget.value) || 0)}
+						oninput={(e) => onUpdate('unit_price', parseFloat(e.currentTarget.value) || 0)}
 						min="0"
 						step="0.01"
 					/>
