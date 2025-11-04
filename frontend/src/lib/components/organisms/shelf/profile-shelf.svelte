@@ -7,12 +7,14 @@
 		data: Party[];
 		searchPlaceholder?: string;
 		emptyMessage?: string;
+		onError?: (error: Error) => void;
 	}
 
 	const {
 		data,
 		searchPlaceholder = 'Search profiles...',
-		emptyMessage = 'No profiles found'
+		emptyMessage = 'No profiles found',
+		onError = (error: Error) => console.error('Profile shelf error:', error)
 	} = $props();
 </script>
 
@@ -23,4 +25,5 @@
 	keyField="id"
 	{searchPlaceholder}
 	{emptyMessage}
+	{onError}
 />
