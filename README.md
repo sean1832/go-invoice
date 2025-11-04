@@ -1,6 +1,15 @@
 # go-invoice
 
-Invoice management application with Go backend and Svelte frontend.
+Simple no bullshit invoice management application built with SvelteKit and Go.
+
+> [!WARNING]
+> This project is still work in progress. Some features may be incomplete or missing.
+
+## Features
+
+- Create, view, and manage invoices
+- Client and provider management
+- REST API for integration
 
 ## Quick Start
 
@@ -52,6 +61,8 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 - **Frontend**: SvelteKit (static build)
 - **Backend**: Go with embedded frontend
 - **Single Binary**: The frontend is embedded in the Go binary for easy deployment
+- **Data Storage**: Local file-based storage (JSON files) for simplicity (will be replaced with a database in future)
+- **API**: RESTful API for managing invoices, clients, and providers
 
 ## Project Structure
 
@@ -75,4 +86,4 @@ REST API available at `/api/v1/`:
 
 ## License
 
-MIT
+GLP-3.0 License. See [LICENSE](LICENSE) for details.
