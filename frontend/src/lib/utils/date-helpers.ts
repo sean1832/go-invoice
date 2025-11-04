@@ -3,14 +3,14 @@
  * All dates are in ISO format (YYYY-MM-DD)
  */
 
-import { parseDate, type DateValue } from '@internationalized/date';
+import { getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
 
 /**
  * Get today's date as ISO string
  * @returns Today's date in YYYY-MM-DD format
  */
 export function getTodayISOString(): string {
-	return new Date().toISOString().split('T')[0];
+	return today(getLocalTimeZone()).toString();
 }
 
 /**
@@ -19,9 +19,9 @@ export function getTodayISOString(): string {
  * @returns Date in YYYY-MM-DD format
  */
 export function getDateFromToday(daysFromNow: number): string {
-	const date = new Date();
-	date.setDate(date.getDate() + daysFromNow);
-	return date.toISOString().split('T')[0];
+	const startDate = today(getLocalTimeZone());
+	const targetDate = startDate.add({ days: daysFromNow });
+	return targetDate.toString();
 }
 
 /**
@@ -87,7 +87,9 @@ export function isValidISODate(dateString: string): boolean {
  * @returns Negative if date1 < date2, 0 if equal, positive if date1 > date2
  */
 export function compareDates(date1: string, date2: string): number {
-	return new Date(date1).getTime() - new Date(date2).getTime();
+	if (date1 < date2) return -1;
+	if (date1 > date2) return 1;
+	return 0;
 }
 
 /**
