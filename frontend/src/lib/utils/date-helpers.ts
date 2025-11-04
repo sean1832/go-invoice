@@ -58,11 +58,6 @@ export function safeParseDate(dateString: string | undefined | null): DateValue 
 	}
 }
 
-export function extractDateFromISO(isoString: string | undefined | null): string {
-	if (!isoString) return '';
-	return isoString.split('T')[0];
-}
-
 /**
  * Convert DateValue to ISO string
  * @param dateValue - DateValue object

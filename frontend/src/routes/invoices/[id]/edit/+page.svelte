@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import InvoiceForm from '@/components/organisms/invoice-form/invoice-form.svelte';
-	import { clients, providers } from '@/stores';
+	import { clients, providers, invoices } from '@/stores';
 	import type { Invoice } from '@/types/invoice';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
@@ -17,11 +17,31 @@
 	let invoice = $derived(data.invoice as Invoice);
 	let error = $derived(data.invErr);
 
-	function handleSave(data: any) {
-		// TODO: Implement API call to update invoice
-		console.log('Updating invoice:', invoice.id, data);
-		// Redirect to invoice view after successful save
-		window.history.back();
+	let isSaving = $state(false);
+	let saveError = $state<string | null>(null);
+
+	async function handleSave(updatedData: Invoice) {
+		try {
+			isSaving = true;
+			saveError = null;
+
+			// Update invoice via API
+			const updatedInvoice = await api.invoices.updateInvoice(fetch, invoice.id, updatedData);
+
+			// Update store with the updated invoice
+			invoices.update((current) =>
+				current.map((inv) => (inv.id === updatedInvoice.id ? updatedInvoice : inv))
+			);
+
+			// Navigate back to invoice view
+			window.history.back();
+		} catch (err) {
+			console.error('Failed to update invoice:', err);
+			saveError =
+				err instanceof Error ? err.message : 'Failed to update invoice. Please try again.';
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function handleCancel() {
@@ -65,6 +85,11 @@
 			<p class="text-muted-foreground">Loading...</p>
 		</div>
 	{:else}
-		<InvoiceForm mode="edit" {invoice} onSave={handleSave} onCancel={handleCancel} />
+		{#if saveError}
+			<div class="mb-4">
+				<ErrorAlert message={saveError} />
+			</div>
+		{/if}
+		<InvoiceForm mode="edit" {invoice} {isSaving} onSave={handleSave} onCancel={handleCancel} />
 	{/if}
 </div>

@@ -33,11 +33,12 @@
 	interface Props {
 		invoice?: Invoice;
 		mode: 'create' | 'edit';
+		isSaving?: boolean;
 		onSave?: (data: any) => void;
 		onCancel?: () => void;
 	}
 
-	let { invoice, mode, onSave, onCancel }: Props = $props();
+	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
 	let invoiceId = $state(invoice?.id || generateInvoiceId());
@@ -59,9 +60,6 @@
 		bsb: '',
 		account_number: ''
 	});
-
-	// Loading state
-	let isSaving = $state(false);
 
 	// Initialize from activeProvider in create mode
 	$effect(() => {
@@ -202,7 +200,6 @@
 		}
 
 		// Submit
-		isSaving = true;
 		onSave?.(invoiceData);
 	}
 </script>

@@ -1,14 +1,33 @@
 <script lang="ts">
 	import InvoiceForm from '@/components/organisms/invoice-form/invoice-form.svelte';
-	import { clients, providers } from '@/stores';
+	import { clients, invoices, providers } from '@/stores';
 	import { api } from '@/services';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
+	import type { Invoice } from '@/types/invoice';
 
-	function handleSave(data: any) {
-		// TODO: Implement API call to save invoice
-		console.log('Saving new invoice:', data);
-		// Redirect to invoice list after successful save
-		window.history.back();
+	let isSaving = $state(false);
+	let saveError = $state<string | null>(null);
+
+	async function handleSave(data: Invoice) {
+		console.warn(data);
+		try {
+			isSaving = true;
+			saveError = null;
+
+			// Create invoice via API
+			const createdInvoice = await api.invoices.createInvoice(fetch, data);
+
+			// Update store with the new invoice
+			invoices.update((current) => [...current, createdInvoice]);
+
+			// Navigate back to invoice list
+			window.history.back();
+		} catch (err) {
+			console.error('Failed to save invoice:', err);
+			saveError = err instanceof Error ? err.message : 'Failed to save invoice. Please try again.';
+		} finally {
+			isSaving = false;
+		}
 	}
 
 	function handleCancel() {
@@ -50,6 +69,11 @@
 			<p class="text-muted-foreground">Loading...</p>
 		</div>
 	{:else}
-		<InvoiceForm mode="create" onSave={handleSave} onCancel={handleCancel} />
+		{#if saveError}
+			<div class="mb-4">
+				<ErrorAlert message={saveError} />
+			</div>
+		{/if}
+		<InvoiceForm mode="create" {isSaving} onSave={handleSave} onCancel={handleCancel} />
 	{/if}
 </div>
