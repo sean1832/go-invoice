@@ -1,5 +1,5 @@
-
 ## Features
+
 - [ ] Invoice PDF generation
 - [ ] SMTP email sending
 - [ ] Authentication and user management
@@ -7,7 +7,13 @@
 - [ ] Enhanced error handling and logging
 
 ## Backend API
+
 - [ ] Invoice querying and filtering
 - [ ] Invoice pagination
 - [ ] Filtering
 - [ ] PDF upload to backend
+
+## Frontend UI
+
+- [ ] Reduce redundant API calls
+- [ ] Better cache management

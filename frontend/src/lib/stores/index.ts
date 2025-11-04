@@ -10,14 +10,6 @@ export {
 	providers,
 	activeProvider,
 	providersLoading,
-	loadProviders,
-	getProvider,
-	saveProvider,
-	deleteProvider,
-	setActiveProvider,
-	clearActiveProvider,
-	resetProvidersToMock,
-	initializeProviders
 } from './provider';
 
 // Client store

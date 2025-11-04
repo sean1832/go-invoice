@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { ProviderForm } from '@/components/organisms/profile-form';
 	import type { ProviderData } from '@/types/invoice';
-	import { saveProvider } from '@/stores/provider';
+	//import { saveProvider } from '@/stores/provider';
 
 	async function handleSave(provider: ProviderData) {
 		console.log('Creating new provider:', provider);
-		await saveProvider(provider);
+		// TODO: implement save api logic
+		//await saveProvider(provider);
 		// Navigate back
 		window.history.back();
 	}

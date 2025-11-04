@@ -2,9 +2,8 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider, saveProvider, resetProvidersToMock, loadProviders } from '@/stores';
+	import { activeProvider} from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-	import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
 	import { ProviderForm } from '@/components/organisms/profile-form';
 
 	// Use reactive reference to activeProvider
@@ -12,7 +11,8 @@
 
 	async function handleSave(provider: ProviderData) {
 		console.log('Saving provider:', provider);
-		await saveProvider(provider);
+		// TODO: implement save api logic
+		//await saveProvider(provider);
 		// Go back after saving
 		window.history.back();
 	}

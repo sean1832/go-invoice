@@ -8,13 +8,9 @@
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ProviderData } from '@/types/invoice';
-	import {
-		providers as providersStore,
-		activeProvider,
-		setActiveProvider,
-		loadProviders
-	} from '@/stores';
+	import { providers as providersStore, activeProvider, providers } from '@/stores';
 	import { onMount } from 'svelte';
+	import { api } from '@/services';
 
 	let open = $state(false);
 	let currentProvider = $state<ProviderData | null>(null);
@@ -25,7 +21,6 @@
 	$effect(() => {
 		const unsubProvider = activeProvider.subscribe((value) => {
 			currentProvider = value;
-			console.log('[Provider Selector] Provider updated via $effect:', value?.name || 'null');
 		});
 		return unsubProvider;
 	});
@@ -33,30 +28,50 @@
 	$effect(() => {
 		const unsubProviders = providersStore.subscribe((value) => {
 			currentProviders = value;
-			console.log('[Provider Selector] Providers list updated via $effect:', value.length);
 		});
 		return unsubProviders;
 	});
 
-	// Reload providers when popover opens
-	$effect(() => {
-		if (open) {
-			console.log('[Provider Selector] Popover opened, reloading providers...');
-			loadProviders();
+	let isLoading = $state(true);
+	let loadError = $state<string | null>(null);
+
+	async function loadProviders() {
+		try {
+			isLoading = true;
+			const data = await api.providers.getAllProviders(fetch);
+			providers.set(data);
+		} catch (err) {
+			console.error(`[profile selector] failed to load data: `, err);
+			loadError = err instanceof Error ? err.message : 'Failed to load data. Please try again.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	onMount(async () => {
+		await loadProviders();
+
+		// Only set default if there's no active provider already stored
+		// Check both the store value and localStorage to ensure we don't override
+		const storedActiveProvider = localStorage.getItem('activeProvider');
+
+		// Get current value from store
+		let currentStoreValue: ProviderData | null = null;
+		const unsubscribe = activeProvider.subscribe((value) => {
+			currentStoreValue = value;
+		});
+		unsubscribe();
+
+		// Only set default if nothing is stored AND store is empty AND we have providers
+		if (!storedActiveProvider && !currentStoreValue && currentProviders.length > 0) {
+			activeProvider.set(currentProviders[0]); // default to first one
 		}
 	});
 
-	onMount(async () => {
-		console.log('[Provider Selector] Component mounted');
-		await loadProviders();
-	});
-
 	function handleProviderSelect(provider: ProviderData) {
-		console.log('[Provider Selector] Selecting provider:', provider.name);
-		setActiveProvider(provider);
+		activeProvider.set(provider);
 		currentProvider = provider; // Force immediate update
 		updateKey++; // Force re-render
-		console.log('[Provider Selector] Provider set, closing popover...');
 		// Give the state time to update before closing
 		setTimeout(() => {
 			open = false;
@@ -74,7 +89,7 @@
 			// If this was the active provider, clear it or set another one
 			if (currentProvider?.id === provider.id) {
 				if (updatedProviders.length > 0) {
-					setActiveProvider(updatedProviders[0]);
+					activeProvider.set(updatedProviders[0]);
 				} else {
 					localStorage.removeItem('activeProvider');
 					window.location.href = '/providers/new';
