@@ -7,8 +7,7 @@
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import CopyIcon from '@lucide/svelte/icons/copy';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import * as Alert from '$lib/components/ui/alert/index.js';
-	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 
 	interface Props {
 		data: {
@@ -53,20 +52,7 @@
 
 <div class="container mx-auto max-w-5xl p-4">
 	{#if error || !invoice}
-		<!-- Error State -->
-		<div class="mb-6">
-			<Button variant="ghost" size="sm" onclick={goBack} class="mb-4">
-				<ArrowLeftIcon class="mr-2 h-4 w-4" />
-				Back
-			</Button>
-			<Alert.Root variant="destructive">
-				<AlertCircleIcon class="h-4 w-4" />
-				<Alert.Title>Error</Alert.Title>
-				<Alert.Description>
-					{error || 'Invoice not found'}
-				</Alert.Description>
-			</Alert.Root>
-		</div>
+		<ErrorAlert message={error || 'Invoice not found'} showBackButton={true} />
 	{:else}
 		<!-- Action Buttons Bar -->
 		<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

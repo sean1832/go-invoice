@@ -2,10 +2,8 @@
 	import InvoiceShelf from '@/components/organisms/shelf/invoice-shelf.svelte';
 	import { invoices, filteredInvoices } from '$lib/stores/invoices';
 	import { api } from '$lib/services';
-	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import Spinner from '@/components/atoms/spinner.svelte';
-	import * as Alert from '$lib/components/ui/alert/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -48,14 +46,12 @@
 						<p class="text-muted-foreground">Loading invoices...</p>
 					</div>
 				{:else if errorMessage}
-					<Alert.Root variant="destructive">
-						<AlertCircleIcon />
-						<Alert.Title>Error Loading Invoices</Alert.Title>
-						<Alert.Description>{errorMessage}</Alert.Description>
-					</Alert.Root>
-					<div class="flex justify-center">
-						<Button onclick={loadInvoices} class="w-full cursor-pointer">Retry</Button>
-					</div>
+					<ErrorAlert
+						message={errorMessage}
+						title="Error Loading Invoices"
+						showRetryButton={true}
+						onRetry={loadInvoices}
+					/>
 				{:else}
 					<InvoiceShelf data={loadedInvoices} />
 				{/if}
