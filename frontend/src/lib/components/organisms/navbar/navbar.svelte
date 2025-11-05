@@ -2,9 +2,16 @@
 	import ProviderSelector from '@/components/molecules/provider-selector.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import Logo from '$lib/assets/favicon.svg';
+	import { cn } from '@/utils';
+
+	interface Props {
+		class?: string;
+	}
+
+	let { class: className = '' }: Props = $props();
 </script>
 
-<nav class="p-4">
+<nav class={cn('p-4', className)}>
 	<div class="container mx-auto flex justify-between">
 		<a href="/"
 			><h1 class="text-2xl font-bold">
