@@ -26,7 +26,7 @@
 {#if invoice}
 	<!-- Printable Invoice Display Component -->
 	<div class="container mx-auto max-w-5xl p-4">
-		<InvoiceDisplayCard {invoice} />
+		<InvoiceDisplayCard {invoice} class="print:border-none print:shadow-none" />
 	</div>
 {:else}
 	<div class="container mx-auto max-w-5xl p-4 text-center">
