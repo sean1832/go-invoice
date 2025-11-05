@@ -1,8 +1,8 @@
 <!--
 	Invoice Display Items Mobile Organism
 	
-	Mobile card view matching original invoice-card.svelte layout.
-	Shows items as individual cards with date, description, quantity/price grid, and total.
+	Improved mobile card view with better visual hierarchy and cleaner design.
+	Shows items as cards with description prominent, metadata compact, and amount highlighted.
 	
 	Props:
 	- items: ServiceItem[] - Array of service items to display
@@ -15,7 +15,8 @@
 	import type { ServiceItem } from '@/types/invoice';
 	import { cn } from '@/utils';
 	import { formatCurrency, formatDateShort } from '@/utils/formatters';
-	import Separator from '@/components/ui/separator/separator.svelte';
+	import DateDisplay from '@/components/atoms/date-display.svelte';
+	import CurrencyDisplay from '@/components/atoms/currency-display.svelte';
 
 	interface Props {
 		items: ServiceItem[];
@@ -25,42 +26,49 @@
 	let { items, class: customClass = '' }: Props = $props();
 </script>
 
-<div class={cn('space-y-4 lg:hidden', customClass)}>
-	{#each items as item}
+<div class={cn('space-y-3 md:hidden', customClass)}>
+	{#each items as item, index}
 		<div
-			class="rounded-lg border-2 border-border bg-card p-4 transition-colors hover:border-primary/50"
+			class="rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md"
 		>
-			<!-- Item Header -->
-			<div class="mb-2 flex items-start justify-between">
-				<div class="flex-1">
-					<p class="mb-1 font-semibold text-foreground">{item.description}</p>
-					{#if item.description_detail}
-						<p class="mb-2 text-sm text-muted-foreground">{item.description_detail}</p>
-					{/if}
-					<p class="text-xs text-muted-foreground">{formatDateShort(item.date)}</p>
+			<!-- Description & Date Header -->
+			<div class="mb-3">
+				<div class="mb-1 flex items-start justify-between gap-2">
+					<h4 class="flex-1 text-base leading-tight font-semibold text-foreground">
+						{item.description}
+					</h4>
+					<DateDisplay
+						date={item.date}
+						format="short"
+						class="shrink-0 text-xs text-muted-foreground"
+					/>
+				</div>
+				{#if item.description_detail}
+					<p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+						{item.description_detail}
+					</p>
+				{/if}
+			</div>
+
+			<!-- Quantity & Unit Price Row -->
+			<div class="mb-3 flex items-center justify-between text-sm">
+				<div class="flex items-center gap-4">
+					<div>
+						<span class="text-muted-foreground">Qty:</span>
+						<span class="ml-1 font-medium text-foreground">{item.quantity}</span>
+					</div>
+					<div class="h-4 w-px bg-border"></div>
+					<div>
+						<span class="text-muted-foreground">@ </span>
+						<CurrencyDisplay amount={item.unit_price} class="font-medium text-foreground" />
+					</div>
 				</div>
 			</div>
 
-			<Separator class="my-3" />
-
-			<!-- Item Details Grid -->
-			<div class="grid grid-cols-2 gap-3 text-sm">
-				<div>
-					<p class="mb-0.5 text-xs text-muted-foreground">Quantity</p>
-					<p class="font-semibold text-foreground">{item.quantity}</p>
-				</div>
-				<div>
-					<p class="mb-0.5 text-xs text-muted-foreground">Unit Price</p>
-					<p class="font-semibold text-foreground">{formatCurrency(item.unit_price)}</p>
-				</div>
-			</div>
-
-			<!-- Item Total -->
-			<div class="mt-3 border-t border-border pt-3">
-				<div class="flex items-center justify-between">
-					<p class="font-medium text-muted-foreground">Amount</p>
-					<p class="text-lg font-bold text-foreground">{formatCurrency(item.total_price)}</p>
-				</div>
+			<!-- Amount (highlighted) -->
+			<div class="flex items-center justify-between rounded-md bg-primary/5 px-3 py-2.5">
+				<span class="text-sm font-medium text-muted-foreground">Amount</span>
+				<CurrencyDisplay amount={item.total_price} class="text-lg font-bold text-primary" />
 			</div>
 		</div>
 	{/each}

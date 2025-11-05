@@ -25,7 +25,7 @@
 	let { items, class: customClass = '' }: Props = $props();
 </script>
 
-<div class={cn('hidden overflow-hidden rounded-lg border-2 border-border lg:block', customClass)}>
+<div class={cn('hidden overflow-hidden rounded-lg border-2 border-border md:block', customClass)}>
 	<table class="w-full">
 		<thead>
 			<tr class="bg-primary text-primary-foreground">
