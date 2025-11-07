@@ -2,16 +2,28 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go-invoice/internal/api"
 	"go-invoice/internal/storage"
 	"go-invoice/internal/ui"
 	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load(".env.dev")
+	if err == nil {
+		slog.Info(".env.dev file found!")
+	}
 	port := 8080
+	frontendBaseURL := os.Getenv("FRONTEND_BASE_URL")
+	if frontendBaseURL == "" {
+		frontendBaseURL = fmt.Sprintf("http://localhost:%d", port)
+	}
 
 	mux := http.NewServeMux()
 	storageDir, err := storage.NewStorageDir()
@@ -20,8 +32,9 @@ func main() {
 		return
 	}
 	handler := api.Handler{
-		Context:    context.Background(),
-		StorageDir: *storageDir,
+		Context:         context.Background(),
+		StorageDir:      *storageDir,
+		FrontendBaseURL: frontendBaseURL,
 	}
 
 	handler.RegisterRoutesV1(mux)

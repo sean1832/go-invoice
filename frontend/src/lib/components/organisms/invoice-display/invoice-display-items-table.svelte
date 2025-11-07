@@ -25,7 +25,7 @@
 	let { items, class: customClass = '' }: Props = $props();
 </script>
 
-<div class={cn('hidden overflow-hidden rounded-lg border-2 border-border lg:block', customClass)}>
+<div class={cn('hidden overflow-hidden rounded-lg border-2 border-border md:block', customClass)}>
 	<table class="w-full">
 		<thead>
 			<tr class="bg-primary text-primary-foreground">
@@ -37,8 +37,12 @@
 			</tr>
 		</thead>
 		<tbody class="bg-card">
-			{#each items as item}
-				<tr class="border-b-2 border-border transition-colors hover:bg-muted/50">
+			{#each items as item, index}
+				<tr
+					class="transition-colors hover:bg-muted/50 {index < items.length - 1
+						? 'border-b-2 border-border' // add border except for last row
+						: ''}"
+				>
 					<td class="px-6 py-4 text-left">
 						<DateDisplay date={item.date} format="short" class="text-muted-foreground" />
 					</td>

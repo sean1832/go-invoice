@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Popover from '@/components/ui/popover';
-	import Button from '@/components/ui/button/button.svelte';
 	import Separator from '@/components/ui/separator/separator.svelte';
 	import UserIcon from '@lucide/svelte/icons/circle-user-round';
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -12,6 +11,9 @@
 	import { get } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { api } from '@/services';
+	import { toggleMode } from 'mode-watcher';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
 
 	let open = $state(false);
 	let currentProvider = $state<ProviderData | null>(null);
@@ -208,6 +210,25 @@
 					>
 						<PlusIcon class="mr-2 h-4 w-4" />
 						<span>Add Provider</span>
+					</button>
+				</div>
+
+				<Separator />
+				<!-- Theme Toggle -->
+				<div class="px-2 py-2">
+					<button
+						onclick={toggleMode}
+						class="flex w-full items-center rounded-sm px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+					>
+						<span class="relative mr-2 h-4 w-4">
+							<SunIcon
+								class="absolute h-4 w-4 scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
+							/>
+							<MoonIcon
+								class="absolute h-4 w-4 scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0"
+							/>
+						</span>
+						<span>Toggle Theme</span>
 					</button>
 				</div>
 			</div>

@@ -1,0 +1,47 @@
+package api
+
+import (
+	"fmt"
+	"go-invoice/internal/services"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+func (h *Handler) handleInvoicePDF(w http.ResponseWriter, r *http.Request) {
+	// Implementation for generating and returning invoice PDF
+	if r.Method != http.MethodGet {
+		writeRespErr(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		writeRespErr(w, "invoice ID is required", http.StatusBadRequest)
+		return
+	}
+
+	chromeService, err := services.NewChromeService()
+	if err != nil {
+		writeRespErr(w, "error creating chrome service", http.StatusInternalServerError)
+		return
+	}
+	defer chromeService.Close() // <- finally close
+
+	url := fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id)
+	pdf, err := chromeService.GeneratePDF(url, 10*time.Second)
+	if err != nil {
+		writeRespErr(w, "error generating pdf", http.StatusInternalServerError)
+		return
+	}
+
+	filename := fmt.Sprintf("%s.pdf", id)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Length", strconv.Itoa(len(pdf)))
+
+	_, err = w.Write(pdf)
+	if err != nil {
+		writeRespErr(w, "error writing pdf to response", http.StatusInternalServerError)
+		return
+	}
+}

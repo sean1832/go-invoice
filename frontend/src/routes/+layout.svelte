@@ -18,5 +18,5 @@
 </svelte:head>
 
 <ModeWatcher />
-<Navbar />
+<Navbar class="print:hidden" />
 {@render children()}

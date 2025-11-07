@@ -6,7 +6,17 @@ export interface ApiClientOptions extends RequestInit {
 	 * @default 5000
 	 */
 	timeout?: number;
+
+	/**
+	 * Expected response type:
+	 * - 'json' (default)
+	 * - 'text' => for plain text responses
+	 * - 'blob' => for files, pdf, images
+	 * - 'arrayBuffer' => for binary data
+	 */
+	responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer';
 }
+// TODO: pdf support `application/pdf`
 
 export async function apiClient<T>(
 	KitFetch: typeof fetch,
@@ -16,7 +26,7 @@ export async function apiClient<T>(
 	const url = `${BASE_URL}${path}`;
 
 	// destructure custom timeout with option
-	const { timeout = 5000, ...fetchOptions } = options;
+	const { timeout = 5000, responseType = 'json', ...fetchOptions } = options;
 
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -92,12 +102,22 @@ export async function apiClient<T>(
 		return {} as T;
 	}
 
-	// Backend wraps responses in { code, message, data } structure
-	// We need to unwrap the data field
-	const json = await response.json();
-	if (json && typeof json === 'object' && 'data' in json) {
-		return json.data as T;
+	switch (responseType) {
+		case 'text':
+			return (await response.text()) as T;
+		case 'blob':
+			return (await response.blob()) as T;
+		case 'arrayBuffer':
+			return (await response.arrayBuffer()) as T;
+		case 'json':
+		default: {
+			// Backend wraps responses in { code, message, data } structure
+			// We need to unwrap the data field
+			const json = await response.json();
+			if (json && typeof json === 'object' && 'data' in json) {
+				return json.data as T;
+			}
+			return json as T;
+		}
 	}
-
-	return json as T;
 }

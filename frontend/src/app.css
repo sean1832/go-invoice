@@ -118,4 +118,59 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+
+	@media print {
+		:root,
+		.dark {
+			/* Override background and foreground to pure white/black for crisp printing */
+			--background: oklch(1 0 0) !important;
+			--foreground: oklch(0 0 0) !important;
+
+			/* Force other key structural elements to light mode values */
+			--card: oklch(1 0 0) !important;
+			--card-foreground: oklch(0 0 0) !important;
+			--popover: oklch(1 0 0) !important;
+			--popover-foreground: oklch(0 0 0) !important;
+			--primary: oklch(0 0 0) !important; /* Often better as black for print contrast */
+			--primary-foreground: oklch(1 0 0) !important;
+			--secondary: oklch(0.97 0 0) !important;
+			--secondary-foreground: oklch(0 0 0) !important;
+			--muted: oklch(0.97 0 0) !important;
+			--muted-foreground: oklch(
+				0.4 0 0
+			) !important; /* Slightly darker for better print readability */
+			--accent: oklch(0.97 0 0) !important;
+			--accent-foreground: oklch(0 0 0) !important;
+			--border: oklch(0.8 0 0) !important; /* Darker border for print visibility */
+			--input: oklch(0.922 0 0) !important;
+			--ring: oklch(0.708 0 0) !important;
+
+			/* Reset sidebar variables if you print it, otherwise hide it via CSS */
+			--sidebar: oklch(1 0 0) !important;
+			--sidebar-foreground: oklch(0 0 0) !important;
+			--sidebar-primary: oklch(0 0 0) !important;
+			--sidebar-primary-foreground: oklch(1 0 0) !important;
+			--sidebar-accent: oklch(0.97 0 0) !important;
+			--sidebar-accent-foreground: oklch(0 0 0) !important;
+			--sidebar-border: oklch(0.8 0 0) !important;
+			--sidebar-ring: oklch(0.708 0 0) !important;
+		}
+
+		/* Optional: Hide elements that shouldn't print */
+		nav,
+		footer,
+		button,
+		[role='button'],
+		.no-print {
+			display: none !important;
+		}
+
+		/* Ensure body uses these new variables */
+		body {
+			background-color: var(--background) !important;
+			color: var(--foreground) !important;
+			-webkit-print-color-adjust: exact !important;
+			print-color-adjust: exact !important;
+		}
+	}
 }
