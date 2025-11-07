@@ -26,7 +26,7 @@ func (h *Handler) handleProvidersItem(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleProvidersCollection(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getAllResources(w, h.StorageDir.Providers, "provider", func(dir string) (any, error) {
+		getAllResources(w, r, h.StorageDir.Providers, "provider", func(dir string) (any, error) {
 			return getAllProfiles[*storage.ProviderData](dir)
 		})
 	case http.MethodPost:
