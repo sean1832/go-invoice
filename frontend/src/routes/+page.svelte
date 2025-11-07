@@ -54,6 +54,30 @@
 		window.location.href = `/invoices/${invoice.id}/edit`;
 	}
 
+	async function handleDownload(invoice: Invoice) {
+		try {
+			const blob = await api.invoices.downloadPdf(fetch, invoice.id);
+
+			// Create a temporary link to trigger the download
+			const link = document.createElement('a');
+			const url = URL.createObjectURL(blob);
+
+			link.href = url;
+			link.download = `${invoice.id}.pdf`;
+
+			document.body.appendChild(link);
+			link.click();
+
+			// Clean up
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('Error downloading invoice PDF:', error);
+			handleError(
+				error instanceof Error ? error.message : 'Failed to download PDF. Please try again.'
+			);
+		}
+	}
 	// Load invoices on mount
 	$effect(() => {
 		loadInvoices();
@@ -88,6 +112,7 @@
 						onError={handleError}
 						onDelete={handleDelete}
 						onEdit={handleEdit}
+						onDownload={handleDownload}
 						{deletingInvoiceId}
 					/>
 				{/if}

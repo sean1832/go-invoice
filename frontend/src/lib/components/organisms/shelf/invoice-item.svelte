@@ -16,10 +16,18 @@
 		onError?: (message: string) => void;
 		onEdit: (item: Invoice) => void;
 		onDelete: (item: Invoice) => void;
+		onDownload?: (item: Invoice) => void;
 		isDeleting?: boolean;
 	}
 
-	let { item: invoice, onError, onEdit, onDelete, isDeleting = false }: Props = $props();
+	let {
+		item: invoice,
+		onError,
+		onEdit,
+		onDelete,
+		onDownload,
+		isDeleting = false
+	}: Props = $props();
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
@@ -59,14 +67,10 @@
 		return;
 	}
 
-	function duplicateInvoice() {
-		// TODO: Implement duplicate logic
-		console.log('Duplicate invoice:', invoice.id);
-	}
-
 	function downloadInvoice() {
-		// TODO: Implement download logic
-		console.log('Download invoice:', invoice.id);
+		if (onDownload) {
+			onDownload(invoice);
+		}
 	}
 </script>
 
@@ -109,15 +113,6 @@
 	<Item.Actions class="flex gap-1">
 		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit" disabled={isDeleting}>
 			<EditIcon class="h-4 w-4" />
-		</Button>
-		<Button
-			variant="ghost"
-			size="sm"
-			onclick={duplicateInvoice}
-			title="Duplicate"
-			disabled={isDeleting}
-		>
-			<CopyIcon class="h-4 w-4" />
 		</Button>
 		<Button
 			variant="ghost"
