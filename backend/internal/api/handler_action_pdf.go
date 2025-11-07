@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"go-invoice/internal/services"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,20 +18,24 @@ func (h *Handler) handleInvoicePDF(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
 		writeRespErr(w, "invoice ID is required", http.StatusBadRequest)
+		slog.Error("invoice ID is requred")
 		return
 	}
 
 	chromeService, err := services.NewChromeService()
 	if err != nil {
 		writeRespErr(w, "error creating chrome service", http.StatusInternalServerError)
+		slog.Error("error creating chrome service", "error", err)
 		return
 	}
 	defer chromeService.Close() // <- finally close
 
 	url := fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id)
+	slog.Info("generating pdf", "url", url)
 	pdf, err := chromeService.GeneratePDF(url, 10*time.Second)
 	if err != nil {
 		writeRespErr(w, "error generating pdf", http.StatusInternalServerError)
+		slog.Error("error generating pdf", "error", err)
 		return
 	}
 
@@ -42,6 +47,7 @@ func (h *Handler) handleInvoicePDF(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(pdf)
 	if err != nil {
 		writeRespErr(w, "error writing pdf to response", http.StatusInternalServerError)
+		slog.Error("error writing pdf to response", "error", err)
 		return
 	}
 }

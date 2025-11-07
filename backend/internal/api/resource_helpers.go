@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,6 +25,7 @@ func getResourceByID(
 	resourceType string,
 	newResource func() ResourceData,
 ) {
+	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	id := r.PathValue("id")
 	if id == "" {
 		writeRespErr(w, fmt.Sprintf("%s ID is required", resourceType), http.StatusBadRequest)
@@ -36,8 +38,10 @@ func getResourceByID(
 	if err := readJSON(filePath, resource); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			writeRespErr(w, fmt.Sprintf("%s not found for '%s'", resourceType, id), http.StatusNotFound)
+			logger.Error("resource not found", "error", err)
 		} else {
 			writeRespErr(w, fmt.Sprintf("failed to read %s '%s'", resourceType, id), http.StatusInternalServerError)
+			logger.Error("failed to read resource", "error", err)
 		}
 		return
 	}
@@ -53,9 +57,11 @@ func updateResourceByID(
 	resourceType string,
 	newResource func() ResourceData,
 ) {
+	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	id := r.PathValue("id")
 	if id == "" {
 		writeRespErr(w, fmt.Sprintf("%s ID is required", resourceType), http.StatusBadRequest)
+		logger.Error("failed to parse ID from URL")
 		return
 	}
 
@@ -64,21 +70,25 @@ func updateResourceByID(
 	exists, err := isPathExist(filePath)
 	if err != nil {
 		writeRespErr(w, fmt.Sprintf("failed to check %s '%s' existence: %v", resourceType, id, err), http.StatusInternalServerError)
+		logger.Error("failed to check resource existence", "error", err)
 		return
 	}
 	if !exists {
 		writeRespErr(w, fmt.Sprintf("%s not found for '%s'", resourceType, id), http.StatusNotFound)
+		logger.Error("resource not found")
 		return
 	}
 
 	resource := newResource()
 	if err := json.NewDecoder(r.Body).Decode(resource); err != nil {
 		writeRespErr(w, fmt.Sprintf("invalid %s data for '%s': %v", resourceType, id, err), http.StatusBadRequest)
+		logger.Error("invalid resource data", "error", err)
 		return
 	}
 
 	if err := writeJSON(filePath, resource, 2); err != nil {
 		writeRespErr(w, fmt.Sprintf("failed to update %s '%s'", resourceType, id), http.StatusInternalServerError)
+		logger.Error("failed to update resource", "error", err)
 		return
 	}
 
@@ -92,9 +102,11 @@ func deleteResourceByID(
 	storageDir string,
 	resourceType string,
 ) {
+	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	id := r.PathValue("id")
 	if id == "" {
 		writeRespErr(w, fmt.Sprintf("%s ID is required", resourceType), http.StatusBadRequest)
+		logger.Error("failed to parse ID from URL")
 		return
 	}
 
@@ -103,8 +115,10 @@ func deleteResourceByID(
 	if err := os.Remove(filePath); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			writeRespErr(w, fmt.Sprintf("%s not found for '%s'", resourceType, id), http.StatusNotFound)
+			logger.Error("resource item not found")
 		} else {
 			writeRespErr(w, fmt.Sprintf("failed to delete %s '%s'", resourceType, id), http.StatusInternalServerError)
+			logger.Error("failed to delete resource item")
 		}
 		return
 	}
@@ -115,16 +129,20 @@ func deleteResourceByID(
 // getAllResources handles GET request for listing all resources
 func getAllResources(
 	w http.ResponseWriter,
+	r *http.Request,
 	storageDir string,
 	resourceType string,
 	getAll func(string) (any, error),
 ) {
+	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	resources, err := getAll(storageDir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			writeRespErr(w, fmt.Sprintf("%s resource is currently empty", resourceType), http.StatusNotFound)
+			logger.Error("resource is empty")
 		} else {
 			writeRespErr(w, fmt.Sprintf("failed to list %s informations", resourceType), http.StatusInternalServerError)
+			logger.Error("failed to list resource informations")
 		}
 		return
 	}
@@ -140,19 +158,23 @@ func createResource(
 	resourceType string,
 	newResource func() ResourceData,
 ) {
+	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	if r.Body == nil || r.ContentLength == 0 {
 		writeRespErr(w, "request body is empty", http.StatusBadRequest)
+		logger.Error("request body is empty")
 		return
 	}
 
 	resource := newResource()
 	if err := json.NewDecoder(r.Body).Decode(resource); err != nil {
 		writeRespErr(w, fmt.Sprintf("invalid %s data", resourceType), http.StatusBadRequest)
+		logger.Error("invalide resource data")
 		return
 	}
 
 	if !resource.HasRequiredFields() {
 		writeRespErr(w, fmt.Sprintf("incomplete %s data", resourceType), http.StatusBadRequest)
+		logger.Error("incomplete resource data")
 		return
 	}
 
@@ -166,6 +188,7 @@ func createResource(
 		name, ok := tempData["name"].(string)
 		if !ok || name == "" {
 			writeRespErr(w, "name or id field is required", http.StatusBadRequest)
+			logger.Error("failed to generate id from name when ID is not avaliable")
 			return
 		}
 		id = strings.ToLower(strings.ReplaceAll(name, " ", "_"))
@@ -176,15 +199,18 @@ func createResource(
 	exists, err := isPathExist(filePath)
 	if err != nil {
 		writeRespErr(w, fmt.Sprintf("failed to check %s '%s' existence: %v", resourceType, id, err), http.StatusInternalServerError)
+		logger.Error("failed to check resource existence", "error", err)
 		return
 	}
 	if exists {
 		writeRespErr(w, fmt.Sprintf("%s already exists for '%s'", resourceType, id), http.StatusConflict)
+		logger.Error("resource already exists")
 		return
 	}
 
 	if err := writeJSON(filePath, resource, 2); err != nil {
 		writeRespErr(w, fmt.Sprintf("failed to create %s '%s'", resourceType, id), http.StatusInternalServerError)
+		logger.Error("failed to create resource", "error", err)
 		return
 	}
 

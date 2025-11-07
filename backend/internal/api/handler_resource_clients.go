@@ -25,7 +25,7 @@ func (h *Handler) handleClientsItem(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleClientsCollection(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getAllResources(w, h.StorageDir.Clients, "client", func(dir string) (any, error) {
+		getAllResources(w, r, h.StorageDir.Clients, "client", func(dir string) (any, error) {
 			return getAllProfiles[*storage.ClientData](dir)
 		})
 	case http.MethodPost:
