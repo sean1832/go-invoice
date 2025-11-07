@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 )
@@ -56,13 +57,32 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration) ([]byte, 
 
 	err := chromedp.Run(tabCtx,
 		chromedp.Navigate(url),
-		chromedp.WaitReady("body"),
+		chromedp.WaitVisible(`#pdf-render-complete, #pdf-render-error`, chromedp.ByQuery), // wait for id to shows up
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			var err error
-			pdfBuffer, _, err = page.PrintToPDF().
+			// check if error element exists
+			var errorNodes []*cdp.Node
+			err := chromedp.Nodes(`#pdf-reader-error`, &errorNodes, chromedp.ByQuery, chromedp.AtLeast(0)).Do(ctx)
+			if err != nil {
+				// error querying the DOM, not an application error
+				return fmt.Errorf("could not check for error node: %v", err)
+			}
+
+			if len(errorNodes) > 0 {
+				var errorText string
+				_ = chromedp.TextContent(`#pdf-render-error`, &errorText, chromedp.ByQuery, chromedp.AtLeast(0)).Do(ctx)
+				if errorText != "" {
+					return fmt.Errorf("page rendered and error: %s", errorText)
+				}
+				return fmt.Errorf("page rendered and error") // e.g. invoice not found
+			}
+
+			// no error node, so #pdf-render-complete must be present.
+			// pdf generation
+			var printErr error
+			pdfBuffer, _, printErr = page.PrintToPDF().
 				WithPrintBackground(true).
 				Do(ctx)
-			return err
+			return printErr
 		}),
 	)
 
