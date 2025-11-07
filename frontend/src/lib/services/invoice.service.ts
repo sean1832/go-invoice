@@ -54,3 +54,15 @@ export async function updateInvoice(
 export async function deleteInvoice(KitFetch: typeof fetch, id: string) {
 	return http.delete(KitFetch, `/invoices/${id}`);
 }
+
+/**
+ * downloads the PDF of an invoice using the provided fetch function.
+ * @param KitFetch - `KitFetch` is a parameter that represents the fetch function provided by SvelteKit.
+ * @param id - The `id` parameter is a string that represents the unique identifier of the invoice whose PDF you want to download.
+ * @returns A Promise that resolves to the response containing the PDF data.
+ */
+export async function downloadPdf(KitFetch: typeof fetch, id: string): Promise<Blob> {
+	return http.get<Blob>(KitFetch, `/invoices/${id}/pdf`, {
+		responseType: 'blob'
+	});
+}

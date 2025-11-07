@@ -8,6 +8,7 @@
 	import CopyIcon from '@lucide/svelte/icons/copy';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
+	import { api } from '@/services';
 
 	interface Props {
 		data: {
@@ -39,9 +40,32 @@
 		window.location.href = `/invoices/${invoice.id}/edit`;
 	}
 
-	function downloadInvoice() {
-		// TODO: Implement download logic
-		console.log('Download invoice:', invoice.id);
+	let downloadError = $state<string | null>(null);
+
+	async function downloadInvoice() {
+		try {
+			const blob = await api.invoices.downloadPdf(fetch, invoice.id);
+
+			// Create a temporary link to trigger the download
+			const link = document.createElement('a');
+			const url = URL.createObjectURL(blob);
+
+			link.href = url;
+			link.download = `${invoice.id}.pdf`;
+
+			document.body.appendChild(link);
+			link.click();
+
+			// Clean up
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('Error downloading invoice PDF:', error);
+			downloadError =
+				error instanceof Error ? error.message : 'Failed to download PDF. Please try again.';
+		} finally {
+			downloadError = null;
+		}
 	}
 
 	function duplicateInvoice() {
@@ -53,6 +77,8 @@
 <div class="container mx-auto max-w-5xl p-4">
 	{#if error || !invoice}
 		<ErrorAlert message={error || 'Invoice not found'} showBackButton={true} />
+	{:else if downloadError}
+		<ErrorAlert message={downloadError} showBackButton={true} />
 	{:else}
 		<!-- Invoice Display Component -->
 		<InvoiceDisplayCard {invoice} />
