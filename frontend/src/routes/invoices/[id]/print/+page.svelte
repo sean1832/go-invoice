@@ -15,21 +15,20 @@
 	let { data }: Props = $props();
 	let invoice = $derived(data.invoice as Invoice);
 	let error = $derived(data.error);
-
-	$effect(() => {
-		if (error) {
-			throw new Error(error);
-		}
-	});
 </script>
 
-{#if invoice}
-	<!-- Printable Invoice Display Component -->
-	<div class="container mx-auto max-w-5xl p-4">
+{#if error}
+	<!-- Error Display -->
+	<div id="pdf-render-error" class="container mx-auto max-w-5xl p-4 text-center">
+		<p class="text-red-600">{error}</p>
+	</div>
+{:else if invoice}
+	<!-- Invoice Display -->
+	<div id="pdf-render-complete" class="container mx-auto max-w-5xl p-4">
 		<InvoiceDisplayCard {invoice} class="print:border-none print:shadow-none" />
 	</div>
 {:else}
 	<div class="container mx-auto max-w-5xl p-4 text-center">
-		<p class="text-red-600">Invoice not found.</p>
+		<p>Loading invoice...</p>
 	</div>
 {/if}
