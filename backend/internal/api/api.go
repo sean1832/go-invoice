@@ -7,8 +7,9 @@ import (
 )
 
 type Handler struct {
-	Context    context.Context
-	StorageDir storage.StorageDir
+	Context         context.Context
+	StorageDir      storage.StorageDir
+	FrontendBaseURL string
 }
 
 func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
@@ -21,6 +22,7 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	mux.HandleFunc(prefix+"/invoices", h.handleInvoicesCollection)
 	mux.HandleFunc(prefix+"/invoices/{id}", h.handleInvoicesItem)
 	mux.HandleFunc(prefix+"/invoices/count", h.handleInvoicesCount)
+	mux.HandleFunc(prefix+"/invoices/{id}/pdf", h.handleInvoicePDF)
 }
 
 func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
