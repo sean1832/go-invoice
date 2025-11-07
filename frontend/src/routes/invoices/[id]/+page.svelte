@@ -67,11 +67,6 @@
 			downloadError = null;
 		}
 	}
-
-	function duplicateInvoice() {
-		// TODO: Implement duplicate logic
-		console.log('Duplicate invoice:', invoice.id);
-	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -100,10 +95,6 @@
 				<Button variant="outline" size="sm" onclick={downloadInvoice}>
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
-				</Button>
-				<Button variant="outline" size="sm" onclick={duplicateInvoice}>
-					<CopyIcon class="h-4 w-4 sm:mr-2" />
-					<span class="hidden sm:inline">Duplicate</span>
 				</Button>
 			</div>
 		</div>

@@ -59,11 +59,6 @@
 		return;
 	}
 
-	function duplicateInvoice() {
-		// TODO: Implement duplicate logic
-		console.log('Duplicate invoice:', invoice.id);
-	}
-
 	function downloadInvoice() {
 		// TODO: Implement download logic
 		console.log('Download invoice:', invoice.id);
@@ -109,15 +104,6 @@
 	<Item.Actions class="flex gap-1">
 		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit" disabled={isDeleting}>
 			<EditIcon class="h-4 w-4" />
-		</Button>
-		<Button
-			variant="ghost"
-			size="sm"
-			onclick={duplicateInvoice}
-			title="Duplicate"
-			disabled={isDeleting}
-		>
-			<CopyIcon class="h-4 w-4" />
 		</Button>
 		<Button
 			variant="ghost"
