@@ -32,6 +32,7 @@
 		onError,
 		onEdit,
 		onDelete,
+		onDownload,
 		deletingItemId = null
 	} = $props();
 
@@ -78,6 +79,7 @@
 					{onError}
 					{onEdit}
 					{onDelete}
+					{onDownload}
 					isDeleting={deletingItemId === item[keyField]}
 				/>
 			{/each}

@@ -16,10 +16,18 @@
 		onError?: (message: string) => void;
 		onEdit: (item: Invoice) => void;
 		onDelete: (item: Invoice) => void;
+		onDownload?: (item: Invoice) => void;
 		isDeleting?: boolean;
 	}
 
-	let { item: invoice, onError, onEdit, onDelete, isDeleting = false }: Props = $props();
+	let {
+		item: invoice,
+		onError,
+		onEdit,
+		onDelete,
+		onDownload,
+		isDeleting = false
+	}: Props = $props();
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
@@ -60,8 +68,9 @@
 	}
 
 	function downloadInvoice() {
-		// TODO: Implement download logic
-		console.log('Download invoice:', invoice.id);
+		if (onDownload) {
+			onDownload(invoice);
+		}
 	}
 </script>
 

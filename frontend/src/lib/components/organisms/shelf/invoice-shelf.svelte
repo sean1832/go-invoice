@@ -11,10 +11,11 @@
 		onError?: (message: string) => void;
 		onEdit: (item: Invoice) => void;
 		onDelete: (item: Invoice) => void;
+		onDownload?: (item: Invoice) => void;
 		deletingInvoiceId?: string | null;
 	}
 
-	const { data, onError, onEdit, onDelete, deletingInvoiceId = null } = $props();
+	const { data, onError, onEdit, onDelete, onDownload, deletingInvoiceId = null } = $props();
 
 	let activeTab = $state<InvoiceStatus | 'all'>('all');
 
@@ -53,6 +54,7 @@
 				{onError}
 				{onEdit}
 				{onDelete}
+				{onDownload}
 				deletingItemId={deletingInvoiceId}
 			/>
 		</Tabs.Content>
