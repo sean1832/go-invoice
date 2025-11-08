@@ -37,7 +37,7 @@
 	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
-	let invoiceId = $state(invoice?.id || generateInvoiceId());
+	let invoiceId = $state(invoice?.id || generateInvoiceId()); // TODO: generate ID on backend
 	let issueDate = $state(invoice?.date || getDefaultIssueDate());
 	let dueDate = $state(invoice?.due || getDefaultDueDate());
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
