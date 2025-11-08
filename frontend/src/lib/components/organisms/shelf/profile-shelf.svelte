@@ -31,7 +31,7 @@
 	keyField="id"
 	{searchPlaceholder}
 	{emptyMessage}
-	{onError}
+	onError={(message) => onError(new Error(message))}
 	{onEdit}
 	{onDelete}
 	deletingItemId={deletingInvoiceId}
