@@ -2,7 +2,7 @@
  * Invoice Store - Shared state for invoice data across components
  */
 
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import type { Invoice, InvoiceFilters } from '@/types/invoice';
 
 // Stores
@@ -64,24 +64,4 @@ export const filteredInvoices = derived([invoices, invoiceFilters], ([$invoices,
  */
 export function removeInvoice(id: string): void {
 	invoices.update((items) => items.filter((inv) => inv.id !== id));
-}
-
-/**
- * Generate a new invoice ID based on current date
- * Uses the in-memory store (already synced with backend)
- */
-export function generateInvoiceId(): string {
-	// TODO: fetch from backend to avoid collisions
-	const now = new Date();
-	const year = now.getFullYear().toString().slice(-2);
-	const month = (now.getMonth() + 1).toString().padStart(2, '0');
-	const day = now.getDate().toString().padStart(2, '0');
-	const prefix = `INV-${year}${month}${day}`;
-
-	// Get current invoices from the store (already synced with backend)
-	const currentInvoices = get(invoices);
-	const todayInvoices = currentInvoices.filter((inv) => inv.id.startsWith(prefix));
-	const sequence = (todayInvoices.length + 1).toString().padStart(3, '0');
-
-	return `${prefix}${sequence}`;
 }

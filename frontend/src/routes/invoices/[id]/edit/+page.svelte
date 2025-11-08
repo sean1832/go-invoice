@@ -90,6 +90,12 @@
 				<ErrorAlert message={saveError} />
 			</div>
 		{/if}
-		<InvoiceForm mode="edit" {invoice} {isSaving} onSave={handleSave} onCancel={handleCancel} />
+		<InvoiceForm
+			mode="edit"
+			{invoice}
+			{isSaving}
+			onSave={handleSave}
+			onCancel={handleCancel}
+		/>
 	{/if}
 </div>

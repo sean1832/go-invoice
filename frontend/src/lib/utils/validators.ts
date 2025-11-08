@@ -106,7 +106,7 @@ export function validateLineItem(item: ServiceItem, index: number): ValidationRe
  */
 export function validateInvoice(invoice: Partial<Invoice>): ValidationResult {
 	const errors: string[] = [];
-
+	// TODO: update validations requirements
 	// Validate provider
 	if (invoice.provider) {
 		const providerResult = validateParty(invoice.provider, 'provider');

@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
 	import type { Invoice, Party, ServiceItem } from '@/types/invoice';
-	import { providers, clients, activeProvider, generateInvoiceId } from '@/stores';
+	import { providers, clients, activeProvider } from '@/stores';
 	import { createEmptyLineItem, createEmptyParty } from '@/utils/invoice-generators';
 	import { getDefaultIssueDate, getDefaultDueDate } from '@/utils/date-helpers';
 	import { calculateLineItemTotal, calculatePricing } from '@/utils/invoice-calculations';
@@ -37,7 +37,7 @@
 	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
-	let invoiceId = $state(invoice?.id || generateInvoiceId()); // TODO: generate ID on backend
+	let invoiceId = $state(invoice?.id || "");
 	let issueDate = $state(invoice?.date || getDefaultIssueDate());
 	let dueDate = $state(invoice?.due || getDefaultDueDate());
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());

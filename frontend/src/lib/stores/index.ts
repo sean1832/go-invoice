@@ -26,5 +26,4 @@ export {
 	invoicesError,
 	invoiceFilters,
 	filteredInvoices,
-	generateInvoiceId
 } from './invoices';

@@ -81,10 +81,12 @@
 	<Card.Content class="space-y-4">
 		<div class="grid gap-4 md:grid-cols-3">
 			<!-- Invoice ID -->
-			<div class="space-y-2">
-				<Label for="invoice-id">Invoice ID</Label>
-				<Input id="invoice-id" bind:value={invoiceId} placeholder="INV-251103001" />
-			</div>
+			{#if invoiceId !== ''}
+				<div class="space-y-2">
+					<Label for="invoice-id">Invoice ID</Label>
+					<Input id="invoice-id" bind:value={invoiceId} placeholder="INV-251103001" />
+				</div>
+			{/if}
 
 			<!-- Issue Date -->
 			<div class="space-y-2">

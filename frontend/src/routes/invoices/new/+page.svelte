@@ -55,7 +55,6 @@
 			isLoading = false;
 		}
 	}
-
 	$effect(() => {
 		loadData();
 	});

@@ -61,7 +61,7 @@ func (inv *Invoice) SetID(id string) {
 }
 
 func (inv *Invoice) HasRequiredFields() bool {
-	return inv.ID != "" && inv.Status != "" && inv.Provider.HasRequiredFields() && inv.Client.HasRequiredFields() && inv.Payment.HasRequiredFields()
+	return inv.Status != "" && inv.Provider.HasRequiredFields() && inv.Client.HasRequiredFields() && inv.Payment.HasRequiredFields()
 }
 
 // AddItem adds a service item to the invoice and updates the pricing
