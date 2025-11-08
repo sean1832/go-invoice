@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go-invoice/internal/invoice"
+	"go-invoice/internal/types"
 	"log/slog"
 	"net/http"
 	"os"
@@ -190,17 +192,41 @@ func createResource(
 	var tempData map[string]interface{}
 	bodyBytes, _ := json.Marshal(resource)
 	json.Unmarshal(bodyBytes, &tempData)
-	id, ok := tempData["id"].(string)
-	if !ok || id == "" {
-		// if ID is not provided, generate from name
-		name, ok := tempData["name"].(string)
-		if !ok || name == "" {
-			writeRespErr(w, "name or id field is required", http.StatusBadRequest)
-			logger.Error("failed to generate id from name when ID is not avaliable")
+
+	var id string
+	switch resourceType {
+	case ProviderType, ClientType:
+		existingID, ok := tempData["id"].(string)
+		if !ok || existingID == "" {
+			// if ID is not provided, generate from name
+			name, ok := tempData["name"].(string)
+			if !ok || name == "" {
+				writeRespErr(w, "name or id field is required", http.StatusBadRequest)
+				logger.Error("failed to generate id from name when ID is not avaliable")
+				return
+			}
+			id = strings.ToLower(strings.ReplaceAll(name, " ", "_"))
+		} else {
+			id = existingID
+		}
+	case InvoiceType:
+		dateStr := types.Today().Format("060102")
+		pattern := fmt.Sprintf("INV-%s*.json", dateStr)
+		jsonFiles, err := filepath.Glob(filepath.Join(storageDir, pattern))
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			writeRespErr(w, "failed to generate invoice ID", http.StatusInternalServerError)
+			logger.Error("failed to generate invoice ID", "error", err)
 			return
 		}
-		id = strings.ToLower(strings.ReplaceAll(name, " ", "_"))
+		suffix := invoice.FindMaxSuffixFromFilename(jsonFiles) + 1
+		id = fmt.Sprintf("INV-%s%02d", dateStr, suffix)
+	default:
+		writeRespErr(w, "invalid resource type, this is likely an internal error", http.StatusInternalServerError)
+		logger.Error("unsupported resource type", "resourceType", resourceType)
+		return
 	}
+
+	resource.SetID(id)
 
 	filePath := filepath.Join(storageDir, id+".json")
 
