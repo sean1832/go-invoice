@@ -2,10 +2,7 @@ package invoice
 
 import (
 	"errors"
-	"fmt"
 	"go-invoice/internal/types"
-	"go/format"
-	"time"
 )
 
 type InvoiceStatus string
@@ -27,28 +24,6 @@ type Invoice struct {
 	Pricing     Pricing       `json:"pricing"`                // pricing details
 	Payment     PaymentInfo   `json:"payment"`                // payment information
 	EmailTarget string        `json:"email_target,omitempty"` // (optional) email target for sending the invoice
-	count       int           `json:"-"`                      // internal count, not serialized
-}
-
-// New creates a new invoice with the given provider, client, payment info, and tax rate
-func New(provider, client Party, payment PaymentInfo, taxRate float32, count int) (*Invoice, error) {
-	pricing, err := NewPricing(0, taxRate)
-	if err != nil {
-		return nil, err
-	}
-	today := types.Today()
-	return &Invoice{
-		ID:       generateInvoiceID(count),
-		Status:   StatusDraft,
-		Date:     today,
-		Due:      today.AddDate(0, 0, 30), // due in 30 days
-		Provider: provider,
-		Client:   client,
-		Items:    []ServiceItem{},
-		Pricing:  *pricing,
-		Payment:  payment,
-		count:    count,
-	}, nil
 }
 
 // SetEmailTarget sets the email address to send the invoice to
@@ -61,20 +36,13 @@ func (inv *Invoice) SetID(id string) {
 }
 
 func (inv *Invoice) HasRequiredFields() bool {
-	return inv.ID != "" && inv.Status != "" && inv.Provider.HasRequiredFields() && inv.Client.HasRequiredFields() && inv.Payment.HasRequiredFields()
+	return inv.Status != "" && inv.Provider.HasRequiredFields() && inv.Client.HasRequiredFields() && inv.Payment.HasRequiredFields()
 }
 
 // AddItem adds a service item to the invoice and updates the pricing
 func (inv *Invoice) AddItem(item ServiceItem) {
 	inv.Items = append(inv.Items, item)
 	inv.Pricing.Update(calculateSubtotal(inv.Items))
-}
-
-// generateInvoiceID creates a unique invoice ID based on the current date
-func generateInvoiceID(count int) string {
-	today := time.Now()
-	formatted, _ := format.Source([]byte(today.Format("060102")))
-	return fmt.Sprintf("INV-%s%03d", string(formatted), count)
 }
 
 // Party represents either the service provider or the client/customer

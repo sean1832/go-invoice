@@ -26,8 +26,4 @@ export {
 	invoicesError,
 	invoiceFilters,
 	filteredInvoices,
-	generateInvoiceId
 } from './invoices';
-
-// Mock data (for development only - delete when switching to API)
-export { mockProviders, mockClients, mockInvoices } from './mockup';

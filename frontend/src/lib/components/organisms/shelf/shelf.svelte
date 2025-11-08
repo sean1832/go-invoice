@@ -15,6 +15,7 @@
 		onError?: (message: string) => void; // Error handler to pass to items
 		onEdit: (item: any) => void; // Edit callback to pass to items
 		onDelete: (item: any) => void; // Delete callback to pass to items
+		onDownload?: (item: any) => void; // Download callback to pass to items
 		deletingItemId?: string | null; // ID of the item currently being deleted
 	}
 
@@ -34,7 +35,7 @@
 		onDelete,
 		onDownload,
 		deletingItemId = null
-	} = $props();
+	}: Props = $props();
 
 	let searchQuery = $state('');
 	let activeTab = $state<string>('all');

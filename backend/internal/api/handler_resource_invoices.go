@@ -9,15 +9,15 @@ import (
 func (h *Handler) handleInvoicesItem(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getResourceByID(w, r, h.StorageDir.Invoices, "invoice", func() ResourceData {
+		getResourceByID(w, r, h.StorageDir.Invoices, InvoiceType, func() ResourceData {
 			return &invoice.Invoice{}
 		})
 	case http.MethodPut:
-		updateResourceByID(w, r, h.StorageDir.Invoices, "invoice", func() ResourceData {
+		updateResourceByID(w, r, h.StorageDir.Invoices, InvoiceType, func() ResourceData {
 			return &invoice.Invoice{}
 		})
 	case http.MethodDelete:
-		deleteResourceByID(w, r, h.StorageDir.Invoices, "invoice")
+		deleteResourceByID(w, r, h.StorageDir.Invoices, InvoiceType)
 	default:
 		writeRespErr(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -31,7 +31,7 @@ func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Reques
 		queryParams := query.ParseInvoiceQuery(r.URL.Query())
 
 		// Get all invoices
-		invoices, err := getAllInvoices(h.StorageDir.Invoices)
+		invoices, err := getAllInvoices(h.StorageDir.Invoices, "*.json")
 		if err != nil {
 			writeRespErr(w, "failed to list invoice informations", http.StatusInternalServerError)
 			return
@@ -44,7 +44,7 @@ func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Reques
 
 		writeRespOk(w, "list of invoices", invoices)
 	case http.MethodPost:
-		createResource(w, r, h.StorageDir.Invoices, "invoice", func() ResourceData {
+		createResource(w, r, h.StorageDir.Invoices, InvoiceType, func() ResourceData {
 			return &invoice.Invoice{}
 		})
 	default:
