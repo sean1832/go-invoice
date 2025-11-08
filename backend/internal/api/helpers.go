@@ -65,8 +65,8 @@ func getAllProfiles[T identifiable](root string) ([]T, error) {
 	return profiles, nil
 }
 
-func getAllInvoices(root string) ([]invoice.Invoice, error) {
-	jsonFiles, err := filepath.Glob(filepath.Join(root, "*.json"))
+func getAllInvoices(root string, pattern string) ([]invoice.Invoice, error) {
+	jsonFiles, err := filepath.Glob(filepath.Join(root, pattern))
 	if err != nil {
 		return nil, err
 	}

@@ -31,7 +31,7 @@ func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Reques
 		queryParams := query.ParseInvoiceQuery(r.URL.Query())
 
 		// Get all invoices
-		invoices, err := getAllInvoices(h.StorageDir.Invoices)
+		invoices, err := getAllInvoices(h.StorageDir.Invoices, "*.json")
 		if err != nil {
 			writeRespErr(w, "failed to list invoice informations", http.StatusInternalServerError)
 			return
