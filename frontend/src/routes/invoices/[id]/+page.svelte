@@ -5,10 +5,11 @@
 	import type { Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
-	import CopyIcon from '@lucide/svelte/icons/copy';
+	import SendIcon from '@lucide/svelte/icons/send';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
+	import EmailDialog from '@/components/molecules/email-dialog.svelte';
 
 	interface Props {
 		data: {
@@ -67,6 +68,10 @@
 			downloadError = null;
 		}
 	}
+
+	async function handleSend() {
+		// TODO: Implement send invoice logic
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -96,6 +101,12 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
+				<EmailDialog>
+					<Button variant="outline" size="sm" onclick={handleSend}>
+						<SendIcon class="mr-2 h-4 w-4" />
+						<span class="hidden sm:inline">Send Invoice</span>
+					</Button>
+				</EmailDialog>
 			</div>
 		</div>
 	{/if}

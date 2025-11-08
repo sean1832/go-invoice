@@ -160,18 +160,14 @@
 
 	// Form submission handlers
 	function handleSaveDraft() {
-		submitForm('draft');
-	}
-
-	function handleSend() {
-		submitForm('send');
+		submitForm();
 	}
 
 	function handleCancel() {
 		onCancel?.();
 	}
 
-	function submitForm(status: 'draft' | 'send') {
+	function submitForm() {
 		// Calculate final pricing
 		const pricing = calculatePricing(items, taxRate);
 
@@ -185,7 +181,7 @@
 			items,
 			pricing,
 			payment: paymentInfo,
-			status
+			status: 'draft' // Always draft on save
 		};
 
 		// Validate
@@ -234,6 +230,5 @@
 		{isSaving}
 		onCancel={handleCancel}
 		onSaveDraft={handleSaveDraft}
-		onSend={handleSend}
 	/>
 </div>
