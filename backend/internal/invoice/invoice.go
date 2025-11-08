@@ -14,16 +14,17 @@ const (
 
 // Invoice represents the core invoice domain model
 type Invoice struct {
-	ID          string        `json:"id"`                     // invoice number/identifier
-	Status      InvoiceStatus `json:"status"`                 // invoice status (draft, sent)
-	Date        types.Date    `json:"date"`                   // invoice date
-	Due         types.Date    `json:"due"`                    // payment due date
-	Provider    Party         `json:"provider"`               // service provider
-	Client      Party         `json:"client"`                 // client/customer
-	Items       []ServiceItem `json:"items"`                  // list of services/products
-	Pricing     Pricing       `json:"pricing"`                // pricing details
-	Payment     PaymentInfo   `json:"payment"`                // payment information
-	EmailTarget string        `json:"email_target,omitempty"` // (optional) email target for sending the invoice
+	ID              string        `json:"id"`                     // invoice number/identifier
+	Status          InvoiceStatus `json:"status"`                 // invoice status (draft, sent)
+	Date            types.Date    `json:"date"`                   // invoice date
+	Due             types.Date    `json:"due"`                    // payment due date
+	Provider        Party         `json:"provider"`               // service provider
+	Client          Party         `json:"client"`                 // client/customer
+	Items           []ServiceItem `json:"items"`                  // list of services/products
+	Pricing         Pricing       `json:"pricing"`                // pricing details
+	Payment         PaymentInfo   `json:"payment"`                // payment information
+	EmailTarget     string        `json:"email_target,omitempty"` // (optional) email target for sending the invoice
+	EmailTemplateID string        `json:"email_template_id"`      // email template ID
 }
 
 // SetEmailTarget sets the email address to send the invoice to

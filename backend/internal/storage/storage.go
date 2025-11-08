@@ -64,8 +64,9 @@ func ensurePathExist(path string) error {
 // ClientData represents client/customer data as stored on disk
 type ClientData struct {
 	invoice.Party
-	TaxRate     float32 `json:"tax_rate"`
-	EmailTarget string  `json:"email_target"`
+	TaxRate         float32 `json:"tax_rate"`
+	EmailTarget     string  `json:"email_target"`
+	EmailTemplateId string  `json:"email_template_id"`
 }
 
 // FromJSON deserializes client data from JSON
@@ -73,6 +74,9 @@ func NewClientDataFromJSON(data []byte) (*ClientData, error) {
 	var c ClientData
 	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal client JSON: %v", err)
+	}
+	if c.EmailTemplateId == "" {
+		c.EmailTemplateId = "default"
 	}
 	return &c, nil
 }
@@ -108,27 +112,18 @@ func (p *ProviderData) HasRequiredFields() bool {
 	return p.Party.HasRequiredFields() && p.Payment.HasRequiredFields()
 }
 
-// EmailConfig represents email configuration as stored on disk
-type EmailConfig struct {
-	ID         string `json:"id"`
-	SMTPConfig struct {
-		Host     string `json:"host"`
-		Port     string `json:"port"`
-		Username string `json:"username"`
-		Password string `json:"password"`
-	} `json:"smtp"`
-	DefaultMessage struct {
-		Subject string `json:"subject"`
-		Body    string `json:"body"`
-		Footer  string `json:"footer"`
-	} `json:"default_message"`
-	Recipients []string `json:"recipients"`
+type EmailTemplateData struct {
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
 }
 
-// FromJSON deserializes email config from JSON
-func (e *EmailConfig) FromJSON(data []byte) error {
-	if err := json.Unmarshal(data, e); err != nil {
-		return fmt.Errorf("failed to unmarshal email config JSON: %v", err)
+func NewDefaultEmailTemplateData() *EmailTemplateData {
+	return &EmailTemplateData{
+		Id:      "default",
+		Name:    "Default Invoice Email",
+		Subject: "Invoice from ${PROVIDER_NAME} - ${INVOICE_ID}",
+		Body:    "Please find the attached invoice for the services rendered.\n\nClient name: ${CLIENT_NAME}\nSubcontractor email: ${PROVIDER_EMAIL}\nService type: ${SERVICE_TYPE}\n\nKind regards,\n${PROVIDER_NAME}",
 	}
-	return nil
 }

@@ -210,6 +210,7 @@ func createResource(
 			id = existingID
 		}
 	case InvoiceType:
+		// id generation: INV-YYMMDDXX
 		dateStr := types.Today().Format("060102")
 		pattern := fmt.Sprintf("INV-%s*.json", dateStr)
 		jsonFiles, err := filepath.Glob(filepath.Join(storageDir, pattern))
@@ -220,6 +221,17 @@ func createResource(
 		}
 		suffix := invoice.FindMaxSuffixFromFilename(jsonFiles) + 1
 		id = fmt.Sprintf("INV-%s%02d", dateStr, suffix)
+
+		// apply default email template if not set
+		inv, ok := resource.(*invoice.Invoice)
+		if !ok {
+			writeRespErr(w, "invalid invoice data", http.StatusInternalServerError)
+			logger.Error("invalid invoice data")
+			return
+		}
+		if inv.EmailTemplateID == "" {
+			inv.EmailTemplateID = "default"
+		}
 	default:
 		writeRespErr(w, "invalid resource type, this is likely an internal error", http.StatusInternalServerError)
 		logger.Error("unsupported resource type", "resourceType", resourceType)
