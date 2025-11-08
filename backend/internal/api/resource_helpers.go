@@ -11,6 +11,14 @@ import (
 	"strings"
 )
 
+type resourceType string
+
+const (
+	InvoiceType  resourceType = "invoice"
+	ClientType   resourceType = "client"
+	ProviderType resourceType = "provider"
+)
+
 // ResourceData is an interface that all resource types (Client, Provider) must implement
 type ResourceData interface {
 	SetID(id string)
@@ -22,7 +30,7 @@ func getResourceByID(
 	w http.ResponseWriter,
 	r *http.Request,
 	storageDir string,
-	resourceType string,
+	resourceType resourceType,
 	newResource func() ResourceData,
 ) {
 	logger := slog.With("url", r.RequestURI, "method", r.Method)
@@ -54,7 +62,7 @@ func updateResourceByID(
 	w http.ResponseWriter,
 	r *http.Request,
 	storageDir string,
-	resourceType string,
+	resourceType resourceType,
 	newResource func() ResourceData,
 ) {
 	logger := slog.With("url", r.RequestURI, "method", r.Method)
@@ -100,7 +108,7 @@ func deleteResourceByID(
 	w http.ResponseWriter,
 	r *http.Request,
 	storageDir string,
-	resourceType string,
+	resourceType resourceType,
 ) {
 	logger := slog.With("url", r.RequestURI, "method", r.Method)
 	id := r.PathValue("id")
@@ -131,7 +139,7 @@ func getAllResources(
 	w http.ResponseWriter,
 	r *http.Request,
 	storageDir string,
-	resourceType string,
+	resourceType resourceType,
 	getAll func(string) (any, error),
 ) {
 	logger := slog.With("url", r.RequestURI, "method", r.Method)
@@ -155,7 +163,7 @@ func createResource(
 	w http.ResponseWriter,
 	r *http.Request,
 	storageDir string,
-	resourceType string,
+	resourceType resourceType,
 	newResource func() ResourceData,
 ) {
 	logger := slog.With("url", r.RequestURI, "method", r.Method)

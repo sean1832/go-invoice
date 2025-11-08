@@ -8,15 +8,15 @@ import (
 func (h *Handler) handleClientsItem(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getResourceByID(w, r, h.StorageDir.Clients, "client", func() ResourceData {
+		getResourceByID(w, r, h.StorageDir.Clients, ClientType, func() ResourceData {
 			return &storage.ClientData{}
 		})
 	case http.MethodPut:
-		updateResourceByID(w, r, h.StorageDir.Clients, "client", func() ResourceData {
+		updateResourceByID(w, r, h.StorageDir.Clients, ClientType, func() ResourceData {
 			return &storage.ClientData{}
 		})
 	case http.MethodDelete:
-		deleteResourceByID(w, r, h.StorageDir.Clients, "client")
+		deleteResourceByID(w, r, h.StorageDir.Clients, ClientType)
 	default:
 		writeRespErr(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -25,11 +25,11 @@ func (h *Handler) handleClientsItem(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleClientsCollection(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getAllResources(w, r, h.StorageDir.Clients, "client", func(dir string) (any, error) {
+		getAllResources(w, r, h.StorageDir.Clients, ClientType, func(dir string) (any, error) {
 			return getAllProfiles[*storage.ClientData](dir)
 		})
 	case http.MethodPost:
-		createResource(w, r, h.StorageDir.Clients, "client", func() ResourceData {
+		createResource(w, r, h.StorageDir.Clients, ClientType, func() ResourceData {
 			return &storage.ClientData{}
 		})
 	default:

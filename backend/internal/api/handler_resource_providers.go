@@ -9,15 +9,15 @@ import (
 func (h *Handler) handleProvidersItem(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getResourceByID(w, r, h.StorageDir.Providers, "provider", func() ResourceData {
+		getResourceByID(w, r, h.StorageDir.Providers, ProviderType, func() ResourceData {
 			return &storage.ProviderData{}
 		})
 	case http.MethodPut:
-		updateResourceByID(w, r, h.StorageDir.Providers, "provider", func() ResourceData {
+		updateResourceByID(w, r, h.StorageDir.Providers, ProviderType, func() ResourceData {
 			return &storage.ProviderData{}
 		})
 	case http.MethodDelete:
-		deleteResourceByID(w, r, h.StorageDir.Providers, "provider")
+		deleteResourceByID(w, r, h.StorageDir.Providers, ProviderType)
 	default:
 		writeRespErr(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -26,11 +26,11 @@ func (h *Handler) handleProvidersItem(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleProvidersCollection(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getAllResources(w, r, h.StorageDir.Providers, "provider", func(dir string) (any, error) {
+		getAllResources(w, r, h.StorageDir.Providers, ProviderType, func(dir string) (any, error) {
 			return getAllProfiles[*storage.ProviderData](dir)
 		})
 	case http.MethodPost:
-		createResource(w, r, h.StorageDir.Providers, "provider", func() ResourceData {
+		createResource(w, r, h.StorageDir.Providers, ProviderType, func() ResourceData {
 			return &storage.ProviderData{}
 		})
 	default:
