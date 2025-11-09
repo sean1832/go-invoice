@@ -28,7 +28,7 @@
 			phone: '',
 			abn: '',
 			tax_rate: 10,
-			target_email: ''
+			email_target: ''
 		}
 	);
 
@@ -52,7 +52,7 @@
 			newErrors.taxRate = 'Tax rate must be between 0 and 100';
 		}
 
-		if (formData.target_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.target_email)) {
+		if (formData.email_target && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_target)) {
 			newErrors.targetEmail = 'Invalid email format';
 		}
 
@@ -187,7 +187,7 @@
 						id="targetEmail"
 						type="email"
 						placeholder="billing@acme.com"
-						bind:value={formData.target_email}
+						bind:value={formData.email_target}
 						disabled={disable}
 						class={errors.targetEmail ? 'border-destructive' : ''}
 					/>

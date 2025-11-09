@@ -17,10 +17,15 @@
 <script lang="ts">
 	import type { Invoice, Party, ServiceItem } from '@/types/invoice';
 	import { providers, clients, activeProvider } from '@/stores';
-	import { createEmptyLineItem, createEmptyParty } from '@/utils/invoice-generators';
-	import { getDefaultIssueDate, getDefaultDueDate } from '@/utils/date-helpers';
-	import { calculateLineItemTotal, calculatePricing } from '@/utils/invoice-calculations';
-	import { validateInvoice } from '@/utils/validators';
+	import {
+		validateInvoice,
+		calculateLineItemTotal,
+		calculatePricing,
+		getDefaultIssueDate,
+		getDefaultDueDate,
+		createEmptyLineItem,
+		createEmptyParty
+	} from '@/helpers';
 	import InvoiceHeaderSection from './invoice-header-section.svelte';
 	import InvoicePartiesSection from './invoice-parties-section.svelte';
 	import InvoiceItemsSection from './invoice-items-section.svelte';
@@ -37,13 +42,23 @@
 	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
-	let invoiceId = $state(invoice?.id || "");
+	let invoiceId = $state(invoice?.id || '');
 	let issueDate = $state(invoice?.date || getDefaultIssueDate());
 	let dueDate = $state(invoice?.due || getDefaultDueDate());
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
 	let client = $state<Party>(invoice?.client || createEmptyParty());
 	let items = $state<ServiceItem[]>(invoice?.items || [createEmptyLineItem()]);
-	let taxRate = $state(invoice?.pricing?.tax_rate || 10);
+
+	// Derived reactive client lookup
+	let currentClient = $derived($clients.find((c) => c.id === client.id));
+	let taxRate = $state(invoice?.pricing?.tax_rate || 0);
+
+	// Update tax rate when client changes
+	$effect(() => {
+		if (currentClient?.tax_rate !== undefined && !invoice) {
+			taxRate = currentClient.tax_rate;
+		}
+	});
 
 	// Selected IDs for profile selectors
 	let selectedProviderId = $state<string | undefined>(undefined);
@@ -160,20 +175,25 @@
 
 	// Form submission handlers
 	function handleSaveDraft() {
-		submitForm('draft');
-	}
-
-	function handleSend() {
-		submitForm('send');
+		submitForm();
 	}
 
 	function handleCancel() {
 		onCancel?.();
 	}
 
-	function submitForm(status: 'draft' | 'send') {
+	function submitForm() {
 		// Calculate final pricing
 		const pricing = calculatePricing(items, taxRate);
+
+		// set email_target
+		const client_data = $clients.find((c) => c.id === client.id);
+		let emailTarget = '';
+		if (client_data && client_data.email_target) {
+			emailTarget = client_data.email_target;
+		} else if (invoice && invoice.email_target) {
+			emailTarget = invoice.email_target;
+		}
 
 		// Build invoice object
 		const invoiceData: Invoice = {
@@ -185,7 +205,8 @@
 			items,
 			pricing,
 			payment: paymentInfo,
-			status
+			status: 'draft', // Always draft on save
+			email_target: emailTarget
 		};
 
 		// Validate
@@ -230,10 +251,5 @@
 	/>
 
 	<!-- Action Buttons -->
-	<InvoiceFormActions
-		{isSaving}
-		onCancel={handleCancel}
-		onSaveDraft={handleSaveDraft}
-		onSend={handleSend}
-	/>
+	<InvoiceFormActions {isSaving} onCancel={handleCancel} onSaveDraft={handleSaveDraft} />
 </div>

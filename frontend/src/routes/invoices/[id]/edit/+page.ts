@@ -28,6 +28,13 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		};
 	}
 
+	// join description parts for editing
+	for (const item of invoice.items) {
+		if (item.description_detail && item.description_detail.trim() !== '') {
+			item.description = `${item.description}\n${item.description_detail}`;
+		}
+	}
+
 	return {
 		invoice
 	};

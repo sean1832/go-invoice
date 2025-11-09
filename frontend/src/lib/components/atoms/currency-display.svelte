@@ -13,7 +13,7 @@
 	<CurrencyDisplay amount={total} class="text-lg font-bold" />
 -->
 <script lang="ts">
-	import { formatCurrency } from '@/utils/formatters';
+	import { formatCurrency } from '@/helpers';
 	import { cn } from '@/utils';
 
 	interface Props {

@@ -3,7 +3,8 @@ export type InvoiceStatus = 'draft' | 'send';
 
 export interface ClientData extends Party {
 	tax_rate: number;
-	target_email?: string;
+	email_target?: string;
+	email_template_id: string;
 }
 
 export interface ProviderData extends Party {
@@ -58,6 +59,7 @@ export interface Invoice {
 	pricing: Pricing;
 	payment: PaymentInfo;
 	email_target?: string; // optional email target for sending
+	email_template_id?: string; // optional email template ID
 }
 
 // Form data for creating/editing invoices
@@ -78,4 +80,18 @@ export interface InvoiceFilters {
 	search_query?: string;
 	sort_by?: 'date' | 'amount' | 'client';
 	sort_order?: 'asc' | 'desc';
+}
+
+export interface EmailContent {
+	subject: string;
+	body: string;
+}
+
+export interface EmailTemplate extends EmailContent {
+	id: string;
+	name: string;
+}
+
+export interface EmailConfig extends EmailContent {
+	to: string;
 }

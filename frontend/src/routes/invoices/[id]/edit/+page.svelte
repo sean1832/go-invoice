@@ -25,6 +25,15 @@
 			isSaving = true;
 			saveError = null;
 
+			// Seperate description -> description_detail by first line break
+			for (const item of updatedData.items) {
+				if (item.description.includes('\n')) {
+					const lines = item.description.split('\n');
+					item.description = lines[0];
+					item.description_detail = lines.slice(1).join('\n');
+				}
+			}
+
 			// Update invoice via API
 			const updatedInvoice = await api.invoices.updateInvoice(fetch, invoice.id, updatedData);
 
@@ -90,12 +99,6 @@
 				<ErrorAlert message={saveError} />
 			</div>
 		{/if}
-		<InvoiceForm
-			mode="edit"
-			{invoice}
-			{isSaving}
-			onSave={handleSave}
-			onCancel={handleCancel}
-		/>
+		<InvoiceForm mode="edit" {invoice} {isSaving} onSave={handleSave} onCancel={handleCancel} />
 	{/if}
 </div>

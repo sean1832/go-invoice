@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { ClientForm } from '@/components/organisms/profile-form';
 	import { api } from '@/services';
 	import type { ClientData } from '@/types/invoice';
@@ -27,5 +28,10 @@
 </script>
 
 <div class="container mx-auto max-w-3xl p-4">
+	{#if saveError}
+			<div class="mb-4">
+				<ErrorAlert message={saveError} title="Save Failed" onRetry={() => (saveError = null)} />
+			</div>
+		{/if}
 	<ClientForm mode="create" disable={isSaving} onSave={handleSave} onCancel={handleCancel} />
 </div>

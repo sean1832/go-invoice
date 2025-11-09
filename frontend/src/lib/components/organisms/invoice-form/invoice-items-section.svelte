@@ -24,7 +24,7 @@
 <script lang="ts">
 	import type { ServiceItem } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { calculatePricing } from '@/utils/invoice-calculations';
+	import { calculatePricing } from '@/helpers';
 	import * as Card from '@/components/ui/card';
 	import Button from '@/components/ui/button/button.svelte';
 	import Separator from '@/components/ui/separator/separator.svelte';

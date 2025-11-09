@@ -2,24 +2,47 @@
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
 	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
-	import type { Invoice } from '@/types/invoice';
+	import type { EmailConfig, EmailTemplate, Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
-	import CopyIcon from '@lucide/svelte/icons/copy';
+	import SendIcon from '@lucide/svelte/icons/send';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
+	import EmailDialog from '@/components/molecules/email-dialog.svelte';
+	import { formatEmailTemplate, validateEmailConfig } from '$lib/helpers';
 
 	interface Props {
 		data: {
 			invoice: Invoice | null;
+			emailConfig: EmailTemplate | null;
 			error?: string;
 		};
 	}
 
 	let { data }: Props = $props();
 	let invoice = $derived(data.invoice as Invoice);
+	let emailData = $derived(data.emailConfig as EmailTemplate);
 	let error = $derived(data.error);
+
+	// Format email template with invoice data
+	let formattedEmail = $derived.by(() => {
+		if (!emailData || !invoice) return { to: '', subject: '', body: '' } as EmailConfig;
+
+		const pattern = {
+			INVOICE_ID: invoice.id,
+			CLIENT_NAME: invoice.client.name,
+			PROVIDER_NAME: invoice.provider.name,
+			PROVIDER_EMAIL: invoice.provider.email || '',
+			SERVICE_TYPE: invoice.items[0].description || ''
+		};
+
+		return {
+			to: invoice.email_target || '',
+			subject: formatEmailTemplate(emailData.subject, pattern),
+			body: formatEmailTemplate(emailData.body, pattern)
+		} as EmailConfig;
+	});
 
 	// Helper functions
 	function getStatusVariant(status: Invoice['status']): 'default' | 'secondary' {
@@ -67,6 +90,28 @@
 			downloadError = null;
 		}
 	}
+
+	async function onSubmit(emailConfig: EmailConfig) {
+		// validate first
+		const validation = validateEmailConfig(emailConfig);
+		if (!validation.isValid) {
+			alert(
+				'Email validation failed, please fix the following errors:\n\n' +
+					validation.errors.join('\n')
+			);
+			return;
+		}
+
+		try {
+			// await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
+			alert('Invoice email sent successfully.');
+		} catch (error) {
+			console.error('Error sending invoice email:', error);
+			alert(
+				error instanceof Error ? error.message : 'Failed to send invoice email. Please try again.'
+			);
+		}
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -96,6 +141,12 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
+				<EmailDialog templateData={formattedEmail} {onSubmit}>
+					<Button variant="outline" size="sm">
+						<SendIcon class="mr-2 h-4 w-4" />
+						<span class="hidden sm:inline">Send Invoice</span>
+					</Button>
+				</EmailDialog>
 			</div>
 		</div>
 	{/if}

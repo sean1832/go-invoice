@@ -14,7 +14,7 @@
 <script lang="ts">
 	import type { ServiceItem } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatCurrency, formatDateShort } from '@/utils/formatters';
+	import { formatCurrency, formatDateShort } from '@/helpers';
 	import DateDisplay from '@/components/atoms/date-display.svelte';
 	import CurrencyDisplay from '@/components/atoms/currency-display.svelte';
 

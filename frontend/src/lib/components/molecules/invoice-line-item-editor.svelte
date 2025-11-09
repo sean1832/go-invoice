@@ -24,8 +24,8 @@
 <script lang="ts">
 	import type { ServiceItem } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatCurrency } from '@/utils/formatters';
-	import { safeParseDate, dateValueToISOString } from '@/utils/date-helpers';
+	import { formatCurrency } from '@/helpers';
+	import { safeParseDate, dateValueToISOString } from '@/helpers';
 	import type { DateValue } from '@internationalized/date';
 	import Label from '@/components/ui/label/label.svelte';
 	import Input from '@/components/ui/input/input.svelte';

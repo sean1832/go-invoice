@@ -30,11 +30,18 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	if (!invoice) {
 		return {
 			invoice: null,
+			emailConfig: null,
 			error: 'Invoice not found'
 		};
 	}
 
+	const emailConfig = await api.smtp.getEmailTemplate(
+		fetch,
+		invoice.email_template_id || 'default'
+	);
+
 	return {
-		invoice
+		invoice,
+		emailConfig
 	};
 };

@@ -14,7 +14,7 @@
 <script lang="ts">
 	import type { Invoice } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatDateShort } from '@/utils/formatters';
+	import { formatDateShort } from '@/helpers';
 
 	interface Props {
 		invoice: Invoice;

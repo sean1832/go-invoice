@@ -98,3 +98,18 @@ export function formatABN(abn: string): string {
 export function formatPercentage(rate: number, decimals: number = 0): string {
 	return `${rate.toFixed(decimals)}%`;
 }
+
+/**
+ * Format an email template with the given variables
+ * @param template - The email template string
+ * @param variables - The variables to replace in the template
+ * @returns The formatted email string
+ */
+export function formatEmailTemplate(template: string, variables: Record<string, string>): string {
+	let formatted = template;
+	for (const [key, value] of Object.entries(variables)) {
+		const placeholder = `{{${key}}}`;
+		formatted = formatted.replaceAll(placeholder, value);
+	}
+	return formatted;
+}

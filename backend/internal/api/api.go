@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"go-invoice/internal/storage"
 	"net/http"
 )
@@ -23,6 +24,7 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	mux.HandleFunc(prefix+"/invoices/{id}", h.handleInvoicesItem)
 	mux.HandleFunc(prefix+"/invoices/count", h.handleInvoicesCount)
 	mux.HandleFunc(prefix+"/invoices/{id}/pdf", h.handleInvoicePDF)
+	mux.HandleFunc(fmt.Sprintf("GET %s/email_templates/{id}", prefix), h.handleEmailTemplate)
 }
 
 func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
