@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Item from '$lib/components/ui/item/index.js';
 	import Button from '@/components/ui/button/button.svelte';
+	import { ConfirmDialog } from '@/components/molecules';
 	import type { Party } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -14,14 +15,18 @@
 
 	const { item, onEdit, onDelete, isDeleting } = $props();
 
+	let deleteDialogOpen = $state(false);
+
 	function handleEdit() {
 		onEdit(item);
 	}
 
+	function openDeleteDialog() {
+		deleteDialogOpen = true;
+	}
+
 	function handleDelete() {
-		if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-			onDelete(item);
-		}
+		onDelete(item);
 	}
 </script>
 
@@ -58,7 +63,7 @@
 		<Button
 			size="sm"
 			variant="ghost"
-			onclick={handleDelete}
+			onclick={openDeleteDialog}
 			title="Delete profile"
 			aria-label="Delete {item.name}"
 			disabled={isDeleting}
@@ -67,3 +72,13 @@
 		</Button>
 	</Item.Actions>
 </Item.Root>
+
+<ConfirmDialog
+	bind:open={deleteDialogOpen}
+	title="Delete Profile"
+	description="Are you sure you want to delete <strong>{item.name}</strong>? This action cannot be undone."
+	confirmText="Delete"
+	cancelText="Cancel"
+	confirmVariant="destructive"
+	onConfirm={handleDelete}
+/>
