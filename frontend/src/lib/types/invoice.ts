@@ -3,7 +3,7 @@ export type InvoiceStatus = 'draft' | 'send';
 
 export interface ClientData extends Party {
 	tax_rate: number;
-	target_email?: string;
+	email_target?: string;
 	email_template_id: string;
 }
 
