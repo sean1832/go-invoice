@@ -10,7 +10,7 @@
 		onError?: (error: Error) => void;
 		onEdit: (item: Party) => void;
 		onDelete: (item: Party) => void;
-		deletingInvoiceId?: string | null;
+		deletingProfileId?: string | null;
 	}
 
 	const {
@@ -20,19 +20,19 @@
 		onError = (error: Error) => console.error('Profile shelf error:', error),
 		onEdit,
 		onDelete,
-		deletingProfileId: deletingInvoiceId
+		deletingProfileId = null
 	} = $props();
 </script>
 
 <Shelf
 	{data}
-	itemComponent={ProfileItem}
 	searchFields={['name', 'email']}
 	keyField="id"
 	{searchPlaceholder}
 	{emptyMessage}
-	onError={(message) => onError(new Error(message))}
-	{onEdit}
-	{onDelete}
-	deletingItemId={deletingInvoiceId}
-/>
+	deletingItemId={deletingProfileId}
+>
+	{#snippet children(item: Party, isDeleting: boolean)}
+		<ProfileItem {item} {onEdit} {onDelete} {isDeleting} />
+	{/snippet}
+</Shelf>

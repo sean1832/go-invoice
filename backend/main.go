@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"go-invoice/internal/api"
+	"go-invoice/internal/auth"
 	"go-invoice/internal/storage"
 	"go-invoice/internal/ui"
 	"log/slog"
@@ -17,36 +18,61 @@ import (
 
 func main() {
 
-	// args --dev
-	devmodePtr := flag.Bool("dev", false, "Enable dev mode (seperate frontend & backend port, do not enable this for production!)")
+	// Initialize logger
+	if err := godotenv.Load(); err != nil {
+		slog.Info("No .env file found, relying on OS environment variables.")
+	} else {
+		slog.Info(".env file loaded.")
+	}
+
+	// Define and parse flags
+	devmodePtr := flag.Bool("dev", false, "Enable dev mode (uses DEV_FRONTEND_BASE_URL)")
 	portPtr := flag.Int("port", 8080, "Port for server to host.")
 	flag.Parse()
 
-	if *devmodePtr {
-		err := godotenv.Load(".env.dev")
-		if err != nil {
-			slog.Warn("devmode enabled but .env.dev is not found")
-		} else {
-			slog.Info("devmode enabled and .env.dev is loaded")
-		}
-	}
-
+	// Set variables from flags
 	port := *portPtr
+	isDevMode := *devmodePtr
 	var frontendBaseURL string
-	if *devmodePtr {
-		// devmode
-		frontendBaseURL = os.Getenv("FRONTEND_BASE_URL")
+
+	// frontend base URL configuration
+	if isDevMode {
+		// --- Development Mode ---
+		slog.Info("Dev mode enabled.")
+		frontendBaseURL = os.Getenv("DEV_FRONTEND_BASE_URL")
+
 		if frontendBaseURL == "" {
-			slog.Warn("FRONTEND_BASE_URL not set in .env.dev, defaulting to http://localhost:5173")
+			slog.Warn("DEV_FRONTEND_BASE_URL not set, defaulting to http://localhost:5173")
 			frontendBaseURL = "http://localhost:5173"
 		}
 	} else {
-		// production mode
-		frontendBaseURL = os.Getenv("FRONTEND_BASE_URL")
-		if frontendBaseURL == "" {
-			frontendBaseURL = fmt.Sprintf("http://localhost:%d", port)
-		}
+		// --- Production Mode ---
+		slog.Info("Production mode enabled.")
+		frontendBaseURL = fmt.Sprintf("http://localhost:%d", port)
 	}
+
+	// google oauth client id/secret check
+	googleOAuthClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
+	googleOAuthClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+	smtp_password := os.Getenv("SMTP_PASSWORD")
+
+	var authMethod auth.AuthMethod
+	if (googleOAuthClientID == "" || googleOAuthClientSecret == "") && smtp_password == "" {
+		slog.Warn("either GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, or SMTP_PASSWORD must be set in environment variables for email functionality.")
+		authMethod = auth.AuthMethodNone
+	} else if smtp_password != "" {
+		slog.Warn("Using SMTP_PASSWORD is not recommended for security reasons.")
+		authMethod = auth.AuthMethodPlain
+	} else {
+		slog.Info("Google OAuth credentials loaded.")
+		authMethod = auth.AuthMethodOAuth2
+	}
+
+	slog.Info("Configuration loaded",
+		"port", port,
+		"frontend_url", frontendBaseURL,
+		"dev_mode", isDevMode,
+	)
 
 	mux := http.NewServeMux()
 	storageDir, err := storage.NewStorageDir()
@@ -58,6 +84,7 @@ func main() {
 		Context:         context.Background(),
 		StorageDir:      *storageDir,
 		FrontendBaseURL: frontendBaseURL,
+		EmailAuthMethod: authMethod,
 	}
 
 	handler.RegisterRoutesV1(mux)

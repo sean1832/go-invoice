@@ -93,5 +93,5 @@ export interface EmailTemplate extends EmailContent {
 }
 
 export interface EmailConfig extends EmailContent {
-	to: string;
+	to: string[];
 }

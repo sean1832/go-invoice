@@ -2,14 +2,12 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
+	import { ConfirmDialog } from '@/components/molecules';
 	import type { Invoice } from '@/types/invoice';
-	import EyeIcon from '@lucide/svelte/icons/eye';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import CopyIcon from '@lucide/svelte/icons/copy';
 	import DownloadIcon from '@lucide/svelte/icons/download';
-	import { api } from '@/services';
-	import { removeInvoice } from '@/stores/invoices';
+	import Spinner from '@/components/atoms/spinner.svelte';
 
 	interface Props {
 		item: Invoice;
@@ -18,6 +16,7 @@
 		onDelete: (item: Invoice) => void;
 		onDownload?: (item: Invoice) => void;
 		isDeleting?: boolean;
+		isDownloading: boolean;
 	}
 
 	let {
@@ -26,8 +25,11 @@
 		onEdit,
 		onDelete,
 		onDownload,
-		isDeleting = false
+		isDeleting = false,
+		isDownloading
 	}: Props = $props();
+
+	let deleteDialogOpen = $state(false);
 
 	// Helper function to format currency
 	function formatCurrency(amount: number): string {
@@ -60,11 +62,12 @@
 		onEdit(invoice);
 	}
 
-	async function deleteInvoice() {
-		if (confirm(`Are you sure you want to delete ${invoice.id}?`)) {
-			onDelete(invoice);
-		}
-		return;
+	function openDeleteDialog() {
+		deleteDialogOpen = true;
+	}
+
+	function confirmDelete() {
+		onDelete(invoice);
 	}
 
 	function downloadInvoice() {
@@ -119,11 +122,21 @@
 			size="sm"
 			onclick={downloadInvoice}
 			title="Download"
+			disabled={isDeleting || isDownloading}
+		>
+			{#if isDownloading}
+				<Spinner class="h-4 w-4" />
+			{:else}
+				<DownloadIcon class="h-4 w-4" />
+			{/if}
+		</Button>
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={openDeleteDialog}
+			title="Delete"
 			disabled={isDeleting}
 		>
-			<DownloadIcon class="h-4 w-4" />
-		</Button>
-		<Button variant="ghost" size="sm" onclick={deleteInvoice} title="Delete" disabled={isDeleting}>
 			{#if isDeleting}
 				<span class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
 				></span>
@@ -133,3 +146,13 @@
 		</Button>
 	</Item.Actions>
 </Item.Root>
+
+<ConfirmDialog
+	bind:open={deleteDialogOpen}
+	title="Delete Invoice"
+	description="Are you sure you want to delete invoice <strong>{invoice.id}</strong>? This action cannot be undone."
+	confirmText="Delete"
+	cancelText="Cancel"
+	confirmVariant="destructive"
+	onConfirm={confirmDelete}
+/>

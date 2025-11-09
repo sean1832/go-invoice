@@ -4,7 +4,7 @@
 
 	interface Props {
 		data: any[];
-		itemComponent: any; // Svelte component for rendering each item
+		children: any; // Svelte snippet for rendering each item
 		searchFields?: string[]; // Fields to search in (e.g., ['name', 'email'])
 		keyField?: string; // Field to use as the unique key (default: 'id')
 		showTabs?: boolean; // Whether to show status tabs
@@ -12,17 +12,13 @@
 		tabOptions?: { label: string; value: string }[]; // Tab configuration
 		emptyMessage?: string; // Message when no results
 		searchPlaceholder?: string;
-		onError?: (message: string) => void; // Error handler to pass to items
-		onEdit: (item: any) => void; // Edit callback to pass to items
-		onDelete: (item: any) => void; // Delete callback to pass to items
-		onDownload?: (item: any) => void; // Download callback to pass to items
 		deletingItemId?: string | null; // ID of the item currently being deleted
 	}
 
 	// Generic props with defaults
 	const {
 		data,
-		itemComponent: ItemComponent,
+		children,
 		searchFields = [],
 		keyField = 'id',
 		showTabs = false,
@@ -30,10 +26,6 @@
 		tabOptions = [],
 		emptyMessage = 'No items found',
 		searchPlaceholder = 'Search...',
-		onError,
-		onEdit,
-		onDelete,
-		onDownload,
 		deletingItemId = null
 	}: Props = $props();
 
@@ -75,14 +67,7 @@
 	{:else}
 		<div class="flex flex-col gap-3">
 			{#each filteredData as item, index (item[keyField] || index)}
-				<ItemComponent
-					{item}
-					{onError}
-					{onEdit}
-					{onDelete}
-					{onDownload}
-					isDeleting={deletingItemId === item[keyField]}
-				/>
+				{@render children(item, deletingItemId ? deletingItemId === item[keyField] : false)}
 			{/each}
 		</div>
 	{/if}

@@ -1,5 +1,5 @@
 import { http } from '@/api/http';
-import type { Invoice } from '@/types/invoice';
+import type { EmailConfig, Invoice } from '@/types/invoice';
 
 /**
  * retrieves all invoices using the provided fetch function.
@@ -64,5 +64,22 @@ export async function deleteInvoice(KitFetch: typeof fetch, id: string) {
 export async function downloadPdf(KitFetch: typeof fetch, id: string): Promise<Blob> {
 	return http.get<Blob>(KitFetch, `/invoices/${id}/pdf`, {
 		responseType: 'blob'
+	});
+}
+
+/**
+ * Sends an email for a specific invoice using the provided fetch function. (this will take some time to process, best to add loading indicator)
+ * @param KitFetch - `KitFetch` is a parameter that represents the fetch function provided by SvelteKit.
+ * @param id - The `id` parameter is a string that represents the unique identifier of the invoice to send.
+ * @param emailConfig - The `emailConfig` parameter is an EmailConfig object that contains the email details.
+ * @returns A Promise that resolves to the response from the server.
+ */
+export async function sendInvoiceEmail(
+	KitFetch: typeof fetch,
+	id: string,
+	emailConfig: EmailConfig
+) {
+	return http.post<void>(KitFetch, `/invoices/${id}/email`, emailConfig, {
+		timeout: 10000 // set timeout to 10 seconds
 	});
 }
