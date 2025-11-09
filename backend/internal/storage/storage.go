@@ -27,7 +27,6 @@ func NewStorageDir(rootDir string) (*StorageDir, error) {
 		Clients:        filepath.Join(rootDir, "clients"),
 		Providers:      filepath.Join(rootDir, "providers"),
 		Invoices:       filepath.Join(rootDir, "invoices"),
-		Config:         filepath.Join(rootDir, "smtp"), // Consider renaming to "config" or "smtp_config"
 		EmailTemplates: filepath.Join(rootDir, "email_templates"),
 	}
 
@@ -37,7 +36,6 @@ func NewStorageDir(rootDir string) (*StorageDir, error) {
 		storage.Clients,
 		storage.Providers,
 		storage.Invoices,
-		storage.Config,
 		storage.EmailTemplates,
 	}
 
