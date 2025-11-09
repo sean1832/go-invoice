@@ -3,7 +3,7 @@
  * All functions return validation results with error messages
  */
 
-import type { ServiceItem, Party, Invoice } from '@/types/invoice';
+import type { ServiceItem, Party, Invoice, EmailConfig } from '@/types/invoice';
 
 export interface ValidationResult {
 	isValid: boolean;
@@ -168,4 +168,25 @@ export function validateRequired(
 	fieldName: string
 ): string | null {
 	return isEmpty(value) ? `${fieldName} is required` : null;
+}
+
+export function validateEmailConfig(emailConfig: EmailConfig): ValidationResult {
+	const errors: string[] = [];
+
+	if (isEmpty(emailConfig.to)) {
+		errors.push('Email recipient (To) is required');
+	} else if (!isValidEmail(emailConfig.to!)) {
+		errors.push('Email recipient (To) is not a valid email address');
+	}
+
+	if (isEmpty(emailConfig.subject)) {
+		errors.push('Email subject is required');
+	}
+	if (isEmpty(emailConfig.body)) {
+		errors.push('Email body is required');
+	}
+	return {
+		isValid: errors.length === 0,
+		errors
+	};
 }

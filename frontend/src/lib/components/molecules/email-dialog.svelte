@@ -8,12 +8,25 @@
 	import type { EmailConfig, EmailContent } from '@/types/invoice';
 	interface Props {
 		children: () => any;
-		onSubmit?: (data: any) => void;
+		onSubmit?: (data: EmailConfig) => void;
 		templateData: EmailConfig;
 	}
 	let { children, onSubmit, templateData }: Props = $props();
 
-	function handleSubmit() {}
+	// derive local state from templateData
+	let emailTo = $state(templateData.to);
+	let emailSubject = $state(templateData.subject);
+	let emailBody = $state(templateData.body);
+
+	function handleSubmit() {
+		if (onSubmit) {
+			onSubmit({
+				to: emailTo,
+				subject: emailSubject,
+				body: emailBody
+			});
+		}
+	}
 </script>
 
 <Dialog.Root>
@@ -28,15 +41,15 @@
 		<div class="flex flex-col gap-2">
 			<div class="relative">
 				<Label for="email_to">To</Label>
-				<Input id="email_to" placeholder="example@email.com" value={templateData.to} class="mt-2" />
+				<Input id="email_to" placeholder="example@email.com" bind:value={emailTo} class="mt-2" />
 			</div>
 			<div class="relative mt-8">
 				<Label for="email_subject">Subject</Label>
-				<Input id="email_subject" class="mt-2" value={templateData.subject} />
+				<Input id="email_subject" class="mt-2" bind:value={emailSubject} />
 			</div>
 			<div class="relative">
 				<Label for="email_body">Body</Label>
-				<Textarea id="email_body" class="mt-2" value={templateData.body} />
+				<Textarea id="email_body" class="mt-2" bind:value={emailBody} />
 			</div>
 			<div>
 				<Button variant="ghost">

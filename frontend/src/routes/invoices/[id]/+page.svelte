@@ -10,7 +10,7 @@
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
 	import EmailDialog from '@/components/molecules/email-dialog.svelte';
-	import { formatEmailTemplate } from '$lib/helpers';
+	import { formatEmailTemplate, validateEmailConfig } from '$lib/helpers';
 
 	interface Props {
 		data: {
@@ -90,6 +90,28 @@
 			downloadError = null;
 		}
 	}
+
+	async function onSubmit(emailConfig: EmailConfig) {
+		// validate first
+		const validation = validateEmailConfig(emailConfig);
+		if (!validation.isValid) {
+			alert(
+				'Email validation failed, please fix the following errors:\n\n' +
+					validation.errors.join('\n')
+			);
+			return;
+		}
+
+		try {
+			// await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
+			alert('Invoice email sent successfully.');
+		} catch (error) {
+			console.error('Error sending invoice email:', error);
+			alert(
+				error instanceof Error ? error.message : 'Failed to send invoice email. Please try again.'
+			);
+		}
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -119,7 +141,7 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail}>
+				<EmailDialog templateData={formattedEmail} {onSubmit}>
 					<Button variant="outline" size="sm">
 						<SendIcon class="mr-2 h-4 w-4" />
 						<span class="hidden sm:inline">Send Invoice</span>
