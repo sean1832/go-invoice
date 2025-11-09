@@ -16,16 +16,13 @@ jobs:
         include:
           - os: windows-latest
             binary: go-invoice.exe
-            asset_name: go-invoice-windows-amd64.exe
-            archive_ext: zip
+            archive_name: go-invoice-windows-amd64.zip
           - os: ubuntu-latest
             binary: go-invoice
-            asset_name: go-invoice-linux-amd64
-            archive_ext: tar.gz
+            archive_name: go-invoice-linux-amd64.zip
           - os: macos-latest
             binary: go-invoice
-            asset_name: go-invoice-macos-amd64
-            archive_ext: tar.gz
+            archive_name: go-invoice-macos-amd64.zip
 
     steps:
       - name: Checkout code
@@ -65,23 +62,17 @@ jobs:
           cd backend/bin
           # Copy .env.example as .env
           cp ../.env.example .env
-          # Rename binary
-          mv ${{ matrix.binary }} ${{ matrix.asset_name }}
 
       - name: Create release archive
         shell: bash
         run: |
           cd backend/bin
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ${{ matrix.asset_name }}.zip ${{ matrix.asset_name }} .env
-          else
-            tar -czf ${{ matrix.asset_name }}.tar.gz ${{ matrix.asset_name }} .env
-          fi
+          7z a ${{ matrix.archive_name }} ${{ matrix.binary }} .env
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            backend/bin/${{ matrix.asset_name }}.${{ matrix.archive_ext }}
+            backend/bin/${{ matrix.archive_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
