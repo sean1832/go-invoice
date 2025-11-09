@@ -30,7 +30,7 @@
 		<span class="font-semibold text-foreground">{formatCurrency(pricing.subtotal)}</span>
 	</div>
 	<div class="flex justify-between border-b border-border py-2 text-sm sm:text-base">
-		<span class="text-muted-foreground">Tax ({pricing.tax_rate}%):</span>
+		<span class="text-muted-foreground">GST ({pricing.tax_rate}%):</span>
 		<span class="font-semibold text-foreground">{formatCurrency(pricing.tax)}</span>
 	</div>
 	<div
