@@ -3,6 +3,7 @@
 - [ ] SMTP email sending
 - [ ] Authentication and user management
 - [ ] Database integration (currently uses local file storage)
+- [ ] Description field for clients
 
 ## Backend API
 

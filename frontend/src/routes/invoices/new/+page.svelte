@@ -14,6 +14,15 @@
 			isSaving = true;
 			saveError = null;
 
+			// Seperate description -> description_detail by first line break
+			for (const item of data.items) {
+				if (item.description.includes('\n')) {
+					const lines = item.description.split('\n');
+					item.description = lines[0];
+					item.description_detail = lines.slice(1).join('\n');
+				}
+			}
+
 			// Create invoice via API
 			const createdInvoice = await api.invoices.createInvoice(fetch, data);
 
