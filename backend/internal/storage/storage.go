@@ -2,7 +2,6 @@ package storage
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -19,54 +18,41 @@ type StorageDir struct {
 	EmailTemplates string
 }
 
-func NewStorageDir() (*StorageDir, error) {
-	exePath, err := os.Executable()
-	if err != nil {
-		return nil, fmt.Errorf("unable to obtain executable path: %v", err)
-	}
-	dir := filepath.Dir(exePath)
-	root := filepath.Join(dir, "db")
-
-	clientsDir := filepath.Join(root, "clients")
-	providersDir := filepath.Join(root, "providers")
-	invoicesDir := filepath.Join(root, "invoices")
-	configDir := filepath.Join(root, "smtp")
-	emailTemplatesDir := filepath.Join(root, "email_templates")
-
-	// Ensure all directories exist
-	if err := ensurePathExist(clientsDir); err != nil {
-		return nil, err
-	}
-	if err := ensurePathExist(providersDir); err != nil {
-		return nil, err
-	}
-	if err := ensurePathExist(invoicesDir); err != nil {
-		return nil, err
-	}
-	if err := ensurePathExist(configDir); err != nil {
-		return nil, err
-	}
-	if err := ensurePathExist(emailTemplatesDir); err != nil {
-		return nil, err
+// NewStorageDir initializes the storage directory structure.
+// It takes a rootDir as an argument, making the function testable and configurable.
+func NewStorageDir(rootDir string) (*StorageDir, error) {
+	// 1. Define all paths relative to the configurable root.
+	storage := &StorageDir{
+		Root:           rootDir,
+		Clients:        filepath.Join(rootDir, "clients"),
+		Providers:      filepath.Join(rootDir, "providers"),
+		Invoices:       filepath.Join(rootDir, "invoices"),
+		Config:         filepath.Join(rootDir, "smtp"), // Consider renaming to "config" or "smtp_config"
+		EmailTemplates: filepath.Join(rootDir, "email_templates"),
 	}
 
-	return &StorageDir{
-		Root:           root,
-		Clients:        clientsDir,
-		Providers:      providersDir,
-		Invoices:       invoicesDir,
-		Config:         configDir,
-		EmailTemplates: emailTemplatesDir,
-	}, nil
-}
+	// 2. Create a list of all paths that must exist.
+	paths := []string{
+		storage.Root,
+		storage.Clients,
+		storage.Providers,
+		storage.Invoices,
+		storage.Config,
+		storage.EmailTemplates,
+	}
 
-func ensurePathExist(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("path not exist '%s': %v", path, err)
+	// 3. Loop and create each one, using the correct tool (MkdirAll).
+	// Use 0755 (rwxr-xr-x) instead of 0777 (os.ModePerm).
+	const perm = 0755
+
+	for _, path := range paths {
+		// os.MkdirAll is idempotent: it does nothing if the path already exists.
+		if err := os.MkdirAll(path, perm); err != nil {
+			return nil, fmt.Errorf("failed to create storage directory %q: %v", path, err)
 		}
 	}
-	return nil
+
+	return storage, nil
 }
 
 // ClientData represents client/customer data as stored on disk
