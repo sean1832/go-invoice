@@ -176,6 +176,15 @@
 		// Calculate final pricing
 		const pricing = calculatePricing(items, taxRate);
 
+		// set email_target
+		const client_data = $clients.find((c) => c.id === client.id);
+		let emailTarget = '';
+		if (client_data && client_data.email_target) {
+			emailTarget = client_data.email_target;
+		} else if (invoice && invoice.email_target) {
+			emailTarget = invoice.email_target;
+		}
+
 		// Build invoice object
 		const invoiceData: Invoice = {
 			id: invoiceId,
@@ -186,7 +195,8 @@
 			items,
 			pricing,
 			payment: paymentInfo,
-			status: 'draft' // Always draft on save
+			status: 'draft', // Always draft on save
+			email_target: emailTarget
 		};
 
 		// Validate

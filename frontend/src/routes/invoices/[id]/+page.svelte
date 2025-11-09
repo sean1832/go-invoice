@@ -2,7 +2,7 @@
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
 	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
-	import type { EmailConfig, Invoice } from '@/types/invoice';
+	import type { EmailConfig, EmailTemplate, Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import SendIcon from '@lucide/svelte/icons/send';
@@ -15,19 +15,19 @@
 	interface Props {
 		data: {
 			invoice: Invoice | null;
-			emailConfig: EmailConfig | null;
+			emailConfig: EmailTemplate | null;
 			error?: string;
 		};
 	}
 
 	let { data }: Props = $props();
 	let invoice = $derived(data.invoice as Invoice);
-	let emailData = $derived(data.emailConfig as EmailConfig);
+	let emailData = $derived(data.emailConfig as EmailTemplate);
 	let error = $derived(data.error);
 
 	// Format email template with invoice data
 	let formattedEmail = $derived.by(() => {
-		if (!emailData || !invoice) return emailData;
+		if (!emailData || !invoice) return { to: '', subject: '', body: '' } as EmailConfig;
 
 		const pattern = {
 			INVOICE_ID: invoice.id,
@@ -38,7 +38,7 @@
 		};
 
 		return {
-			to: emailData.to,
+			to: invoice.email_target || '',
 			subject: formatEmailTemplate(emailData.subject, pattern),
 			body: formatEmailTemplate(emailData.body, pattern)
 		} as EmailConfig;
