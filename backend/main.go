@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"go-invoice/internal/api"
+	"go-invoice/internal/auth"
 	"go-invoice/internal/storage"
 	"go-invoice/internal/ui"
 	"log/slog"
@@ -53,14 +54,18 @@ func main() {
 	// google oauth client id/secret check
 	googleOAuthClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 	googleOAuthClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-	googleOAuthAppPassword := os.Getenv("GOOGLE_OAUTH_APP_PASSWORD")
+	smtp_password := os.Getenv("SMTP_PASSWORD")
 
-	if (googleOAuthClientID == "" || googleOAuthClientSecret == "") && googleOAuthAppPassword == "" {
-		slog.Warn("GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, or GOOGLE_OAUTH_APP_PASSWORD must be set in environment variables for email functionality.")
-	} else if googleOAuthAppPassword != "" {
-		slog.Warn("Using GOOGLE_OAUTH_APP_PASSWORD is not recommended for security reasons.")
+	var authMethod auth.AuthMethod
+	if (googleOAuthClientID == "" || googleOAuthClientSecret == "") && smtp_password == "" {
+		slog.Warn("either GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, or SMTP_PASSWORD must be set in environment variables for email functionality.")
+		authMethod = auth.AuthMethodNone
+	} else if smtp_password != "" {
+		slog.Warn("Using SMTP_PASSWORD is not recommended for security reasons.")
+		authMethod = auth.AuthMethodPlain
 	} else {
 		slog.Info("Google OAuth credentials loaded.")
+		authMethod = auth.AuthMethodOAuth2
 	}
 
 	slog.Info("Configuration loaded",
@@ -79,6 +84,7 @@ func main() {
 		Context:         context.Background(),
 		StorageDir:      *storageDir,
 		FrontendBaseURL: frontendBaseURL,
+		EmailAuthMethod: authMethod,
 	}
 
 	handler.RegisterRoutesV1(mux)

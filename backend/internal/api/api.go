@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"go-invoice/internal/auth"
 	"go-invoice/internal/storage"
 	"net/http"
 )
@@ -11,6 +12,7 @@ type Handler struct {
 	Context         context.Context
 	StorageDir      storage.StorageDir
 	FrontendBaseURL string
+	EmailAuthMethod auth.AuthMethod
 }
 
 func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
@@ -24,6 +26,7 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	mux.HandleFunc(prefix+"/invoices/{id}", h.handleInvoicesItem)
 	mux.HandleFunc(prefix+"/invoices/count", h.handleInvoicesCount)
 	mux.HandleFunc(prefix+"/invoices/{id}/pdf", h.handleInvoicePDF)
+	mux.HandleFunc(fmt.Sprintf("POST %s/invoices/{id}/email", prefix), h.handleSendEmail)
 	mux.HandleFunc(fmt.Sprintf("GET %s/email_templates/{id}", prefix), h.handleEmailTemplate)
 }
 
