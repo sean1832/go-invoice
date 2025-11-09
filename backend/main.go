@@ -17,6 +17,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Version is set via ldflags during build
+var Version = "dev"
+
 func main() {
 
 	// Initialize logger
@@ -82,6 +85,7 @@ func main() {
 	}
 
 	slog.Info("Configuration loaded",
+		"version", Version,
 		"port", port,
 		"frontend_url", frontendBaseURL,
 		"dev_mode", isDevMode,
@@ -99,6 +103,7 @@ func main() {
 		StorageDir:      *storageDir,
 		FrontendBaseURL: frontendBaseURL,
 		EmailAuthMethod: authMethod,
+		Version:         Version,
 	}
 
 	handler.RegisterRoutesV1(mux)

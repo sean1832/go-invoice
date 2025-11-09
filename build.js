@@ -114,11 +114,14 @@ function copyFrontend(buildDir, distDir) {
 /**
  * Build backend
  */
-function buildBackend(backendDir) {
+function buildBackend(backendDir, version = "dev") {
   logStep("Building Go backend...");
+  log(`Version: ${version}`);
+
   const isWindows = process.platform === "win32";
   const binaryName = isWindows ? "go-invoice.exe" : "go-invoice";
-  const buildCmd = `go build -o bin/${binaryName} .`;
+  const ldflags = `-X 'main.Version=${version}'`;
+  const buildCmd = `go build -ldflags "${ldflags}" -o bin/${binaryName} .`;
 
   if (!exec(buildCmd, backendDir)) {
     logError("Go build failed!");
@@ -128,6 +131,26 @@ function buildBackend(backendDir) {
 
   const binaryPath = path.join(backendDir, "bin", binaryName);
   return binaryPath;
+}
+
+/**
+ * Get version from package.json or environment variable
+ */
+function getVersion(rootDir) {
+  // Check for VERSION environment variable (used in CI/CD)
+  if (process.env.VERSION) {
+    return process.env.VERSION;
+  }
+
+  // Read from root package.json
+  const packageJsonPath = path.join(rootDir, "package.json");
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    return packageJson.version || "dev";
+  } catch (error) {
+    logError(`Failed to read version from package.json: ${error.message}`);
+    return "dev";
+  }
 }
 
 /**
@@ -141,6 +164,7 @@ function build() {
   const distDir = path.join(backendDir, "internal", "ui", "dist");
 
   const command = process.argv[2] || "all";
+  const version = getVersion(rootDir);
 
   log(`${colors.bright}${colors.green}Building go-invoice${colors.reset}\n`);
 
@@ -154,7 +178,7 @@ function build() {
       break;
 
     case "backend":
-      const binaryPath = buildBackend(backendDir);
+      const binaryPath = buildBackend(backendDir, version);
       log(`\n${colors.bright}${colors.green}✓ Backend build complete!${colors.reset}`);
       log(`\nRun the application:`);
       log(`  ${colors.cyan}${binaryPath}${colors.reset}\n`);
@@ -164,7 +188,7 @@ function build() {
     default:
       buildFrontend(frontendDir);
       copyFrontend(buildDir, distDir);
-      const fullBinaryPath = buildBackend(backendDir);
+      const fullBinaryPath = buildBackend(backendDir, version);
 
       log(`\n${colors.bright}${colors.green}✓ Build complete!${colors.reset}`);
       log(`\nRun the application:`);

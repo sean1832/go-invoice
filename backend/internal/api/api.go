@@ -13,11 +13,13 @@ type Handler struct {
 	StorageDir      storage.StorageDir
 	FrontendBaseURL string
 	EmailAuthMethod auth.AuthMethod
+	Version         string
 }
 
 func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	const prefix = "/api/v1"
 	mux.HandleFunc(prefix+"/", h.Root)
+	mux.HandleFunc(prefix+"/version", h.handleVersion)
 	mux.HandleFunc(prefix+"/providers", h.handleProvidersCollection)
 	mux.HandleFunc(prefix+"/providers/{id}", h.handleProvidersItem)
 	mux.HandleFunc(prefix+"/clients", h.handleClientsCollection)
