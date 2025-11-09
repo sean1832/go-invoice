@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -68,14 +69,27 @@ func main() {
 		authMethod = auth.AuthMethodOAuth2
 	}
 
+	// storage path
+	storagePath := os.Getenv("STORAGE_PATH")
+	if storagePath == "" {
+		exePath, err := os.Executable()
+		if err != nil {
+			slog.Error("Failed to get executable path", "error", err)
+			return
+		}
+		storagePath = filepath.Join(filepath.Dir(exePath), "db")
+		slog.Info("STORAGE_PATH not set, defaulting to executable directory", "storage_path", storagePath)
+	}
+
 	slog.Info("Configuration loaded",
 		"port", port,
 		"frontend_url", frontendBaseURL,
 		"dev_mode", isDevMode,
+		"storage_path", storagePath,
 	)
 
 	mux := http.NewServeMux()
-	storageDir, err := storage.NewStorageDir()
+	storageDir, err := storage.NewStorageDir(storagePath)
 	if err != nil {
 		slog.Error(err.Error())
 		return
