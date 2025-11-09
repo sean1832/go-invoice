@@ -13,9 +13,18 @@
 		onDelete: (item: Invoice) => void;
 		onDownload?: (item: Invoice) => void;
 		deletingInvoiceId?: string | null;
+		isDownloading: boolean;
 	}
 
-	const { data, onError, onEdit, onDelete, onDownload, deletingInvoiceId = null } = $props();
+	const {
+		data,
+		onError,
+		onEdit,
+		onDelete,
+		onDownload,
+		deletingInvoiceId = null,
+		isDownloading
+	} = $props();
 
 	let activeTab = $state<InvoiceStatus | 'all'>('all');
 
@@ -47,16 +56,23 @@
 		<Tabs.Content value={activeTab} class="mt-4">
 			<Shelf
 				data={filteredByStatus}
-				itemComponent={ShelfItem}
 				searchFields={['id', 'client.name']}
 				emptyMessage="No invoices found"
 				searchPlaceholder="Search invoices by number or client..."
-				{onError}
-				{onEdit}
-				{onDelete}
-				{onDownload}
 				deletingItemId={deletingInvoiceId}
-			/>
+			>
+				{#snippet children(item: Invoice, isDeleting: boolean)}
+					<ShelfItem
+						{item}
+						{onError}
+						{onEdit}
+						{onDelete}
+						{onDownload}
+						{isDeleting}
+						{isDownloading}
+					/>
+				{/snippet}
+			</Shelf>
 		</Tabs.Content>
 	</Tabs.Root>
 

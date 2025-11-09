@@ -3,13 +3,10 @@
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
 	import type { Invoice } from '@/types/invoice';
-	import EyeIcon from '@lucide/svelte/icons/eye';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import CopyIcon from '@lucide/svelte/icons/copy';
 	import DownloadIcon from '@lucide/svelte/icons/download';
-	import { api } from '@/services';
-	import { removeInvoice } from '@/stores/invoices';
+	import Spinner from '@/components/atoms/spinner.svelte';
 
 	interface Props {
 		item: Invoice;
@@ -18,6 +15,7 @@
 		onDelete: (item: Invoice) => void;
 		onDownload?: (item: Invoice) => void;
 		isDeleting?: boolean;
+		isDownloading: boolean;
 	}
 
 	let {
@@ -26,7 +24,8 @@
 		onEdit,
 		onDelete,
 		onDownload,
-		isDeleting = false
+		isDeleting = false,
+		isDownloading
 	}: Props = $props();
 
 	// Helper function to format currency
@@ -119,9 +118,13 @@
 			size="sm"
 			onclick={downloadInvoice}
 			title="Download"
-			disabled={isDeleting}
+			disabled={isDeleting || isDownloading}
 		>
-			<DownloadIcon class="h-4 w-4" />
+			{#if isDownloading}
+				<Spinner class="h-4 w-4" />
+			{:else}
+				<DownloadIcon class="h-4 w-4" />
+			{/if}
 		</Button>
 		<Button variant="ghost" size="sm" onclick={deleteInvoice} title="Delete" disabled={isDeleting}>
 			{#if isDeleting}

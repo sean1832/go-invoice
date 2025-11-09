@@ -61,8 +61,10 @@
 		window.location.href = `/invoices/${invoice.id}/edit`;
 	}
 
+	let isDownloading = $state<boolean>(false);
 	async function handleDownload(invoice: Invoice) {
 		try {
+			isDownloading = true;
 			const blob = await api.invoices.downloadPdf(fetch, invoice.id);
 
 			// Create a temporary link to trigger the download
@@ -83,6 +85,8 @@
 			handleError(
 				error instanceof Error ? error.message : 'Failed to download PDF. Please try again.'
 			);
+		} finally {
+			isDownloading = false;
 		}
 	}
 	// Load invoices on mount
@@ -121,6 +125,7 @@
 						onEdit={handleEdit}
 						onDownload={handleDownload}
 						{deletingInvoiceId}
+						{isDownloading}
 					/>
 				{/if}
 			</div>
