@@ -56,18 +56,11 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: node build.js all
 
-      - name: Prepare release package
-        shell: bash
-        run: |
-          cd backend/bin
-          # Copy .env.example as .env
-          cp ../.env.example .env
-
       - name: Create release archive
         shell: bash
         run: |
           cd backend/bin
-          7z a ${{ matrix.archive_name }} ${{ matrix.binary }} .env
+          7z a ${{ matrix.archive_name }} ${{ matrix.binary }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2

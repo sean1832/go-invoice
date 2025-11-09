@@ -5,7 +5,7 @@
 # go-invoice
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://golang.org/)
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-5.0-FF3E00?logo=svelte)](https://kit.svelte.dev/)
 [![Release](https://img.shields.io/github/v/release/sean1832/go-invoice)](https://github.com/sean1832/go-invoice/releases/latest)
 
@@ -38,36 +38,61 @@ Built with **SvelteKit** and **Go**, packaged as a single executable-no installa
 
 ### Download & Run
 
-**Desktop/Local:**
+**Windows:**
 
-1. **Download** the latest release for your platform from [Releases](https://github.com/sean1832/go-invoice/releases/latest)
+1. **Download** the latest release from [Releases](https://github.com/sean1832/go-invoice/releases/latest):
 
-   - Windows: `go-invoice.exe`
-   - macOS/Linux: `go-invoice`
+   - `go-invoice-windows-amd64.zip`
 
-2. **Run** the application:
+2. **Extract** the zip file to a folder of your choice
+
+3. **Run** the application:
+
+   ```powershell
+   .\go-invoice.exe
+   ```
+
+4. **Open** your browser to http://localhost:8080
+
+**macOS/Linux:**
+
+1. **Download** the latest release from [Releases](https://github.com/sean1832/go-invoice/releases/latest):
+
+   - macOS: `go-invoice-macos-amd64.zip`
+   - Linux: `go-invoice-linux-amd64.zip`
+
+2. **Extract** the zip file:
 
    ```bash
-   # Windows
-   .\go-invoice.exe
+   unzip go-invoice-*.zip
+   ```
 
-   # macOS/Linux
+3. **Make executable** (if needed):
+
+   ```bash
+   chmod +x go-invoice
+   ```
+
+4. **Run** the application:
+
+   ```bash
    ./go-invoice
    ```
 
-3. **Open** your browser to http://localhost:8080
+5. **Open** your browser to http://localhost:8080
 
-That's it! Your data will be stored in a `db/` folder next to the executable.
+Your data will be stored in a `db/` folder that's automatically created next to the executable.
 
-**Headless Server (Linux):**
+**Quick Download & Run (Linux/macOS):**
 
 ```bash
 # Download the latest release
 VERSION=$(curl -s "https://api.github.com/repos/sean1832/go-invoice/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-curl -L -o go-invoice "https://github.com/sean1832/go-invoice/releases/download/$VERSION/go-invoice"
-chmod +x go-invoice
+curl -L -o go-invoice-linux-amd64.zip "https://github.com/sean1832/go-invoice/releases/download/$VERSION/go-invoice-linux-amd64.zip"
 
-# Run the application
+# Extract and run
+unzip go-invoice-linux-amd64.zip
+chmod +x go-invoice
 ./go-invoice
 ```
 
@@ -122,49 +147,46 @@ set STORAGE_PATH=C:\path\to\your\data   # Windows
 
 ### Email Setup (Optional)
 
-To send invoices via email, configure one of the following methods:
+To send invoices via email, you'll need to configure email settings.
 
-**Using `.env` file** (Recommended)
+**Create a `.env` file** next to the executable:
 
-Copy the example configuration file and edit it:
+1. **Download the template** from the repository:
 
-```bash
-cp .env.example .env
-# Edit .env with your preferred editor
-nano .env  # or vim, code, etc.
-```
+   ```bash
+   curl -O https://raw.githubusercontent.com/sean1832/go-invoice/main/backend/.env.example
+   mv .env.example .env
+   ```
 
-Example `.env` configuration:
+   Or manually create a `.env` file and add your configuration.
+
+2. **Edit the `.env` file** with one of the following methods:
+
+**Option 1: SMTP with Password** (Simple but less secure)
 
 ```env
-# SMTP Configuration (Option 1: Simple but less secure)
 SMTP_FROM=your-email@example.com
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_PASSWORD=your-app-password
-
-# OR Google OAuth2 (Option 2: Recommended for Gmail)
-# GOOGLE_OAUTH_CLIENT_ID=your-client-id
-# GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
-```
-
-**Using Environment Variables**
-
-**Option 1: SMTP with Password** (Simple but less secure)
-
-```bash
-export SMTP_FROM="your-email@example.com"
-export SMTP_HOST="smtp.gmail.com"
-export SMTP_PORT="587"
-export SMTP_PASSWORD="your-app-password"
 ```
 
 **Option 2: Gmail OAuth2** (Recommended)
 
-```bash
-export GOOGLE_OAUTH_CLIENT_ID="your-client-id"
-export GOOGLE_OAUTH_CLIENT_SECRET="your-client-secret"
+```env
+GOOGLE_OAUTH_CLIENT_ID=your-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
 ```
+
+> [!TIP]
+> For Gmail users:
+>
+> - **SMTP Method**: Create an [App Password](https://myaccount.google.com/apppasswords) and use it as `SMTP_PASSWORD`
+> - **OAuth2 Method**: Create credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+>
+> The `.env.example` template is available in the [repository](https://github.com/sean1832/go-invoice/blob/main/backend/.env.example) with all available options and explanations.
+
+3. **Restart the application** for changes to take effect
 
 ### Advanced Options
 
@@ -180,7 +202,7 @@ export GOOGLE_OAUTH_CLIENT_SECRET="your-client-secret"
 
 go-invoice is built with simplicity in mind:
 
-- **Frontend**: SvelteKit static site (modern, reactive UI)
+- **Frontend**: SvelteKit static site (modern, lightweight, reactive UI)
 - **Backend**: Go HTTP server with embedded frontend
 - **Storage**: JSON files (no database required)
 - **PDF Engine**: ChromeDP (headless Chrome for pixel-perfect PDFs)
@@ -204,7 +226,6 @@ RESTful API available at `/api/v1/` for integration with other tools:
 - `POST /api/v1/invoices/{id}/email` - Send invoice via email
 - `GET/POST/DELETE /api/v1/clients` - Manage clients
 - `GET/POST/DELETE /api/v1/providers` - Manage service providers
-
 
 ## 🛠️ Development
 
