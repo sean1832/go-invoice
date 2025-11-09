@@ -8,12 +8,22 @@
 	import { api } from '@/services';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { updateProvider } from '@/stores/provider';
+	import { onMount } from 'svelte';
 
 	// Use reactive reference to activeProvider
 	let currentProvider = $derived($activeProvider);
 
 	let errorMessage = $state<string | null>(null);
 	let isSaving = $state(false);
+	let version = $state<string>('dev');
+
+	onMount(async () => {
+		try {
+			version = await api.version.getVersion(fetch);
+		} catch (err) {
+			console.error('Failed to fetch version:', err);
+		}
+	});
 
 	async function handleSave(provider: ProviderData) {
 		isSaving = true;
@@ -77,4 +87,9 @@
 			</Card.Content>
 		</Card.Root>
 	{/if}
+
+	<!-- Version Info -->
+	<div class="mt-8 text-center text-sm text-muted-foreground">
+		Version: {version}
+	</div>
 </div>
