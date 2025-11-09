@@ -78,4 +78,6 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 		writeRespErr(w, "email sending via OAuth2 is not implemented", http.StatusNotImplemented)
 		return
 	}
+
+	writeRespOk(w, fmt.Sprintf("email sent for invoice '%s'", id), emailMessage)
 }
