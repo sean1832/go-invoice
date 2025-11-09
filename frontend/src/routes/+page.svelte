@@ -15,6 +15,13 @@
 
 		try {
 			const data = await api.invoices.getAllInvoices(fetch);
+
+			// empty store if no invoice data
+			if (!data || data.length === 0) {
+				invoices.set([]);
+				return;
+			}
+
 			invoices.set(data);
 		} catch (error) {
 			console.error('Failed to load invoices:', error);

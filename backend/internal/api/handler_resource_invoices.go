@@ -4,6 +4,7 @@ import (
 	"go-invoice/internal/invoice"
 	"go-invoice/internal/query"
 	"net/http"
+	"os"
 )
 
 func (h *Handler) handleInvoicesItem(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +33,7 @@ func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Reques
 
 		// Get all invoices
 		invoices, err := getAllInvoices(h.StorageDir.Invoices, "*.json")
-		if err != nil {
+		if err != nil && err != os.ErrNotExist {
 			writeRespErr(w, "failed to list invoice informations", http.StatusInternalServerError)
 			return
 		}
