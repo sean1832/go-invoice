@@ -48,7 +48,17 @@
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
 	let client = $state<Party>(invoice?.client || createEmptyParty());
 	let items = $state<ServiceItem[]>(invoice?.items || [createEmptyLineItem()]);
-	let taxRate = $state(invoice?.pricing?.tax_rate || 10);
+
+	// Derived reactive client lookup
+	let currentClient = $derived($clients.find((c) => c.id === client.id));
+	let taxRate = $state(invoice?.pricing?.tax_rate || 0);
+
+	// Update tax rate when client changes
+	$effect(() => {
+		if (currentClient?.tax_rate !== undefined && !invoice) {
+			taxRate = currentClient.tax_rate;
+		}
+	});
 
 	// Selected IDs for profile selectors
 	let selectedProviderId = $state<string | undefined>(undefined);
