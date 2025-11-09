@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  release:
+    types: [published, released]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            binary: go-invoice.exe
+            asset_name: go-invoice-windows-amd64.exe
+            archive_ext: zip
+          - os: ubuntu-latest
+            binary: go-invoice
+            asset_name: go-invoice-linux-amd64
+            archive_ext: tar.gz
+          - os: macos-latest
+            binary: go-invoice
+            asset_name: go-invoice-macos-amd64
+            archive_ext: tar.gz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+
+      - name: Extract version from release tag
+        id: version
+        shell: bash
+        run: |
+          # Extract version from tag (e.g., v1.2.3 -> 1.2.3)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build application
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: node build.js all
+
+      - name: Prepare release package
+        shell: bash
+        run: |
+          cd backend/bin
+          # Copy .env.example as .env
+          cp ../.env.example .env
+          # Rename binary
+          mv ${{ matrix.binary }} ${{ matrix.asset_name }}
+
+      - name: Create release archive
+        shell: bash
+        run: |
+          cd backend/bin
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ${{ matrix.asset_name }}.zip ${{ matrix.asset_name }} .env
+          else
+            tar -czf ${{ matrix.asset_name }}.tar.gz ${{ matrix.asset_name }} .env
+          fi
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            backend/bin/${{ matrix.asset_name }}.${{ matrix.archive_ext }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
