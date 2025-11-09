@@ -13,7 +13,7 @@
 	<DateDisplay date={invoice.date} format="short" />
 -->
 <script lang="ts">
-	import { formatDate, formatDateShort, formatDateNumeric } from '@/utils/formatters';
+	import { formatDate, formatDateShort, formatDateNumeric } from '@/helpers';
 	import { cn } from '@/utils';
 
 	interface Props {

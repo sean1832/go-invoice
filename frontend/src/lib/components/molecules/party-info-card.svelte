@@ -16,7 +16,7 @@
 <script lang="ts">
 	import type { Party } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatPhone, formatABN } from '@/utils/formatters';
+	import { formatPhone, formatABN } from '@/helpers';
 
 	interface Props {
 		party: Party;

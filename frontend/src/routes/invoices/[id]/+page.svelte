@@ -10,7 +10,7 @@
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
 	import EmailDialog from '@/components/molecules/email-dialog.svelte';
-	import { formatEmailTemplate } from '$lib/utils/formatters';
+	import { formatEmailTemplate } from '$lib/helpers';
 
 	interface Props {
 		data: {

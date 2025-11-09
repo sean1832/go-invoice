@@ -14,7 +14,7 @@
 <script lang="ts">
 	import type { Pricing } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatCurrency } from '@/utils/formatters';
+	import { formatCurrency } from '@/helpers';
 
 	interface Props {
 		pricing: Pricing;

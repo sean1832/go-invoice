@@ -17,10 +17,15 @@
 <script lang="ts">
 	import type { Invoice, Party, ServiceItem } from '@/types/invoice';
 	import { providers, clients, activeProvider } from '@/stores';
-	import { createEmptyLineItem, createEmptyParty } from '@/utils/invoice-generators';
-	import { getDefaultIssueDate, getDefaultDueDate } from '@/utils/date-helpers';
-	import { calculateLineItemTotal, calculatePricing } from '@/utils/invoice-calculations';
-	import { validateInvoice } from '@/utils/validators';
+	import {
+		validateInvoice,
+		calculateLineItemTotal,
+		calculatePricing,
+		getDefaultIssueDate,
+		getDefaultDueDate,
+		createEmptyLineItem,
+		createEmptyParty
+	} from '@/helpers';
 	import InvoiceHeaderSection from './invoice-header-section.svelte';
 	import InvoicePartiesSection from './invoice-parties-section.svelte';
 	import InvoiceItemsSection from './invoice-items-section.svelte';
@@ -37,7 +42,7 @@
 	let { invoice, mode, isSaving = false, onSave, onCancel }: Props = $props();
 
 	// Form state
-	let invoiceId = $state(invoice?.id || "");
+	let invoiceId = $state(invoice?.id || '');
 	let issueDate = $state(invoice?.date || getDefaultIssueDate());
 	let dueDate = $state(invoice?.due || getDefaultDueDate());
 	let provider = $state<Party>(invoice?.provider || createEmptyParty());
@@ -226,9 +231,5 @@
 	/>
 
 	<!-- Action Buttons -->
-	<InvoiceFormActions
-		{isSaving}
-		onCancel={handleCancel}
-		onSaveDraft={handleSaveDraft}
-	/>
+	<InvoiceFormActions {isSaving} onCancel={handleCancel} onSaveDraft={handleSaveDraft} />
 </div>
