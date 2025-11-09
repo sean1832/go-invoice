@@ -26,6 +26,7 @@
 		createEmptyLineItem,
 		createEmptyParty
 	} from '@/helpers';
+	import { toast } from 'svelte-sonner';
 	import InvoiceHeaderSection from './invoice-header-section.svelte';
 	import InvoicePartiesSection from './invoice-parties-section.svelte';
 	import InvoiceItemsSection from './invoice-items-section.svelte';
@@ -212,7 +213,9 @@
 		// Validate
 		const validation = validateInvoice(invoiceData);
 		if (!validation.isValid) {
-			alert('Please fix the following errors:\n\n' + validation.errors.join('\n'));
+			toast.error('Validation failed', {
+				description: validation.errors.join('\n')
+			});
 			return;
 		}
 

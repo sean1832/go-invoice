@@ -2,6 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { ModeWatcher } from 'mode-watcher';
+	import { Toaster } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	let { children } = $props();
 	import Navbar from '@/components/organisms/navbar/navbar.svelte';
@@ -18,5 +19,6 @@
 </svelte:head>
 
 <ModeWatcher />
+<Toaster position="bottom-center" />
 <Navbar class="print:hidden" />
 {@render children()}

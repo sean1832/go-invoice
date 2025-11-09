@@ -11,6 +11,7 @@
 	import { api } from '@/services';
 	import EmailDialog from '@/components/molecules/email-dialog.svelte';
 	import { formatEmailTemplate, validateEmailConfig } from '$lib/helpers';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		data: {
@@ -102,10 +103,9 @@
 		// validate first
 		const validation = validateEmailConfig(emailConfig);
 		if (!validation.isValid) {
-			alert(
-				'Email validation failed, please fix the following errors:\n\n' +
-					validation.errors.join('\n')
-			);
+			toast.error('Email validation failed', {
+				description: validation.errors.join('\n')
+			});
 			return;
 		}
 
@@ -113,12 +113,12 @@
 			isSending = true;
 			await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
 			// Show success message
-			alert('Invoice email sent successfully.');
+			toast.success('Invoice email sent successfully');
 		} catch (error) {
 			console.error('Error sending invoice email:', error);
-			alert(
-				error instanceof Error ? error.message : 'Failed to send invoice email. Please try again.'
-			);
+			toast.error('Failed to send invoice email', {
+				description: error instanceof Error ? error.message : 'Please try again.'
+			});
 		} finally {
 			isSending = false;
 		}

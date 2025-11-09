@@ -12,6 +12,7 @@
 	import { onMount } from 'svelte';
 	import { api } from '@/services';
 	import { toggleMode } from 'mode-watcher';
+	import { toast } from 'svelte-sonner';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 
@@ -27,7 +28,6 @@
 		});
 		return unsubProvider;
 	});
-
 	$effect(() => {
 		const unsubProviders = providersStore.subscribe((value) => {
 			currentProviders = value;
@@ -117,7 +117,9 @@
 				}
 			} catch (err) {
 				console.error('Failed to delete provider:', err);
-				alert(err instanceof Error ? err.message : `Failed to delete provider ${provider.name}`);
+				toast.error('Failed to delete provider', {
+					description: err instanceof Error ? err.message : `Could not delete ${provider.name}`
+				});
 			}
 		}
 	}
