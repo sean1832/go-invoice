@@ -27,7 +27,7 @@
 
 	// Format email template with invoice data
 	let formattedEmail = $derived.by(() => {
-		if (!emailData || !invoice) return { to: '', subject: '', body: '' } as EmailConfig;
+		if (!emailData || !invoice) return { to: [], subject: '', body: '' } as EmailConfig;
 
 		const pattern = {
 			INVOICE_ID: invoice.id,
@@ -37,8 +37,13 @@
 			SERVICE_TYPE: invoice.items[0].description || ''
 		};
 
+		// Parse email_target as comma-separated list if it exists
+		const recipients = invoice.email_target
+			? invoice.email_target.split(',').map((email) => email.trim())
+			: [];
+
 		return {
-			to: invoice.email_target || '',
+			to: recipients,
 			subject: formatEmailTemplate(emailData.subject, pattern),
 			body: formatEmailTemplate(emailData.body, pattern)
 		} as EmailConfig;

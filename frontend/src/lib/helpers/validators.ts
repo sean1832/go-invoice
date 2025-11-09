@@ -157,6 +157,10 @@ export function isEmpty(value: string | undefined | null): boolean {
 	return !value || value.trim() === '';
 }
 
+export function isListEmpty<T>(list: T[] | undefined | null): boolean {
+	return !list || list.length === 0;
+}
+
 /**
  * Validate required field
  * @param value - Value to check
@@ -173,10 +177,14 @@ export function validateRequired(
 export function validateEmailConfig(emailConfig: EmailConfig): ValidationResult {
 	const errors: string[] = [];
 
-	if (isEmpty(emailConfig.to)) {
+	if (isListEmpty(emailConfig.to)) {
 		errors.push('Email recipient (To) is required');
-	} else if (!isValidEmail(emailConfig.to!)) {
-		errors.push('Email recipient (To) is not a valid email address');
+	} else {
+		// Validate each email address in the array
+		const invalidEmails = emailConfig.to!.filter((email) => !isValidEmail(email));
+		if (invalidEmails.length > 0) {
+			errors.push(`Invalid email address(es): ${invalidEmails.join(', ')}`);
+		}
 	}
 
 	if (isEmpty(emailConfig.subject)) {

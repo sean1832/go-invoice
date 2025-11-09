@@ -13,15 +13,21 @@
 	}
 	let { children, onSubmit, templateData }: Props = $props();
 
-	// derive local state from templateData
-	let emailTo = $state(templateData.to);
+	// derive local state from templateData - convert array to comma-separated string
+	let emailTo = $state(templateData.to.join(', '));
 	let emailSubject = $state(templateData.subject);
 	let emailBody = $state(templateData.body);
 
 	function handleSubmit() {
 		if (onSubmit) {
+			// parse emailTo with comma separated values and trim spaces
+			const recipients = emailTo
+				.split(',')
+				.map((email) => email.trim())
+				.filter((email) => email.length > 0);
+
 			onSubmit({
-				to: emailTo,
+				to: recipients,
 				subject: emailSubject,
 				body: emailBody
 			});
