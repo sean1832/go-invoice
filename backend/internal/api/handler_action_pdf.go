@@ -32,7 +32,7 @@ func (h *Handler) handleInvoicePDF(w http.ResponseWriter, r *http.Request) {
 
 	url := fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id)
 	slog.Info("generating pdf", "url", url)
-	pdf, err := chromeService.GeneratePDF(url, 30*time.Second)
+	pdf, err := chromeService.GeneratePDF(url, 30*time.Second, services.PaperSizeA3, id)
 	if err != nil {
 		writeRespErr(w, "error generating pdf", http.StatusInternalServerError)
 		slog.Error("error generating pdf", "error", err)

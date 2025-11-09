@@ -57,7 +57,7 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer chrome.Close()
-		pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second)
+		pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second, services.PaperSizeA3, id,)
 		if err != nil {
 			writeRespErr(w, "failed to generate pdf attachment", http.StatusInternalServerError)
 			logger.Error("failed to generate pdf attachment", "error", err)
