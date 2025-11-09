@@ -10,6 +10,7 @@
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
 	import EmailDialog from '@/components/molecules/email-dialog.svelte';
+	import { formatEmailTemplate } from '$lib/utils/formatters';
 
 	interface Props {
 		data: {
@@ -23,6 +24,25 @@
 	let invoice = $derived(data.invoice as Invoice);
 	let emailData = $derived(data.emailConfig as EmailConfig);
 	let error = $derived(data.error);
+
+	// Format email template with invoice data
+	let formattedEmail = $derived.by(() => {
+		if (!emailData || !invoice) return emailData;
+
+		const pattern = {
+			INVOICE_ID: invoice.id,
+			CLIENT_NAME: invoice.client.name,
+			PROVIDER_NAME: invoice.provider.name,
+			PROVIDER_EMAIL: invoice.provider.email || '',
+			SERVICE_TYPE: invoice.items[0].description || ''
+		};
+
+		return {
+			to: emailData.to,
+			subject: formatEmailTemplate(emailData.subject, pattern),
+			body: formatEmailTemplate(emailData.body, pattern)
+		} as EmailConfig;
+	});
 
 	// Helper functions
 	function getStatusVariant(status: Invoice['status']): 'default' | 'secondary' {
@@ -99,7 +119,7 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
-				<EmailDialog templateData={emailData}>
+				<EmailDialog templateData={formattedEmail}>
 					<Button variant="outline" size="sm">
 						<SendIcon class="mr-2 h-4 w-4" />
 						<span class="hidden sm:inline">Send Invoice</span>
