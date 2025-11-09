@@ -96,6 +96,8 @@
 		}
 	}
 
+	let isSending = $state(false);
+
 	async function onSubmit(emailConfig: EmailConfig) {
 		// validate first
 		const validation = validateEmailConfig(emailConfig);
@@ -108,13 +110,17 @@
 		}
 
 		try {
-			// await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
+			isSending = true;
+			await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
+			// Show success message
 			alert('Invoice email sent successfully.');
 		} catch (error) {
 			console.error('Error sending invoice email:', error);
 			alert(
 				error instanceof Error ? error.message : 'Failed to send invoice email. Please try again.'
 			);
+		} finally {
+			isSending = false;
 		}
 	}
 </script>
@@ -146,7 +152,7 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail} {onSubmit}>
+				<EmailDialog templateData={formattedEmail} {onSubmit} {isSending}>
 					<Button variant="outline" size="sm">
 						<SendIcon class="mr-2 h-4 w-4" />
 						<span class="hidden sm:inline">Send Invoice</span>
