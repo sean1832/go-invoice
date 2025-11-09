@@ -20,9 +20,12 @@ jobs:
           - os: ubuntu-latest
             binary: go-invoice
             archive_name: go-invoice-linux-amd64.zip
-          - os: macos-latest
+          - os: macos-13 # This runner uses Intel architecture
             binary: go-invoice
             archive_name: go-invoice-macos-amd64.zip
+          - os: macos-14 # This runner is Apple Silicon
+            binary: go-invoice
+            archive_name: go-invoice-macos-arm64.zip
 
     steps:
       - name: Checkout code
