@@ -81,3 +81,17 @@ export interface InvoiceFilters {
 	sort_by?: 'date' | 'amount' | 'client';
 	sort_order?: 'asc' | 'desc';
 }
+
+export interface EmailContent {
+	subject: string;
+	body: string;
+}
+
+export interface EmailTemplate extends EmailContent {
+	id: string;
+	name: string;
+}
+
+export interface EmailConfig extends EmailContent {
+	to: string;
+}

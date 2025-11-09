@@ -11,11 +11,12 @@ import (
 )
 
 type StorageDir struct {
-	Root      string
-	Clients   string
-	Providers string
-	Invoices  string
-	Config    string
+	Root           string
+	Clients        string
+	Providers      string
+	Invoices       string
+	Config         string
+	EmailTemplates string
 }
 
 func NewStorageDir() (*StorageDir, error) {
@@ -30,6 +31,9 @@ func NewStorageDir() (*StorageDir, error) {
 	providersDir := filepath.Join(root, "providers")
 	invoicesDir := filepath.Join(root, "invoices")
 	configDir := filepath.Join(root, "smtp")
+	emailTemplatesDir := filepath.Join(root, "email_templates")
+
+	// Ensure all directories exist
 	if err := ensurePathExist(clientsDir); err != nil {
 		return nil, err
 	}
@@ -42,13 +46,17 @@ func NewStorageDir() (*StorageDir, error) {
 	if err := ensurePathExist(configDir); err != nil {
 		return nil, err
 	}
+	if err := ensurePathExist(emailTemplatesDir); err != nil {
+		return nil, err
+	}
 
 	return &StorageDir{
-		Root:      root,
-		Clients:   clientsDir,
-		Providers: providersDir,
-		Invoices:  invoicesDir,
-		Config:    configDir,
+		Root:           root,
+		Clients:        clientsDir,
+		Providers:      providersDir,
+		Invoices:       invoicesDir,
+		Config:         configDir,
+		EmailTemplates: emailTemplatesDir,
 	}, nil
 }
 
@@ -112,18 +120,18 @@ func (p *ProviderData) HasRequiredFields() bool {
 	return p.Party.HasRequiredFields() && p.Payment.HasRequiredFields()
 }
 
-type EmailTemplateData struct {
+type EmailTemplate struct {
 	Id      string `json:"id"`
 	Name    string `json:"name"`
 	Subject string `json:"subject"`
 	Body    string `json:"body"`
 }
 
-func NewDefaultEmailTemplateData() *EmailTemplateData {
-	return &EmailTemplateData{
+func NewDefaultEmailTemplateData() *EmailTemplate {
+	return &EmailTemplate{
 		Id:      "default",
 		Name:    "Default Invoice Email",
-		Subject: "Invoice from ${PROVIDER_NAME} - ${INVOICE_ID}",
-		Body:    "Please find the attached invoice for the services rendered.\n\nClient name: ${CLIENT_NAME}\nSubcontractor email: ${PROVIDER_EMAIL}\nService type: ${SERVICE_TYPE}\n\nKind regards,\n${PROVIDER_NAME}",
+		Subject: "Invoice from {{PROVIDER_NAME}} - {{INVOICE_ID}}",
+		Body:    "Please find the attached invoice for the services rendered.\n\nClient name: {{CLIENT_NAME}}\nSubcontractor email: {{PROVIDER_EMAIL}}\nService type: {{SERVICE_TYPE}}\n\nKind regards,\n{{PROVIDER_NAME}}",
 	}
 }

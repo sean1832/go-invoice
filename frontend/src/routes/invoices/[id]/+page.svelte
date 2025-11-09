@@ -2,7 +2,7 @@
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
 	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
-	import type { Invoice } from '@/types/invoice';
+	import type { EmailConfig, Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import SendIcon from '@lucide/svelte/icons/send';
@@ -14,12 +14,14 @@
 	interface Props {
 		data: {
 			invoice: Invoice | null;
+			emailConfig: EmailConfig | null;
 			error?: string;
 		};
 	}
 
 	let { data }: Props = $props();
 	let invoice = $derived(data.invoice as Invoice);
+	let emailData = $derived(data.emailConfig as EmailConfig);
 	let error = $derived(data.error);
 
 	// Helper functions
@@ -68,10 +70,6 @@
 			downloadError = null;
 		}
 	}
-
-	async function handleSend() {
-		// TODO: Implement send invoice logic
-	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -101,8 +99,8 @@
 					<DownloadIcon class="h-4 w-4 sm:mr-2" />
 					<span class="hidden sm:inline">Download PDF</span>
 				</Button>
-				<EmailDialog>
-					<Button variant="outline" size="sm" onclick={handleSend}>
+				<EmailDialog templateData={emailData}>
+					<Button variant="outline" size="sm">
 						<SendIcon class="mr-2 h-4 w-4" />
 						<span class="hidden sm:inline">Send Invoice</span>
 					</Button>
