@@ -7,8 +7,20 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
+)
+
+type PaperSize struct {
+	Width  float64
+	Height float64
+}
+
+var (
+	PaperSizeA4     = PaperSize{Width: 8.27, Height: 11.69}  // in inches
+	PaperSizeA3     = PaperSize{Width: 11.69, Height: 16.54} // in inches
+	PaperSizeLetter = PaperSize{Width: 8.5, Height: 11.0}    // in inches
 )
 
 // ChromeService manages a headless Chrome browser instance
@@ -46,7 +58,7 @@ func (s *ChromeService) Close() {
 }
 
 // GeneratePDF navigates to the specified URL and generates a PDF of the page
-func (s *ChromeService) GeneratePDF(url string, timeout time.Duration) ([]byte, error) {
+func (s *ChromeService) GeneratePDF(url string, timeout time.Duration, paperSize PaperSize, title string) ([]byte, error) {
 	tabCtx, cancel := chromedp.NewContext(s.browserCtx)
 	defer cancel()
 
@@ -58,6 +70,8 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration) ([]byte, 
 	err := chromedp.Run(tabCtx,
 		chromedp.Navigate(url),
 		chromedp.WaitVisible(`#pdf-render-complete, #pdf-render-error`, chromedp.ByQuery), // wait for id to shows up
+		chromedp.Evaluate(fmt.Sprintf(`document.title = %q`, title), nil),
+		emulation.SetEmulatedMedia().WithMedia("print"), // set emulated media to print for proper paper sizing
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			// check if error element exists
 			var errorNodes []*cdp.Node
@@ -81,6 +95,8 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration) ([]byte, 
 			var printErr error
 			pdfBuffer, _, printErr = page.PrintToPDF().
 				WithPrintBackground(true).
+				WithPaperHeight(paperSize.Height).
+				WithPaperWidth(paperSize.Width).
 				Do(ctx)
 			return printErr
 		}),

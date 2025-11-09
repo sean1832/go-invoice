@@ -80,6 +80,6 @@ export async function sendInvoiceEmail(
 	emailConfig: EmailConfig
 ) {
 	return http.post<void>(KitFetch, `/invoices/${id}/email`, emailConfig, {
-		timeout: 10000 // set timeout to 10 seconds
+		timeout: 30000 // set timeout to 30 seconds
 	});
 }
