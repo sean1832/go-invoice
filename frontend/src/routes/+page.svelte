@@ -5,9 +5,34 @@
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import type { Invoice } from '@/types/invoice';
+	import { onMount } from 'svelte';
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
+	let shouldRedirect = $state(false);
+
+	// Check if provider exists on mount - redirect to settings if not (OOBE)
+	onMount(async () => {
+		try {
+			const providers = await api.providers.getAllProviders(fetch);
+			console.log('[root page] providers check:', providers, 'type:', typeof providers);
+
+			// Backend returns null when no providers exist
+			if (!providers || !Array.isArray(providers) || providers.length === 0) {
+				console.log('[root page] no providers found, redirecting to /providers/new for setup');
+				shouldRedirect = true;
+				window.location.href = '/providers/new';
+				return;
+			}
+		} catch (err) {
+			console.error('[root page] failed to check providers:', err);
+		}
+
+		// Load invoices after provider check
+		if (!shouldRedirect) {
+			await loadInvoices();
+		}
+	});
 
 	async function loadInvoices() {
 		isLoading = true;
@@ -89,10 +114,6 @@
 			isDownloading = false;
 		}
 	}
-	// Load invoices on mount
-	$effect(() => {
-		loadInvoices();
-	});
 </script>
 
 <div class="p-4">

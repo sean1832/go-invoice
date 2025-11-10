@@ -42,8 +42,10 @@
 		try {
 			isLoading = true;
 			const data = await api.providers.getAllProviders(fetch);
-			providers.set(data);
-			return data;
+			// Backend returns null when no providers exist, normalize to empty array
+			const normalized = data && Array.isArray(data) ? data : [];
+			providers.set(normalized);
+			return normalized;
 		} catch (err) {
 			console.error(`[profile selector] failed to load data: `, err);
 			loadError = err instanceof Error ? err.message : 'Failed to load data. Please try again.';
@@ -63,6 +65,14 @@
 		// Load all providers from server (source of truth)
 		const serverProviders = await loadProviders();
 
+		// If no providers available, just set to null
+		// (The root page should have already redirected to settings)
+		if (!serverProviders || serverProviders.length === 0) {
+			console.warn('[provider selector] no providers available');
+			activeProvider.set(null);
+			return;
+		}
+
 		// Validate cached provider against server data
 		if (cachedProvider && cachedProvider.id) {
 			// Check if cached provider still exists on server
@@ -75,31 +85,19 @@
 					activeProvider.set(freshProvider);
 				} catch (err) {
 					console.error('[provider selector] failed to refresh active provider:', err);
-					// Provider might have been deleted - clear and set first available
-					if (serverProviders.length > 0) {
-						activeProvider.set(serverProviders[0]);
-					} else {
-						activeProvider.set(null);
-					}
+					// Provider might have been deleted - set first available
+					activeProvider.set(serverProviders[0]);
 				}
 			} else {
-				// Cached provider no longer exists on server - clear cache
+				// Cached provider no longer exists on server - set first available
 				console.warn(
 					'[provider selector] cached provider no longer exists on server, clearing cache'
 				);
-				if (serverProviders.length > 0) {
-					activeProvider.set(serverProviders[0]);
-				} else {
-					activeProvider.set(null);
-				}
+				activeProvider.set(serverProviders[0]);
 			}
 		} else {
-			// No cached provider - set first available or null
-			if (serverProviders.length > 0) {
-				activeProvider.set(serverProviders[0]);
-			} else {
-				activeProvider.set(null);
-			}
+			// No cached provider - set first available
+			activeProvider.set(serverProviders[0]);
 		}
 	});
 
