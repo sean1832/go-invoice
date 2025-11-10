@@ -54,14 +54,23 @@
 			newErrors.accountName = 'Account name is required';
 		}
 
-		if (!formData.payment_info.bsb?.trim()) {
+		const bsb = formData.payment_info.bsb?.trim();
+		if (!bsb) {
 			newErrors.bsb = 'BSB is required';
-		} else if (!/^\d{3}-?\d{3}$/.test(formData.payment_info.bsb)) {
-			newErrors.bsb = 'BSB must be in format XXX-XXX';
+		} else if (!/^\d{3}-?\d{3}$/.test(bsb)) {
+			newErrors.bsb = 'Invalid BSB format. Must be 6 digits (e.g., 123456 or 123-456)';
 		}
 
-		if (!formData.payment_info.account_number?.trim()) {
+		const accountNumber = formData.payment_info.account_number?.trim();
+		if (!accountNumber) {
 			newErrors.accountNumber = 'Account number is required';
+		} else if (!/^\d{6,9}$/.test(accountNumber)) {
+			newErrors.accountNumber = 'Invalid account number. Must be 6 to 9 digits';
+		}
+
+		const abn = formData.abn?.trim();
+		if (abn && abn.length != 11) {
+			newErrors.abn = 'ABN must be 11 digits';
 		}
 
 		errors = newErrors;
@@ -70,8 +79,14 @@
 
 	function handleSave() {
 		if (validateForm()) {
+			// trim whitespace for all relevant fields
+			formData.payment_info.bsb = formData.payment_info.bsb.replace(/-/g, '').trim();
+			formData.payment_info.account_number = formData.payment_info.account_number.trim();
+			formData.abn = formData.abn?.trim();
+			formData.phone = formData.phone?.trim();
+			formData.email = formData.email?.trim();
+
 			onSave?.(formData);
-			// Go back after save (the parent component handles navigation via onSave callback)
 		}
 	}
 
@@ -135,7 +150,16 @@
 
 				<div class="space-y-2">
 					<Label for="abn">ABN</Label>
-					<Input id="abn" type="text" placeholder="12 345 678 901" bind:value={formData.abn} />
+					<Input
+						id="abn"
+						type="text"
+						placeholder="12 345 678 901"
+						bind:value={formData.abn}
+						class={errors.abn ? 'border-destructive' : ''}
+					/>
+					{#if errors.abn}
+						<p class="text-sm text-destructive">{errors.abn}</p>
+					{/if}
 				</div>
 			</div>
 

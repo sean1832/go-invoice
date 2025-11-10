@@ -4,6 +4,7 @@
 - [ ] Authentication and user management
 - [ ] Database integration (currently uses local file storage)
 - [ ] Description field for clients
+- [ ] International payment support (IBAN, SWIFT, Bank name fetching based on BSB)
 
 ## Backend API
 
