@@ -2,7 +2,7 @@
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { ProviderForm } from '@/components/organisms/profile-form';
 	import { api } from '@/services';
-	import { updateProvider } from '@/stores/provider';
+	import { addProvider } from '@/stores/provider';
 	import type { ProviderData } from '@/types/invoice';
 
 	let errorMessage = $state<string | null>(null);
@@ -25,8 +25,8 @@
 			}
 			await api.providers.createProvider(fetch, provider);
 
-			// Update both the providers list AND the activeProvider
-			updateProvider(provider);
+			// Add to providers list AND set as activeProvider
+			addProvider(provider);
 
 			// Go back after saving
 			window.history.back();

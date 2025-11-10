@@ -43,44 +43,63 @@
 			isLoading = true;
 			const data = await api.providers.getAllProviders(fetch);
 			providers.set(data);
+			return data;
 		} catch (err) {
 			console.error(`[profile selector] failed to load data: `, err);
 			loadError = err instanceof Error ? err.message : 'Failed to load data. Please try again.';
+			return [];
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	onMount(async () => {
-		await loadProviders();
+		// Get cached value BEFORE clearing (we'll validate it)
+		const cachedProvider = get(activeProvider);
 
-		// Check if there's an active provider in localStorage
-		const storedActiveProvider = localStorage.getItem('activeProvider');
+		// Clear the store immediately to prevent showing stale data
+		activeProvider.set(null);
 
-		// Get current value from store using get()
-		const currentStoreValue = get(activeProvider);
+		// Load all providers from server (source of truth)
+		const serverProviders = await loadProviders();
 
-		// If we have a stored active provider, refresh it from backend to get latest data
-		if (storedActiveProvider || currentStoreValue) {
-			let providerId: string = '';
-			if (currentStoreValue && currentStoreValue.id) {
-				providerId = currentStoreValue.id;
-			} else if (storedActiveProvider) {
-				providerId = (JSON.parse(storedActiveProvider) as ProviderData).id;
-			}
+		// Validate cached provider against server data
+		if (cachedProvider && cachedProvider.id) {
+			// Check if cached provider still exists on server
+			const providerExistsOnServer = serverProviders.some((p) => p.id === cachedProvider.id);
 
-			if (providerId) {
+			if (providerExistsOnServer) {
+				// Refresh with latest server data
 				try {
-					const freshProvider = await api.providers.getProvider(fetch, providerId);
+					const freshProvider = await api.providers.getProvider(fetch, cachedProvider.id);
 					activeProvider.set(freshProvider);
 				} catch (err) {
 					console.error('[provider selector] failed to refresh active provider:', err);
-					// Fall back to using stored data if fetch fails
+					// Provider might have been deleted - clear and set first available
+					if (serverProviders.length > 0) {
+						activeProvider.set(serverProviders[0]);
+					} else {
+						activeProvider.set(null);
+					}
+				}
+			} else {
+				// Cached provider no longer exists on server - clear cache
+				console.warn(
+					'[provider selector] cached provider no longer exists on server, clearing cache'
+				);
+				if (serverProviders.length > 0) {
+					activeProvider.set(serverProviders[0]);
+				} else {
+					activeProvider.set(null);
 				}
 			}
-		} else if (currentProviders.length > 0) {
-			// Only set default if nothing is stored AND store is empty AND we have providers
-			activeProvider.set(currentProviders[0]); // default to first one
+		} else {
+			// No cached provider - set first available or null
+			if (serverProviders.length > 0) {
+				activeProvider.set(serverProviders[0]);
+			} else {
+				activeProvider.set(null);
+			}
 		}
 	});
 
@@ -152,7 +171,9 @@
 			<div class="flex flex-col">
 				<!-- Current Provider Header -->
 				<div class="px-4 py-3">
-					{#if currentProvider}
+					{#if isLoading}
+						<span class="text-sm text-muted-foreground">Loading...</span>
+					{:else if currentProvider}
 						<div class="flex flex-col">
 							<span class="font-semibold">{currentProvider.name}</span>
 							<span class="text-xs text-muted-foreground">{currentProvider.email}</span>
