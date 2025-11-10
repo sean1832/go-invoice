@@ -93,12 +93,14 @@
 					onValueChange={(v) => v && handleSelect(v)}
 				>
 					<Select.Trigger class="w-[200px]">
-						<span>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span>
+						<span class="truncate"
+							>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span
+						>
 					</Select.Trigger>
 					<Select.Content>
 						{#each profiles as profile}
 							<Select.Item value={profile.id} label={profile.name}>
-								{profile.name}
+								<span class="truncate" title={profile.name}>{profile.name}</span>
 							</Select.Item>
 						{/each}
 					</Select.Content>
@@ -196,11 +198,5 @@
 				</div>
 			</Item.Content>
 		{/if}
-	{:else}
-		<Item.Content class="pt-2">
-			<p class="text-sm text-muted-foreground italic">
-				No {type} selected. Please select a {type} profile.
-			</p>
-		</Item.Content>
 	{/if}
 </Item.Root>
