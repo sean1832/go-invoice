@@ -6,17 +6,16 @@
  */
 
 // Provider store
-export {
-	providers,
-	activeProvider,
-	providersLoading,
-} from './provider';
+export { providers, activeProvider, providersLoading } from './provider';
 
 // Client store
 export {
 	clients,
 	clientsLoading,
-	searchClients
+	searchClients,
+	addClient,
+	updateClient,
+	removeClient
 } from './clients';
 
 // Invoice store
@@ -25,5 +24,5 @@ export {
 	invoicesLoading,
 	invoicesError,
 	invoiceFilters,
-	filteredInvoices,
+	filteredInvoices
 } from './invoices';

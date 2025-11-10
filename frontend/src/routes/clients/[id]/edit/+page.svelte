@@ -3,6 +3,7 @@
 	import type { ClientData } from '@/types/invoice';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { api } from '@/services';
+	import { updateClient } from '@/stores/clients';
 
 	interface Props {
 		data: {
@@ -24,6 +25,10 @@
 		saveError = null;
 		try {
 			await api.clients.updateClient(fetch, client.id, client);
+
+			// Update the store with the updated client
+			updateClient(client);
+
 			window.history.back();
 		} catch (err) {
 			console.error('failed to save client: ', err);
