@@ -29,7 +29,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import Separator from '@/components/ui/separator/separator.svelte';
 	import InvoiceLineItemEditor from '@/components/molecules/invoice-line-item-editor.svelte';
-	import TotalsSummary from '@/components/molecules/totals-summary.svelte';
+	import { InvoiceDisplayTotalSummary } from '@/components/organisms/invoice-display';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
 	interface Props {
@@ -83,7 +83,7 @@
 
 		<!-- Totals -->
 		<div class="flex justify-end">
-			<TotalsSummary {pricing} class="w-64" />
+			<InvoiceDisplayTotalSummary {pricing} class="w-64" />
 		</div>
 	</Card.Content>
 </Card.Root>
