@@ -80,27 +80,27 @@
 	variant="muted"
 	class={cn('h-full w-full flex-col! flex-nowrap! items-start', customClass)}
 >
-	<Item.Header class="w-full">
-		<Item.Content class="min-w-0 shrink">
+	<Item.Header class="w-full flex-col! items-start! gap-3">
+		<Item.Content class="w-full">
 			<Item.Title>{title}</Item.Title>
 		</Item.Content>
-		<Item.Actions class="shrink-0">
-			<div class="flex flex-nowrap items-center gap-2">
+		<Item.Actions class="w-full">
+			<div class="flex w-full flex-nowrap items-center gap-2">
 				<Select.Root
 					type="single"
 					bind:open={selectOpen}
 					value={selectedProfileId}
 					onValueChange={(v) => v && handleSelect(v)}
 				>
-					<Select.Trigger class="w-[200px]">
-						<span class="truncate"
-							>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span
-						>
+					<Select.Trigger class="w-[200px] md:w-[220px] lg:w-[330px]">
+						<span class="block truncate">
+							{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}
+						</span>
 					</Select.Trigger>
 					<Select.Content>
 						{#each profiles as profile}
 							<Select.Item value={profile.id} label={profile.name}>
-								<span class="truncate" title={profile.name}>{profile.name}</span>
+								<span class="block truncate" title={profile.name}>{profile.name}</span>
 							</Select.Item>
 						{/each}
 					</Select.Content>
