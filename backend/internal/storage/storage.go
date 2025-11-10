@@ -21,7 +21,7 @@ type StorageDir struct {
 // NewStorageDir initializes the storage directory structure.
 // It takes a rootDir as an argument, making the function testable and configurable.
 func NewStorageDir(rootDir string) (*StorageDir, error) {
-	// 1. Define all paths relative to the configurable root.
+	// Define all paths relative to the configurable root.
 	storage := &StorageDir{
 		Root:           rootDir,
 		Clients:        filepath.Join(rootDir, "clients"),
@@ -30,7 +30,7 @@ func NewStorageDir(rootDir string) (*StorageDir, error) {
 		EmailTemplates: filepath.Join(rootDir, "email_templates"),
 	}
 
-	// 2. Create a list of all paths that must exist.
+	// Create a list of all paths that must exist.
 	paths := []string{
 		storage.Root,
 		storage.Clients,
@@ -39,7 +39,7 @@ func NewStorageDir(rootDir string) (*StorageDir, error) {
 		storage.EmailTemplates,
 	}
 
-	// 3. Loop and create each one, using the correct tool (MkdirAll).
+	// Loop and create each one, using the correct tool (MkdirAll).
 	// Use 0755 (rwxr-xr-x) instead of 0777 (os.ModePerm).
 	const perm = 0755
 
@@ -47,6 +47,15 @@ func NewStorageDir(rootDir string) (*StorageDir, error) {
 		// os.MkdirAll is idempotent: it does nothing if the path already exists.
 		if err := os.MkdirAll(path, perm); err != nil {
 			return nil, fmt.Errorf("failed to create storage directory %q: %v", path, err)
+		}
+	}
+
+	// Create default email template if it doesn't exist
+	defaultTemplatePath := filepath.Join(storage.EmailTemplates, "default.json")
+	if _, err := os.Stat(defaultTemplatePath); os.IsNotExist(err) {
+		defaultTemplate := NewDefaultEmailTemplateData()
+		if err := defaultTemplate.SaveToFile(defaultTemplatePath); err != nil {
+			return nil, fmt.Errorf("failed to create default email template: %v", err)
 		}
 	}
 
@@ -115,7 +124,20 @@ func NewDefaultEmailTemplateData() *EmailTemplate {
 	return &EmailTemplate{
 		Id:      "default",
 		Name:    "Default Invoice Email",
-		Subject: "Invoice from {{PROVIDER_NAME}} - {{INVOICE_ID}}",
+		Subject: "Invoice from {{PROVIDER_NAME}} ({{INVOICE_ID}})",
 		Body:    "Please find the attached invoice for the services rendered.\n\nClient name: {{CLIENT_NAME}}\nSubcontractor email: {{PROVIDER_EMAIL}}\nService type: {{SERVICE_TYPE}}\n\nKind regards,\n{{PROVIDER_NAME}}",
 	}
+}
+
+// SaveToFile saves the email template to a JSON file
+func (et *EmailTemplate) SaveToFile(filePath string) error {
+	data, err := json.MarshalIndent(et, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal email template to JSON: %v", err)
+	}
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write email template to file: %v", err)
+	}
+
+	return nil
 }
