@@ -54,9 +54,37 @@
 	// Track select open state
 	let selectOpen = $state(false);
 
+	// Local storage key for caching
+	const CACHE_KEY =
+		type === 'client' ? 'invoice_last_selected_client' : 'invoice_last_selected_provider';
+
+	// Save selection to localStorage
+	function saveToCache(profileId: string) {
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				localStorage.setItem(CACHE_KEY, profileId);
+			} catch (error) {
+				console.warn('Failed to save profile selection to cache:', error);
+			}
+		}
+	}
+
+	// Load selection from localStorage
+	function loadFromCache(): string | null {
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				return localStorage.getItem(CACHE_KEY);
+			} catch (error) {
+				console.warn('Failed to load profile selection from cache:', error);
+				return null;
+			}
+		}
+		return null;
+	}
+
 	function handleSelect(profileId: string) {
 		selectedProfileId = profileId;
-
+		saveToCache(profileId);
 		onSelect?.(profileId);
 	}
 
@@ -66,6 +94,11 @@
 
 	function handleAddNew() {
 		onAddNew?.();
+	}
+
+	// Export function for parent components to load cached selection
+	export function getCachedSelection(): string | null {
+		return loadFromCache();
 	}
 </script>
 
