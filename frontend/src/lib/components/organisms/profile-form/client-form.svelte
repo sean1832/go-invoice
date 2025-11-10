@@ -27,7 +27,7 @@
 			address: '',
 			phone: '',
 			abn: '',
-			tax_rate: 10,
+			tax_rate: 0,
 			email_target: ''
 		}
 	);
@@ -42,9 +42,12 @@
 			newErrors.name = 'Client name is required';
 		}
 
-		if (!formData.email?.trim()) {
-			newErrors.email = 'Email is required';
-		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+		// if (!formData.email?.trim()) {
+		// 	newErrors.email = 'Email is required';
+		// } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+		// 	newErrors.email = 'Invalid email format';
+		// }
+		if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
 			newErrors.email = 'Invalid email format';
 		}
 
@@ -106,7 +109,7 @@
 			</div>
 
 			<div class="space-y-2">
-				<Label for="email">Email *</Label>
+				<Label for="email">Email</Label>
 				<Input
 					id="email"
 					type="email"
