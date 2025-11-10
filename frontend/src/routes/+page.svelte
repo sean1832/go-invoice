@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InvoiceShelf from '@/components/organisms/shelf/invoice-shelf.svelte';
+	import AppOOBE from '@/components/organisms/oobe/app-oobe.svelte';
 	import { invoices, filteredInvoices, removeInvoice } from '$lib/stores/invoices';
 	import { api } from '$lib/services';
 	import Spinner from '@/components/atoms/spinner.svelte';
@@ -9,29 +10,37 @@
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
-	let shouldRedirect = $state(false);
+	let showOOBE = $state(false);
 
-	// Check if provider exists on mount - redirect to settings if not (OOBE)
+	// Check if provider and client exist on mount - show OOBE if not
 	onMount(async () => {
 		try {
-			const providers = await api.providers.getAllProviders(fetch);
-			console.log('[root page] providers check:', providers, 'type:', typeof providers);
+			isLoading = true;
+			const [providers, clients] = await Promise.all([
+				api.providers.getAllProviders(fetch),
+				api.clients.getAllClients(fetch)
+			]);
 
-			// Backend returns null when no providers exist
-			if (!providers || !Array.isArray(providers) || providers.length === 0) {
-				console.log('[root page] no providers found, redirecting to /providers/new for setup');
-				shouldRedirect = true;
-				window.location.href = '/providers/new';
+			const hasProvider = providers && Array.isArray(providers) && providers.length > 0;
+			const hasClient = clients && Array.isArray(clients) && clients.length > 0;
+
+			// Show OOBE if either provider or client is missing
+			if (!hasProvider || !hasClient) {
+				console.log('[root page] setup incomplete, showing OOBE');
+				showOOBE = true;
+				isLoading = false;
 				return;
 			}
 		} catch (err) {
-			console.error('[root page] failed to check providers:', err);
+			console.error('[root page] failed to check setup status:', err);
+			errorMessage =
+				err instanceof Error ? err.message : 'Failed to check setup status. Please try again.';
+			isLoading = false;
+			return;
 		}
 
-		// Load invoices after provider check
-		if (!shouldRedirect) {
-			await loadInvoices();
-		}
+		// Load invoices after setup check
+		await loadInvoices();
 	});
 
 	async function loadInvoices() {
@@ -114,42 +123,53 @@
 			isDownloading = false;
 		}
 	}
+
+	function handleOOBEComplete() {
+		// Reload the page to check setup and show invoices
+		window.location.reload();
+	}
 </script>
 
 <div class="p-4">
 	<div class="container mx-auto flex justify-center">
 		<div class="w-full max-w-4xl">
-			<div class="mb-6">
-				<h1 class="text-3xl font-bold tracking-tight">Invoices</h1>
-				<p class="text-muted-foreground">Manage and track your invoices</p>
-			</div>
-			<div class="flex flex-col gap-4">
-				{#if errorMessage}
-					<ErrorAlert
-						message={errorMessage}
-						title="Error"
-						showRetryButton={false}
-						onRetry={clearError}
-					/>
-				{/if}
+			{#if showOOBE}
+				<!-- OOBE (Out-of-Box Experience) -->
+				<AppOOBE onComplete={handleOOBEComplete} />
+			{:else}
+				<!-- Normal Invoice Dashboard -->
+				<div class="mb-6">
+					<h1 class="text-3xl font-bold tracking-tight">Invoices</h1>
+					<p class="text-muted-foreground">Manage and track your invoices</p>
+				</div>
+				<div class="flex flex-col gap-4">
+					{#if errorMessage}
+						<ErrorAlert
+							message={errorMessage}
+							title="Error"
+							showRetryButton={false}
+							onRetry={clearError}
+						/>
+					{/if}
 
-				{#if isLoading}
-					<div class="flex flex-col items-center justify-center gap-4 py-12">
-						<Spinner size={48} />
-						<p class="text-muted-foreground">Loading invoices...</p>
-					</div>
-				{:else}
-					<InvoiceShelf
-						data={$filteredInvoices}
-						onError={handleError}
-						onDelete={handleDelete}
-						onEdit={handleEdit}
-						onDownload={handleDownload}
-						{deletingInvoiceId}
-						{isDownloading}
-					/>
-				{/if}
-			</div>
+					{#if isLoading}
+						<div class="flex flex-col items-center justify-center gap-4 py-12">
+							<Spinner size={48} />
+							<p class="text-muted-foreground">Loading invoices...</p>
+						</div>
+					{:else}
+						<InvoiceShelf
+							data={$filteredInvoices}
+							onError={handleError}
+							onDelete={handleDelete}
+							onEdit={handleEdit}
+							onDownload={handleDownload}
+							{deletingInvoiceId}
+							{isDownloading}
+						/>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

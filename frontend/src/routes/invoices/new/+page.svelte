@@ -55,6 +55,7 @@
 				api.clients.getAllClients(fetch),
 				api.providers.getAllProviders(fetch)
 			]);
+
 			clients.set(clientsData);
 			providers.set(providersData);
 		} catch (err) {
