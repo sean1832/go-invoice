@@ -42,11 +42,6 @@
 			newErrors.name = 'Client name is required';
 		}
 
-		// if (!formData.email?.trim()) {
-		// 	newErrors.email = 'Email is required';
-		// } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-		// 	newErrors.email = 'Invalid email format';
-		// }
 		if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
 			newErrors.email = 'Invalid email format';
 		}
@@ -57,6 +52,10 @@
 
 		if (formData.email_target && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_target)) {
 			newErrors.targetEmail = 'Invalid email format';
+		}
+
+		if (formData.abn && formData.abn.length != 11) {
+			newErrors.abn = 'ABN must be 11 digits';
 		}
 
 		errors = newErrors;
@@ -143,7 +142,11 @@
 						placeholder="12 345 678 901"
 						bind:value={formData.abn}
 						disabled={disable}
+						class={errors.abn ? 'border-destructive' : ''}
 					/>
+					{#if errors.abn}
+						<p class="text-sm text-destructive">{errors.abn}</p>
+					{/if}
 				</div>
 			</div>
 
