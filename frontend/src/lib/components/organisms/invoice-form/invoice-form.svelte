@@ -119,6 +119,46 @@
 		}
 	});
 
+	// Reactively update provider data when store changes
+	$effect(() => {
+		if (selectedProviderId && $providers.length > 0) {
+			const updatedProvider = $providers.find((p) => p.id === selectedProviderId);
+			if (updatedProvider) {
+				provider = {
+					id: updatedProvider.id,
+					name: updatedProvider.name,
+					email: updatedProvider.email || '',
+					abn: updatedProvider.abn || '',
+					address: updatedProvider.address || '',
+					phone: updatedProvider.phone || ''
+				};
+				if (updatedProvider.payment_info) {
+					paymentInfo = { ...updatedProvider.payment_info };
+				}
+			}
+		}
+	});
+
+	// Reactively update client data when store changes
+	$effect(() => {
+		if (selectedClientId && $clients.length > 0) {
+			const updatedClient = $clients.find((c) => c.id === selectedClientId);
+			if (updatedClient) {
+				client = {
+					id: updatedClient.id,
+					name: updatedClient.name,
+					email: updatedClient.email || '',
+					abn: updatedClient.abn || '',
+					address: updatedClient.address || '',
+					phone: updatedClient.phone || ''
+				};
+				if (updatedClient.tax_rate !== undefined) {
+					taxRate = updatedClient.tax_rate;
+				}
+			}
+		}
+	});
+
 	// Profile selection handlers
 	function handleProviderSelect(providerId: string) {
 		const selected = $providers.find((p) => p.id === providerId);

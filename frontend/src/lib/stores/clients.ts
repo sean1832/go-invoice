@@ -20,6 +20,30 @@ export function removeClient(id: string): void {
 	clients.update((items) => items.filter((inv) => inv.id !== id));
 }
 
+export function addClient(item: ClientData): void {
+	clients.update((items) => {
+		// Ensure items is always an array
+		const itemsArray = Array.isArray(items) ? items : [];
+
+		// Check if client already exists
+		const exists = itemsArray.some((c) => c.id === item.id);
+		if (exists) {
+			// Update existing
+			return itemsArray.map((c) => (c.id === item.id ? { ...c, ...item } : c));
+		} else {
+			// Add new
+			return [...itemsArray, item];
+		}
+	});
+}
+
+export function updateClient(item: ClientData): void {
+	clients.update((items) => {
+		const itemsArray = Array.isArray(items) ? items : [];
+		return itemsArray.map((c) => (c.id === item.id ? { ...c, ...item } : c));
+	});
+}
+
 /**
  * Search clients by query
  */
