@@ -88,7 +88,7 @@
 	{:else}
 		<!-- Header -->
 		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight">Welcome to Invoice Manager</h1>
+			<h1 class="text-3xl font-bold tracking-tight">Welcome to Go-Invoice</h1>
 			<p class="text-muted-foreground">
 				Let's get you set up! Complete these steps to start managing your invoices.
 			</p>
