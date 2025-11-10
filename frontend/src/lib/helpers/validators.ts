@@ -75,22 +75,21 @@ export function validateParty(party: Party, type: 'provider' | 'client'): Valida
 /**
  * Validate a service line item
  * @param item - Service item to validate
- * @param index - Item index for error messages
  * @returns Validation result with errors
  */
-export function validateLineItem(item: ServiceItem, index: number): ValidationResult {
+export function validateLineItem(item: ServiceItem): ValidationResult {
 	const errors: string[] = [];
 
 	if (!item.description || item.description.trim() === '') {
-		errors.push(`Item ${index + 1}: Description is required`);
+		errors.push(`Description is required`);
 	}
 
 	if (item.quantity <= 0) {
-		errors.push(`Item ${index + 1}: Quantity must be greater than 0`);
+		errors.push(`Quantity must be greater than 0`);
 	}
 
 	if (item.unit_price < 0) {
-		errors.push(`Item ${index + 1}: Unit price cannot be negative`);
+		errors.push(`Unit price cannot be negative`);
 	}
 
 	return {
@@ -127,8 +126,8 @@ export function validateInvoice(invoice: Partial<Invoice>): ValidationResult {
 	if (!invoice.items || invoice.items.length === 0) {
 		errors.push('At least one service item is required');
 	} else {
-		invoice.items.forEach((item, index) => {
-			const itemResult = validateLineItem(item, index);
+		invoice.items.forEach((item) => {
+			const itemResult = validateLineItem(item);
 			errors.push(...itemResult.errors);
 		});
 	}
