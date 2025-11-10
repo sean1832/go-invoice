@@ -61,19 +61,47 @@ export function formatDateNumeric(dateString: string): string {
  * @returns Formatted phone number
  */
 export function formatPhone(phone: string): string {
-	// Remove all non-digit characters
+	// clean the phone number, but keep the leading '+'
+	const cleanPhone = phone.replace(/[^\d+]/g, '');
+
+	// International Format (+61)
+	if (cleanPhone.startsWith('+61')) {
+		const nationalPart = cleanPhone.substring(3); // Get the number without +61
+
+		// Mobile: +61 4xx xxx xxx (9 digits starting with 4)
+		if (nationalPart.startsWith('4') && nationalPart.length === 9) {
+			return `+61 ${nationalPart.slice(0, 3)} ${nationalPart.slice(3, 6)} ${nationalPart.slice(6)}`;
+		}
+
+		// Landline: +61 x xxxx xxxx (9 digits starting with 2, 3, 7, or 8)
+		if (['2', '3', '7', '8'].includes(nationalPart.charAt(0)) && nationalPart.length === 9) {
+			return `+61 ${nationalPart.slice(0, 1)} ${nationalPart.slice(1, 5)} ${nationalPart.slice(5)}`;
+		}
+	}
+
+	// Domestic Format (0x)
+	// strip all non-digits
 	const digits = phone.replace(/\D/g, '');
 
-	// Format as: 0412 345 678 or 02 1234 5678
 	if (digits.length === 10) {
+		// Mobile: 04xx xxx xxx
 		if (digits.startsWith('04')) {
 			return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
-		} else {
+		}
+
+		// Landline: 0x xxxx xxxx
+		if (
+			digits.startsWith('02') ||
+			digits.startsWith('03') ||
+			digits.startsWith('07') ||
+			digits.startsWith('08')
+		) {
 			return `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6)}`;
 		}
 	}
 
-	return phone; // Return as-is if format doesn't match
+	// Fallback: Return the original string if no format matches
+	return phone;
 }
 
 /**
@@ -87,6 +115,19 @@ export function formatABN(abn: string): string {
 		return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
 	}
 	return abn;
+}
+
+/**
+ * Format a BSB (Bank State Branch) number
+ * @param bsb - BSB string
+ * @returns Formatted BSB (e.g., "123-456")
+ */
+export function formatBSB(bsb: string): string {
+	const digits = bsb.replace(/\D/g, '');
+	if (digits.length === 6) {
+		return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+	}
+	return bsb;
 }
 
 /**

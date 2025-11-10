@@ -12,6 +12,7 @@
 	<InvoiceDisplayParties client={invoice.client} />
 -->
 <script lang="ts">
+	import { formatABN, formatPhone } from '@/helpers';
 	import type { Party } from '@/types/invoice';
 	import { cn } from '@/utils';
 
@@ -32,10 +33,10 @@
 				<p class="whitespace-pre-line">{client.address}</p>
 			{/if}
 			{#if client.abn}
-				<p>ABN: {client.abn}</p>
+				<p>ABN: {formatABN(client.abn)}</p>
 			{/if}
 			{#if client.phone}
-				<p>Phone: {client.phone}</p>
+				<p>Phone: {formatPhone(client.phone)}</p>
 			{/if}
 			{#if client.email}
 				<p>Email: {client.email}</p>
