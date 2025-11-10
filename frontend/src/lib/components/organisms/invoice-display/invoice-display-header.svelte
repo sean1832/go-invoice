@@ -14,7 +14,7 @@
 <script lang="ts">
 	import type { Invoice } from '@/types/invoice';
 	import { cn } from '@/utils';
-	import { formatDateShort } from '@/helpers';
+	import { formatABN, formatDateShort, formatPhone } from '@/helpers';
 
 	interface Props {
 		invoice: Invoice;
@@ -49,10 +49,10 @@
 				<p class="whitespace-pre-line">{invoice.provider.address}</p>
 			{/if}
 			{#if invoice.provider.abn}
-				<p>ABN: {invoice.provider.abn}</p>
+				<p>ABN: {formatABN(invoice.provider.abn)}</p>
 			{/if}
 			{#if invoice.provider.phone}
-				<p>Phone: {invoice.provider.phone}</p>
+				<p>Phone: {formatPhone(invoice.provider.phone)}</p>
 			{/if}
 			{#if invoice.provider.email}
 				<p>Email: {invoice.provider.email}</p>

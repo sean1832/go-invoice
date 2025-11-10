@@ -19,8 +19,8 @@
 	import InvoiceDisplayParties from './invoice-display-parties.svelte';
 	import InvoiceDisplayItemsTable from './invoice-display-items-table.svelte';
 	import InvoiceDisplayItemsMobile from './invoice-display-items-mobile.svelte';
-	import TotalsSummary from '@/components/molecules/totals-summary.svelte';
-	import PaymentInfoCard from '@/components/molecules/payment-info-card.svelte';
+	import InvoiceDisplayPaymentInfo from './invoice-display-payment-info.svelte';
+	import InvoiceDisplayTotlaSummary from './invoice-display-total-summary.svelte';
 
 	interface Props {
 		invoice: Invoice;
@@ -54,12 +54,12 @@
 
 		<!-- Totals Section -->
 		<div class="mb-6 flex justify-end sm:mb-8">
-			<TotalsSummary pricing={invoice.pricing} class="w-full sm:w-72" />
+			<InvoiceDisplayTotlaSummary pricing={invoice.pricing} class="w-full sm:w-72" />
 		</div>
 
 		<!-- Payment Information -->
 		<div class="border-t border-border pt-4 sm:pt-6">
-			<PaymentInfoCard payment={invoice.payment} />
+			<InvoiceDisplayPaymentInfo payment={invoice.payment} />
 		</div>
 
 		<!-- Notes/Terms -->

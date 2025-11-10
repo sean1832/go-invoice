@@ -11,6 +11,7 @@
 	<PaymentInfoCard payment={invoice.payment} />
 -->
 <script lang="ts">
+	import { formatBSB } from '@/helpers';
 	import type { PaymentInfo } from '@/types/invoice';
 	import { cn } from '@/utils';
 
@@ -39,7 +40,7 @@
 		<div class="space-y-2">
 			<p class="text-muted-foreground">
 				<span class="font-semibold text-foreground">BSB:</span>
-				{payment.bsb}
+				{formatBSB(payment.bsb)}
 			</p>
 			<p class="text-muted-foreground">
 				<span class="font-semibold text-foreground">Account Number:</span>
