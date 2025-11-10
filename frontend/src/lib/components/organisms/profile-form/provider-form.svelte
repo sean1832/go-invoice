@@ -26,7 +26,7 @@
 			phone: '',
 			abn: '',
 			payment_info: {
-				method: 'Bank Transfer',
+				method: 'EFT Payment',
 				account_name: '',
 				bsb: '',
 				account_number: ''
