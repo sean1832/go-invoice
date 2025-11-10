@@ -30,7 +30,7 @@
 			invoices.update((current) => [...current, createdInvoice]);
 
 			// Navigate back to invoice list
-			window.history.back();
+			window.location.href = `/invoices/${createdInvoice.id}`;
 		} catch (err) {
 			console.error('Failed to save invoice:', err);
 			saveError = err instanceof Error ? err.message : 'Failed to save invoice. Please try again.';
