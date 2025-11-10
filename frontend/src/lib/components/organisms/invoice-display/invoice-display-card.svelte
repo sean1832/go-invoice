@@ -19,8 +19,7 @@
 	import InvoiceDisplayParties from './invoice-display-parties.svelte';
 	import InvoiceDisplayItemsTable from './invoice-display-items-table.svelte';
 	import InvoiceDisplayItemsMobile from './invoice-display-items-mobile.svelte';
-	import TotalsSummary from '@/components/molecules/totals-summary.svelte';
-	import PaymentInfoCard from '@/components/molecules/payment-info-card.svelte';
+	import { PaymentInfoCard, TotalsSummary } from '@/components/molecules';
 
 	interface Props {
 		invoice: Invoice;
