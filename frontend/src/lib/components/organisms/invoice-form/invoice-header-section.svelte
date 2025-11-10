@@ -44,6 +44,13 @@
 	let issueDateValue = $state<DateValue | undefined>(safeParseDate(issueDate));
 	let dueDateValue = $state<DateValue | undefined>(safeParseDate(dueDate));
 
+	// Compute grid columns based on whether invoice ID is present
+	const gridCols = $derived(
+		invoiceId !== ''
+			? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' // 3 columns when ID present
+			: 'grid-cols-1 sm:grid-cols-2' // 2 columns when ID absent
+	);
+
 	// Sync issue date: DateValue <-> string
 	$effect(() => {
 		if (issueDateValue && dateValueToISOString(issueDateValue) !== issueDate) {
@@ -78,26 +85,31 @@
 		<Card.Title>Invoice Details</Card.Title>
 		<Card.Description>Basic invoice information and dates</Card.Description>
 	</Card.Header>
-	<Card.Content class="space-y-4">
-		<div class="grid gap-4 md:grid-cols-3">
+	<Card.Content>
+		<div class={cn('grid gap-4', gridCols)}>
 			<!-- Invoice ID -->
 			{#if invoiceId !== ''}
 				<div class="space-y-2">
-					<Label for="invoice-id">Invoice ID</Label>
-					<Input id="invoice-id" bind:value={invoiceId} placeholder="INV-251103001" />
+					<Label for="invoice-id" class="text-sm font-medium">Invoice ID</Label>
+					<Input
+						id="invoice-id"
+						bind:value={invoiceId}
+						placeholder="INV-251103001"
+						class="w-full"
+					/>
 				</div>
 			{/if}
 
 			<!-- Issue Date -->
 			<div class="space-y-2">
-				<Label>Issue Date</Label>
-				<DatePicker bind:value={issueDateValue} placeholder="Select issue date" />
+				<Label class="text-sm font-medium">Issue Date</Label>
+				<DatePicker bind:value={issueDateValue} placeholder="Select issue date" class="w-full" />
 			</div>
 
 			<!-- Due Date -->
 			<div class="space-y-2">
-				<Label>Due Date</Label>
-				<DatePicker bind:value={dueDateValue} placeholder="Select due date" />
+				<Label class="text-sm font-medium">Due Date</Label>
+				<DatePicker bind:value={dueDateValue} placeholder="Select due date" class="w-full" />
 			</div>
 		</div>
 	</Card.Content>
