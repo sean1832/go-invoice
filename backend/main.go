@@ -31,12 +31,18 @@ func main() {
 
 	// Define and parse flags
 	devmodePtr := flag.Bool("dev", false, "Enable dev mode (uses DEV_FRONTEND_BASE_URL)")
+	dbPtr := flag.String("db", "", "Path to the database file.")
 	portPtr := flag.Int("port", 8080, "Port for server to host.")
 	flag.Parse()
 
 	// Set variables from flags
 	port := *portPtr
 	isDevMode := *devmodePtr
+	dbDir := *dbPtr
+	if dbDir != "" {
+		os.Setenv("STORAGE_PATH", dbDir)
+		slog.Info("Using custom database path from flag.", "db_path", dbDir)
+	}
 	var frontendBaseURL string
 
 	// frontend base URL configuration
