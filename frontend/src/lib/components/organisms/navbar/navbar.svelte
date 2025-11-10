@@ -11,7 +11,7 @@
 	let { class: className = '' }: Props = $props();
 </script>
 
-<nav class={cn('p-4', className)}>
+<nav class={cn('mt-4 mr-4 ml-4', className)}>
 	<div class="container mx-auto flex justify-between">
 		<a href="/"
 			><h1 class="text-2xl font-bold">
@@ -28,6 +28,6 @@
 			<ProviderSelector />
 		</div>
 	</div>
-	<!-- Divider -->
-	<div class="my-4 border-t border-gray-800"></div>
 </nav>
+<!-- Divider -->
+<div class="darkborder-gray-800 my-4 border-t"></div>
