@@ -1,13 +1,47 @@
 <script lang="ts">
 	import InvoiceShelf from '@/components/organisms/shelf/invoice-shelf.svelte';
+	import AppOOBE from '@/components/organisms/oobe/app-oobe.svelte';
 	import { invoices, filteredInvoices, removeInvoice } from '$lib/stores/invoices';
 	import { api } from '$lib/services';
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import type { Invoice } from '@/types/invoice';
+	import { onMount } from 'svelte';
 
 	let isLoading = $state(false);
 	let errorMessage = $state<string | null>(null);
+	let showOOBE = $state(false);
+
+	// Check if provider and client exist on mount - show OOBE if not
+	onMount(async () => {
+		try {
+			isLoading = true;
+			const [providers, clients] = await Promise.all([
+				api.providers.getAllProviders(fetch),
+				api.clients.getAllClients(fetch)
+			]);
+
+			const hasProvider = providers && Array.isArray(providers) && providers.length > 0;
+			const hasClient = clients && Array.isArray(clients) && clients.length > 0;
+
+			// Show OOBE if either provider or client is missing
+			if (!hasProvider || !hasClient) {
+				console.log('[root page] setup incomplete, showing OOBE');
+				showOOBE = true;
+				isLoading = false;
+				return;
+			}
+		} catch (err) {
+			console.error('[root page] failed to check setup status:', err);
+			errorMessage =
+				err instanceof Error ? err.message : 'Failed to check setup status. Please try again.';
+			isLoading = false;
+			return;
+		}
+
+		// Load invoices after setup check
+		await loadInvoices();
+	});
 
 	async function loadInvoices() {
 		isLoading = true;
@@ -89,46 +123,53 @@
 			isDownloading = false;
 		}
 	}
-	// Load invoices on mount
-	$effect(() => {
-		loadInvoices();
-	});
+
+	function handleOOBEComplete() {
+		// Reload the page to check setup and show invoices
+		window.location.reload();
+	}
 </script>
 
 <div class="p-4">
 	<div class="container mx-auto flex justify-center">
 		<div class="w-full max-w-4xl">
-			<div class="mb-6">
-				<h1 class="text-3xl font-bold tracking-tight">Invoices</h1>
-				<p class="text-muted-foreground">Manage and track your invoices</p>
-			</div>
-			<div class="flex flex-col gap-4">
-				{#if errorMessage}
-					<ErrorAlert
-						message={errorMessage}
-						title="Error"
-						showRetryButton={false}
-						onRetry={clearError}
-					/>
-				{/if}
+			{#if showOOBE}
+				<!-- OOBE (Out-of-Box Experience) -->
+				<AppOOBE onComplete={handleOOBEComplete} />
+			{:else}
+				<!-- Normal Invoice Dashboard -->
+				<div class="mb-6">
+					<h1 class="text-3xl font-bold tracking-tight">Invoices</h1>
+					<p class="text-muted-foreground">Manage and track your invoices</p>
+				</div>
+				<div class="flex flex-col gap-4">
+					{#if errorMessage}
+						<ErrorAlert
+							message={errorMessage}
+							title="Error"
+							showRetryButton={false}
+							onRetry={clearError}
+						/>
+					{/if}
 
-				{#if isLoading}
-					<div class="flex flex-col items-center justify-center gap-4 py-12">
-						<Spinner size={48} />
-						<p class="text-muted-foreground">Loading invoices...</p>
-					</div>
-				{:else}
-					<InvoiceShelf
-						data={$filteredInvoices}
-						onError={handleError}
-						onDelete={handleDelete}
-						onEdit={handleEdit}
-						onDownload={handleDownload}
-						{deletingInvoiceId}
-						{isDownloading}
-					/>
-				{/if}
-			</div>
+					{#if isLoading}
+						<div class="flex flex-col items-center justify-center gap-4 py-12">
+							<Spinner size={48} />
+							<p class="text-muted-foreground">Loading invoices...</p>
+						</div>
+					{:else}
+						<InvoiceShelf
+							data={$filteredInvoices}
+							onError={handleError}
+							onDelete={handleDelete}
+							onEdit={handleEdit}
+							onDownload={handleDownload}
+							{deletingInvoiceId}
+							{isDownloading}
+						/>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

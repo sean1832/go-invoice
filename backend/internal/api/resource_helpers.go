@@ -148,8 +148,8 @@ func getAllResources(
 	resources, err := getAll(storageDir)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			writeRespErr(w, fmt.Sprintf("%s resource is currently empty", resourceType), http.StatusNotFound)
-			logger.Error("resource is empty")
+			logger.Info("resource is empty")
+			writeRespOk(w, fmt.Sprintf("resource %s is currently empty", resourceType), nil)
 		} else {
 			writeRespErr(w, fmt.Sprintf("failed to list %s informations", resourceType), http.StatusInternalServerError)
 			logger.Error("failed to list resource informations")

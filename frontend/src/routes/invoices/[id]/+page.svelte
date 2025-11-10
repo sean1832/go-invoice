@@ -107,8 +107,12 @@
 		// validate first
 		const validation = validateEmailConfig(emailConfig);
 		if (!validation.isValid) {
+			const errorMessage =
+				validation.errors.length === 1
+					? validation.errors[0]
+					: `${validation.errors.length} errors: ${validation.errors.join(' • ')}`;
 			toast.error('Email validation failed', {
-				description: validation.errors.join('\n')
+				description: errorMessage
 			});
 			return;
 		}

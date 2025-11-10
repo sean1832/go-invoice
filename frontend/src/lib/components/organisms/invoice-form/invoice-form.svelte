@@ -73,6 +73,21 @@
 		account_number: ''
 	});
 
+	// Load cached client selection for create mode
+	function loadCachedClient() {
+		if (typeof window !== 'undefined' && window.localStorage && mode === 'create' && !invoice) {
+			try {
+				const cachedClientId = localStorage.getItem('invoice_last_selected_client');
+				if (cachedClientId && $clients.find((c) => c.id === cachedClientId)) {
+					// Cached client exists in current client list, auto-select it
+					handleClientSelect(cachedClientId);
+				}
+			} catch (error) {
+				console.warn('Failed to load cached client selection:', error);
+			}
+		}
+	}
+
 	// Initialize from activeProvider in create mode
 	$effect(() => {
 		if ($activeProvider && !invoice && mode === 'create' && !provider.id) {
@@ -94,6 +109,13 @@
 			if (invoice.payment) {
 				paymentInfo = { ...invoice.payment };
 			}
+		}
+	});
+
+	// Load cached client when clients are available
+	$effect(() => {
+		if ($clients.length > 0 && mode === 'create' && !invoice && !selectedClientId) {
+			loadCachedClient();
 		}
 	});
 
@@ -130,6 +152,14 @@
 			};
 			if (selected.tax_rate !== undefined) {
 				taxRate = selected.tax_rate;
+			}
+			// Save to cache via localStorage (redundant with ProfileSelector but ensures consistency)
+			if (typeof window !== 'undefined' && window.localStorage) {
+				try {
+					localStorage.setItem('invoice_last_selected_client', clientId);
+				} catch (error) {
+					console.warn('Failed to save client selection to cache:', error);
+				}
 			}
 		}
 	}
@@ -213,8 +243,12 @@
 		// Validate
 		const validation = validateInvoice(invoiceData);
 		if (!validation.isValid) {
+			const errorMessage =
+				validation.errors.length === 1
+					? validation.errors[0]
+					: `${validation.errors.length} errors: ${validation.errors.join(' • ')}`;
 			toast.error('Validation failed', {
-				description: validation.errors.join('\n')
+				description: errorMessage
 			});
 			return;
 		}

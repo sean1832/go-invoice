@@ -1,11 +1,11 @@
 <script lang="ts">
 	import * as Item from '$lib/components/ui/item';
 	import * as Select from '$lib/components/ui/select';
+	import * as Popover from '$lib/components/ui/popover';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import UserPlusIcon from '@lucide/svelte/icons/user-plus';
-	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-	import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
+	import InfoIcon from '@lucide/svelte/icons/info';
 	import type { Party } from '@/types/invoice';
 	import { cn } from '$lib/utils';
 
@@ -51,15 +51,40 @@
 	const title = type === 'provider' ? 'Provider' : 'Client';
 	const placeholder = type === 'provider' ? 'Select provider' : 'Select client';
 
-	// Collapsed state
-	let isExpanded = $state(false);
-
 	// Track select open state
 	let selectOpen = $state(false);
 
+	// Local storage key for caching
+	const CACHE_KEY =
+		type === 'client' ? 'invoice_last_selected_client' : 'invoice_last_selected_provider';
+
+	// Save selection to localStorage
+	function saveToCache(profileId: string) {
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				localStorage.setItem(CACHE_KEY, profileId);
+			} catch (error) {
+				console.warn('Failed to save profile selection to cache:', error);
+			}
+		}
+	}
+
+	// Load selection from localStorage
+	function loadFromCache(): string | null {
+		if (typeof window !== 'undefined' && window.localStorage) {
+			try {
+				return localStorage.getItem(CACHE_KEY);
+			} catch (error) {
+				console.warn('Failed to load profile selection from cache:', error);
+				return null;
+			}
+		}
+		return null;
+	}
+
 	function handleSelect(profileId: string) {
 		selectedProfileId = profileId;
-
+		saveToCache(profileId);
 		onSelect?.(profileId);
 	}
 
@@ -71,8 +96,9 @@
 		onAddNew?.();
 	}
 
-	function toggleExpanded() {
-		isExpanded = !isExpanded;
+	// Export function for parent components to load cached selection
+	export function getCachedSelection(): string | null {
+		return loadFromCache();
 	}
 </script>
 
@@ -80,25 +106,27 @@
 	variant="muted"
 	class={cn('h-full w-full flex-col! flex-nowrap! items-start', customClass)}
 >
-	<Item.Header class="w-full">
-		<Item.Content class="min-w-0 shrink">
+	<Item.Header class="w-full flex-col! items-start! gap-3">
+		<Item.Content class="w-full">
 			<Item.Title>{title}</Item.Title>
 		</Item.Content>
-		<Item.Actions class="shrink-0">
-			<div class="flex flex-nowrap items-center gap-2">
+		<Item.Actions class="w-full">
+			<div class="flex w-full flex-nowrap items-center gap-2">
 				<Select.Root
 					type="single"
 					bind:open={selectOpen}
 					value={selectedProfileId}
 					onValueChange={(v) => v && handleSelect(v)}
 				>
-					<Select.Trigger class="w-[200px]">
-						<span>{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}</span>
+					<Select.Trigger class="w-[280px] md:w-[200px] lg:w-[330px]">
+						<span class="block truncate">
+							{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}
+						</span>
 					</Select.Trigger>
 					<Select.Content>
 						{#each profiles as profile}
 							<Select.Item value={profile.id} label={profile.name}>
-								{profile.name}
+								<span class="block truncate" title={profile.name}>{profile.name}</span>
 							</Select.Item>
 						{/each}
 					</Select.Content>
@@ -110,97 +138,94 @@
 					<UserPlusIcon class="h-4 w-4" />
 				</Button>
 				{#if selectedProfileId}
-					<Button variant="ghost" size="sm" onclick={toggleExpanded}>
-						{#if isExpanded}
-							<ChevronUpIcon class="h-4 w-4" />
-						{:else}
-							<ChevronDownIcon class="h-4 w-4" />
-						{/if}
-					</Button>
+					<Popover.Root>
+						<Popover.Trigger
+							class="inline-flex h-8 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+						>
+							<InfoIcon class="h-4 w-4" />
+						</Popover.Trigger>
+						<Popover.Content class="w-[400px]">
+							<div class="grid gap-4">
+								<div class="space-y-2">
+									<h4 class="leading-none font-medium">{title} Details</h4>
+								</div>
+								<div class="grid gap-3 text-sm">
+									<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+										<span class="font-medium text-muted-foreground">Name:</span>
+										<span class="wrap-break-word">{profileData.name || 'Not configured'}</span>
+									</div>
+									<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+										<span class="font-medium text-muted-foreground">ABN:</span>
+										<span>{profileData.abn || 'Not configured'}</span>
+									</div>
+									<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+										<span class="font-medium text-muted-foreground">Address:</span>
+										<span class="wrap-break-word">{profileData.address || 'Not configured'}</span>
+									</div>
+									<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+										<span class="font-medium text-muted-foreground">Email:</span>
+										<span class="wrap-break-word">{profileData.email || 'Not configured'}</span>
+									</div>
+									<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+										<span class="font-medium text-muted-foreground">Phone:</span>
+										<span>{profileData.phone || 'Not configured'}</span>
+									</div>
+
+									{#if type === 'client'}
+										{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
+										{#if selectedProfile?.tax_rate !== undefined}
+											<div class="border-t pt-3">
+												<div
+													class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+												>
+													Tax Information
+												</div>
+												<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+													<span class="font-medium text-muted-foreground">Tax Rate:</span>
+													<span>{selectedProfile.tax_rate}%</span>
+												</div>
+											</div>
+										{/if}
+									{/if}
+
+									{#if type === 'provider'}
+										{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
+										{#if selectedProfile?.payment_info}
+											<div class="border-t pt-3">
+												<div
+													class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+												>
+													Payment Information
+												</div>
+												<div class="grid gap-2">
+													<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+														<span class="font-medium text-muted-foreground">Method:</span>
+														<span>{selectedProfile.payment_info.method}</span>
+													</div>
+													<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+														<span class="font-medium text-muted-foreground">Account Name:</span>
+														<span class="wrap-break-word"
+															>{selectedProfile.payment_info.account_name}</span
+														>
+													</div>
+													<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+														<span class="font-medium text-muted-foreground">BSB:</span>
+														<span>{selectedProfile.payment_info.bsb}</span>
+													</div>
+													<div class="grid grid-cols-[100px_1fr] items-start gap-2">
+														<span class="font-medium text-muted-foreground">Account #:</span>
+														<span>{selectedProfile.payment_info.account_number}</span>
+													</div>
+												</div>
+											</div>
+										{/if}
+									{/if}
+								</div>
+							</div>
+						</Popover.Content>
+					</Popover.Root>
 				{/if}
 			</div>
 		</Item.Actions>
 	</Item.Header>
-	{#if selectedProfileId}
-		{#if isExpanded}
-			<Item.Content class="w-full pt-2">
-				<div class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm wrap-break-word">
-					<div>
-						<span class="font-medium text-muted-foreground">Name:</span>
-						<span class="ml-2">{profileData.name || 'Not configured'}</span>
-					</div>
-					<div>
-						<span class="font-medium text-muted-foreground">ABN:</span>
-						<span class="ml-2">{profileData.abn || 'Not configured'}</span>
-					</div>
-					<div class="col-span-2">
-						<span class="font-medium text-muted-foreground">Address:</span>
-						<span class="ml-2">{profileData.address || 'Not configured'}</span>
-					</div>
-					<div>
-						<span class="font-medium text-muted-foreground">Email:</span>
-						<span class="ml-2">{profileData.email || 'Not configured'}</span>
-					</div>
-					<div>
-						<span class="font-medium text-muted-foreground">Phone:</span>
-						<span class="ml-2">{profileData.phone || 'Not configured'}</span>
-					</div>
-
-					{#if type === 'client'}
-						{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
-						{#if selectedProfile?.tax_rate !== undefined}
-							<div class="col-span-2 mt-2 border-t pt-3">
-								<div
-									class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
-								>
-									Tax Information
-								</div>
-								<div>
-									<span class="font-medium text-muted-foreground">Tax Rate:</span>
-									<span class="ml-2">{selectedProfile.tax_rate}%</span>
-								</div>
-							</div>
-						{/if}
-					{/if}
-
-					{#if type === 'provider'}
-						{@const selectedProfile = profiles.find((p) => p.id === selectedProfileId)}
-						{#if selectedProfile?.payment_info}
-							<div class="col-span-2 mt-2 border-t pt-3">
-								<div
-									class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
-								>
-									Payment Information
-								</div>
-								<div class="grid grid-cols-2 gap-x-6 gap-y-2">
-									<div>
-										<span class="font-medium text-muted-foreground">Method:</span>
-										<span class="ml-2">{selectedProfile.payment_info.method}</span>
-									</div>
-									<div>
-										<span class="font-medium text-muted-foreground">Account Name:</span>
-										<span class="ml-2">{selectedProfile.payment_info.account_name}</span>
-									</div>
-									<div>
-										<span class="font-medium text-muted-foreground">BSB:</span>
-										<span class="ml-2">{selectedProfile.payment_info.bsb}</span>
-									</div>
-									<div>
-										<span class="font-medium text-muted-foreground">Account #:</span>
-										<span class="ml-2">{selectedProfile.payment_info.account_number}</span>
-									</div>
-								</div>
-							</div>
-						{/if}
-					{/if}
-				</div>
-			</Item.Content>
-		{/if}
-	{:else}
-		<Item.Content class="pt-2">
-			<p class="text-sm text-muted-foreground italic">
-				No {type} selected. Please select a {type} profile.
-			</p>
-		</Item.Content>
-	{/if}
 </Item.Root>
