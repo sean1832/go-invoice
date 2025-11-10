@@ -14,7 +14,7 @@
 		mode?: 'create' | 'edit';
 	}
 
-	const { provider = undefined, onSave, onCancel, mode = 'create' } = $props();
+	const { provider = undefined, onSave, onCancel, mode = 'create' }: Props = $props();
 
 	// Form state
 	let formData = $state<ProviderData>(
