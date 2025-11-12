@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-invoice/internal/api"
 	"go-invoice/internal/auth"
+	"go-invoice/internal/crypto"
 	"go-invoice/internal/storage"
 	"go-invoice/internal/ui"
 	"log/slog"
@@ -13,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -32,20 +34,36 @@ func main() {
 	// Define and parse flags
 	devmodePtr := flag.Bool("dev", false, "Enable dev mode (uses DEV_FRONTEND_BASE_URL)")
 	dbPtr := flag.String("db", "", "Path to the database file.")
-	portPtr := flag.Int("port", 8080, "Port for server to host.")
 	flag.Parse()
 
-	// Set variables from flags
-	port := *portPtr
+	// === Load Port Configuration ===
+	portStr := os.Getenv("PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil || portStr == "" {
+		slog.Info("PORT not set or invalid, defaulting to 8080")
+		port = 8080
+	}
+
+	// === Load Public URL Configuration ===
+	publicURL := os.Getenv("PUBLIC_URL")
+	if publicURL == "" {
+		// Default to localhost based on the app port for convenience in dev
+		publicURL = fmt.Sprintf("http://localhost:%d", port)
+		slog.Warn("PUBLIC_URL not set, defaulting to app port", "url", publicURL)
+	}
+	// Ensure no trailing slash for consistent URL joining
+	publicURL = strings.TrimRight(publicURL, "/")
+
+	// === 3. Database and Dev Mode Setup ===
 	isDevMode := *devmodePtr
 	dbDir := *dbPtr
 	if dbDir != "" {
 		os.Setenv("STORAGE_PATH", dbDir)
 		slog.Info("Using custom database path from flag.", "db_path", dbDir)
 	}
-	var frontendBaseURL string
 
-	// frontend base URL configuration
+	var frontendBaseURL string
+	// === 4. Frontend Base URL Configuration ===
 	if isDevMode {
 		// --- Development Mode ---
 		slog.Info("Dev mode enabled.")
@@ -58,7 +76,16 @@ func main() {
 	} else {
 		// --- Production Mode ---
 		slog.Info("Production mode enabled.")
-		frontendBaseURL = fmt.Sprintf("http://localhost:%d", port)
+		// In production, the Go app serves the UI, so the
+		// frontend's base URL is the same as the app's public URL.
+		frontendBaseURL = publicURL
+	}
+
+	// === 5. Session Setup ===
+	sessionConfig, err := setupSession()
+	if err != nil {
+		slog.Error("failed to setup session", "error", err)
+		return
 	}
 
 	// google oauth client id/secret check
@@ -76,6 +103,15 @@ func main() {
 	} else {
 		slog.Info("Google OAuth credentials loaded.")
 		authMethod = auth.AuthMethodOAuth2
+
+		// Use the clean publicURL to build the callback
+		callbackURL := fmt.Sprintf("%s/api/v1/auth/google/callback", publicURL)
+
+		auth.NewGoogleOAuth2(
+			googleOAuthClientID, googleOAuthClientSecret,
+			callbackURL, // Use the correctly constructed callback URL
+			*sessionConfig,
+		)
 	}
 
 	// storage path
@@ -124,4 +160,38 @@ func main() {
 
 	slog.Info("Server listening", "url", fmt.Sprintf("http://localhost:%d", port))
 	http.ListenAndServe(":"+strconv.Itoa(port), api.WithCORS(mux, []string{frontendBaseURL}))
+}
+
+func setupSession() (*auth.SessionConfig, error) {
+	var key []byte
+	keyStr := os.Getenv("SESSION_SECRET")
+	if keyStr == "" {
+		var err error
+		key, err = crypto.GenerateSecureBytes(32)
+		if err != nil {
+			return nil, fmt.Errorf("error generating secure bytes: %v", err)
+		}
+	} else {
+		key = []byte(keyStr)
+	}
+
+	var maxAge int
+	ageStr := os.Getenv("SESSION_MAX_AGE")
+	maxAge, err := strconv.Atoi(ageStr)
+	if ageStr == "" || err != nil {
+		maxAge = 86400 * 30 // 30 days default
+	}
+
+	var isProd bool
+	prodStr := os.Getenv("IS_PROD")
+	prodStr = strings.ToLower(prodStr)
+	if prodStr == "true" {
+		isProd = true
+	}
+
+	return &auth.SessionConfig{
+		Key:    key,
+		MaxAge: maxAge,
+		IsProd: isProd,
+	}, nil
 }
