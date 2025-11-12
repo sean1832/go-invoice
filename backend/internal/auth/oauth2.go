@@ -7,6 +7,7 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
+	"golang.org/x/oauth2"
 )
 
 type SessionConfig struct {
@@ -15,8 +16,10 @@ type SessionConfig struct {
 	IsProd bool
 }
 
+var GoogleOAuthConfig *oauth2.Config
+
 func ConfigureGoogleOAuth2(clientId, clientSecret, callbackURL string, config SessionConfig) {
-	store := sessions.NewCookieStore(config.Key)
+	store := sessions.NewCookieStore(config.Key) // TODO: use file store or redis store for production
 	store.MaxAge(config.MaxAge)
 
 	var sameSite http.SameSite
@@ -35,12 +38,25 @@ func ConfigureGoogleOAuth2(clientId, clientSecret, callbackURL string, config Se
 	}
 	gothic.Store = store
 
+	GoogleOAuthConfig = &oauth2.Config{
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+		RedirectURL:  callbackURL,
+		Endpoint:     google.Endpoint,
+		Scopes: []string{
+			"profile",
+			"email",
+			"https://mail.google.com/", // SMTP access scope (required for OAuth2 SMTP)
+		},
+	}
+
 	goth.UseProviders(
 		google.New(
 			clientId, clientSecret, callbackURL,
 			// scopes
-			"profile", "email", // gets user's profile info & email
-			"https://www.googleapis.com/auth/gmail.send", // permission to send email
+			"profile",
+			"email",
+			"https://mail.google.com/", // SMTP access scope (required for OAuth2 SMTP)
 		),
 	)
 }

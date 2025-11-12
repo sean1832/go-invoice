@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+const (
+	SessionName = "go-invoice-session"
+	userKey     = "user"
+)
+
 type Handler struct {
 	Context         context.Context
 	StorageDir      storage.StorageDir

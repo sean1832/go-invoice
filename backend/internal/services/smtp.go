@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"go-invoice/internal/auth"
+	"log/slog"
 	"mime/multipart"
 	"net/smtp"
 	"net/textproto"
@@ -34,11 +35,17 @@ func newOAuth2Auth(username, accessToken string) smtp.Auth {
 }
 func (a *oauth2Auth) Start(server *smtp.ServerInfo) (string, []byte, error) {
 	authStr := fmt.Sprintf("user=%s\x01auth=Bearer %s\x01\x01", a.username, a.accessToken)
+	slog.Info("OAuth2 SMTP auth starting",
+		"username", a.username,
+		"server", server.Name,
+		"token_length", len(a.accessToken))
 	return "XOAUTH2", []byte(authStr), nil
 }
 func (a *oauth2Auth) Next(fromServer []byte, more bool) ([]byte, error) {
 	if more {
-		return nil, fmt.Errorf("[auth] unexpected server challenge: %s", fromServer)
+		// Gmail sends a challenge on failure, respond with empty line to get the actual error
+		slog.Warn("OAuth2 SMTP server challenge received", "challenge", string(fromServer))
+		return []byte{}, nil
 	}
 	return nil, nil
 }
@@ -105,7 +112,7 @@ func (s *SMTPService) Send(to []string, subject string, body string) error {
 		[]byte(msg),
 	)
 	if err != nil {
-		return fmt.Errorf("smpt.SendMail failed: %v", err)
+		return fmt.Errorf("smtp.SendMail failed: %v", err)
 	}
 	return nil
 }

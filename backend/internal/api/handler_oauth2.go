@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"go-invoice/internal/types"
 	"log/slog"
 	"net/http"
 
@@ -42,6 +43,29 @@ func (h *Handler) handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 		slog.Error("error complete user auth", "error", err)
 		return
 	}
+
+	sessions, err := gothic.Store.Get(r, SessionName)
+	if err != nil {
+		writeRespErr(w, fmt.Sprintf("error getting session: %v", err), http.StatusInternalServerError)
+		slog.Error("error getting session", "error", err)
+		return
+	}
+	sessionData := types.UserSessionData{
+		Email:        user.Email,
+		Name:         user.Name,
+		AccessToken:  user.AccessToken,
+		RefreshToken: user.RefreshToken,
+		ExpiresAt:    user.ExpiresAt,
+	}
+	sessions.Values[userKey] = sessionData
+
+	// Save session
+	if err := sessions.Save(r, w); err != nil {
+		writeRespErr(w, fmt.Sprintf("error saving session: %v", err), http.StatusInternalServerError)
+		slog.Error("error saving session", "error", err)
+		return
+	}
+
 	slog.Info("logged in", "user", user.Email)
 	writeRespOk(w, "logged in", nil)
 }

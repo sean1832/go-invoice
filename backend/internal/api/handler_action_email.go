@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"go-invoice/internal/auth"
@@ -12,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/markbates/goth/gothic"
+	"golang.org/x/oauth2"
 )
 
 func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
@@ -29,55 +33,124 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// retreive address and and origin from env
+	host := strings.TrimSpace(os.Getenv("SMTP_HOST"))
+	portStr := strings.TrimSpace(os.Getenv("SMTP_PORT"))
+
+	if host == "" || portStr == "" {
+		writeRespErr(w, "incomplete SMTP settings", http.StatusInternalServerError)
+		logger.Error("incomplete SMTP configuration", "error", "either SMTP_HOST or SMTP_PORT is not configured in environment variables")
+		return
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		writeRespErr(w, "malformed SMTP settings", http.StatusInternalServerError)
+		logger.Error("failed to parse SMTP_PORT to interger")
+		return
+	}
+
+	var credential string
+	var from string
 	switch h.EmailAuthMethod {
 	case auth.AuthMethodNone:
 		writeRespErr(w, "email sending is not configured", http.StatusNotImplemented)
 		return
 	case auth.AuthMethodPlain:
-		password := strings.TrimSpace(os.Getenv("SMTP_PASSWORD"))
-		from := strings.TrimSpace(os.Getenv("SMTP_FROM"))
-		host := strings.TrimSpace(os.Getenv("SMTP_HOST"))
-		portStr := strings.TrimSpace(os.Getenv("SMTP_PORT"))
-		if from == "" || host == "" || portStr == "" || password == "" {
-			writeRespErr(w, "incomplete SMTP settings", http.StatusInternalServerError)
-			logger.Error("incomplete SMTP configuration, either SMTP_FROM, SMTP_HOST, SMTP_PORT, SMTP_PASSWORD is not configured in environment variables")
-		}
-		port, err := strconv.Atoi(portStr)
-		if err != nil {
-			writeRespErr(w, "malformed SMTP settings", http.StatusInternalServerError)
-			logger.Error("failed to parse SMTP_PORT to interger")
-		}
-
-		smtp := services.NewSMTPService(from, host, port, password, auth.AuthMethodPlain)
-		// generate pdf attachment
-		chrome, err := services.NewChromeService()
-		if err != nil {
-			writeRespErr(w, "failed to initialize chrome service for pdf generation", http.StatusInternalServerError)
-			logger.Error("failed to initialize chrome service", "error", err)
+		from = strings.TrimSpace(os.Getenv("SMTP_FROM"))
+		credential = strings.TrimSpace(os.Getenv("SMTP_PASSWORD"))
+		if credential == "" || from == "" {
+			writeRespErr(w, "incomplete SMTP configuration, either SMTP_FROM or SMTP_PASSWORD is not set", http.StatusInternalServerError)
+			logger.Error("incomplete SMTP configuration", "error", "SMTP_PASSWORD is not set")
 			return
 		}
-		defer chrome.Close()
-		pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second, services.PaperSizeA3, id)
-		if err != nil {
-			writeRespErr(w, "failed to generate pdf attachment", http.StatusInternalServerError)
-			logger.Error("failed to generate pdf attachment", "error", err)
-			return
-		}
-		// send email with attachment
-		smtp.SendWithAttachment(
-			emailMessage.To,
-			emailMessage.Subject,
-			emailMessage.Body,
-			fmt.Sprintf("%s.pdf", id),
-			pdfData,
-			services.AttachmentTypePDF,
-		)
 
 	case auth.AuthMethodOAuth2:
-		// TODO: Implement email sending via OAuth2
-		writeRespErr(w, "email sending via OAuth2 is not implemented", http.StatusNotImplemented)
+		session, err := gothic.Store.Get(r, SessionName)
+		if err != nil {
+			writeRespErr(w, "failed to get session for oauth2 email sending", http.StatusInternalServerError)
+			logger.Error("failed to get session for oauth2 email sending", "error", err)
+			return
+		}
+
+		val := session.Values[userKey]
+		sessionData, ok := val.(types.UserSessionData)
+		if !ok {
+			writeRespErr(w, "Unauthorized: Not logged in", http.StatusUnauthorized)
+			logger.Error("unauthorized: not logged in")
+			return
+		}
+
+		// refresh token
+		// rebuild oauth2 token from session data
+		storedToken := &oauth2.Token{
+			AccessToken:  sessionData.AccessToken,
+			RefreshToken: sessionData.RefreshToken,
+			Expiry:       sessionData.ExpiresAt,
+		}
+
+		ctx := context.Background()
+		tokenSource := auth.GoogleOAuthConfig.TokenSource(ctx, storedToken)
+		validToken, err := tokenSource.Token()
+		if err != nil {
+			writeRespErr(w, "failed to refresh auth token", http.StatusUnauthorized)
+			logger.Error("failed to refresh oauth token", "error", err)
+			return
+		}
+
+		if validToken.AccessToken != storedToken.AccessToken {
+			logger.Info("OAuth token refreshed, saving new token to session")
+			sessionData.AccessToken = validToken.AccessToken
+			sessionData.RefreshToken = validToken.RefreshToken
+			sessionData.ExpiresAt = validToken.Expiry
+			if err := session.Save(r, w); err != nil {
+				writeRespErr(w, "failed to save refreshed token", http.StatusInternalServerError)
+				logger.Error("failed to save refreshed token", "error", err)
+				return
+			}
+		}
+
+		from = sessionData.Email
+		credential = sessionData.AccessToken
+
+		logger.Info("OAuth2 email sending",
+			"from", from,
+			"host", host,
+			"port", port,
+			"token_length", len(credential),
+			"token_prefix", credential[:20]+"...")
+	}
+
+	smtp := services.NewSMTPService(from, host, port, credential, h.EmailAuthMethod)
+
+	// generate pdf attachment
+	chrome, err := services.NewChromeService()
+	if err != nil {
+		writeRespErr(w, "failed to initialize chrome service for pdf generation", http.StatusInternalServerError)
+		logger.Error("failed to initialize chrome service", "error", err)
+		return
+	}
+	defer chrome.Close()
+	pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second, services.PaperSizeA3, id)
+	if err != nil {
+		writeRespErr(w, "failed to generate pdf attachment", http.StatusInternalServerError)
+		logger.Error("failed to generate pdf attachment", "error", err)
+		return
+	}
+	// send email with attachment
+	err = smtp.SendWithAttachment(
+		emailMessage.To,
+		emailMessage.Subject,
+		emailMessage.Body,
+		fmt.Sprintf("%s.pdf", id),
+		pdfData,
+		services.AttachmentTypePDF,
+	)
+	if err != nil {
+		writeRespErr(w, "failed to send email", http.StatusInternalServerError)
+		logger.Error("failed to send email", "error", err)
 		return
 	}
 
 	writeRespOk(w, fmt.Sprintf("email sent for invoice '%s'", id), emailMessage)
+	logger.Info("invoice successfully sent", "invoice", id, "from", from, "to", emailMessage.To)
 }

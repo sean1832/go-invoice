@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"go-invoice/internal/api"
 	"go-invoice/internal/auth"
 	"go-invoice/internal/crypto"
 	"go-invoice/internal/storage"
+	"go-invoice/internal/types"
 	"go-invoice/internal/ui"
 	"log/slog"
 	"net/http"
@@ -21,6 +23,10 @@ import (
 
 // Version is set via ldflags during build
 var Version = "dev"
+
+func init() {
+	gob.Register(types.UserSessionData{})
+}
 
 func main() {
 	// Load environment and flags
