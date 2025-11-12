@@ -190,7 +190,7 @@ func setupAuth(publicURL string, sessionConfig *auth.SessionConfig) (auth.AuthMe
 
 		callbackURL := fmt.Sprintf("%s/api/v1/auth/google/callback", publicURL)
 
-		auth.NewGoogleOAuth2(
+		auth.ConfigureGoogleOAuth2(
 			googleOAuthClientID,
 			googleOAuthClientSecret,
 			callbackURL,
