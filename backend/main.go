@@ -23,153 +23,194 @@ import (
 var Version = "dev"
 
 func main() {
+	// Load environment and flags
+	loadEnv()
+	devmodePtr := flag.Bool("dev", false, "Enable dev mode (uses DEV_FRONTEND_BASE_URL)")
+	dbPtr := flag.String("db", "", "Path to the database file.")
+	flag.Parse()
+	isDevMode := *devmodePtr
+	dbPathFromFlag := *dbPtr
 
-	// Initialize logger
+	// Load core application configuration
+	port, publicURL, frontendURL, storagePath, err := loadAppConfig(isDevMode, dbPathFromFlag)
+	if err != nil {
+		slog.Error("Failed to load app configuration", "error", err)
+		os.Exit(1)
+	}
+
+	// Set up session
+	sessionConfig, err := setupSession()
+	if err != nil {
+		slog.Error("Failed to set up session", "error", err)
+		os.Exit(1)
+	}
+
+	// Set up authentication
+	authMethod, err := setupAuth(publicURL, sessionConfig)
+	if err != nil {
+		slog.Error("Failed to set up authentication", "error", err)
+		os.Exit(1)
+	}
+
+	// Create the HTTP router (mux)
+	mux := http.NewServeMux()
+
+	// Initialize storage
+	storageDir, err := storage.NewStorageDir(storagePath)
+	if err != nil {
+		slog.Error("Failed to initialize storage", "error", err)
+		os.Exit(1)
+	}
+
+	// Initialize API handler
+	apiHandler := api.Handler{
+		Context:         context.Background(),
+		StorageDir:      *storageDir,
+		FrontendBaseURL: frontendURL,
+		EmailAuthMethod: authMethod,
+		Version:         Version,
+	}
+	apiHandler.RegisterRoutesV1(mux)
+
+	// Initialize embedded UI handler
+	uiHandler, err := ui.NewHandler()
+	if err != nil {
+		slog.Error("Failed to initialize UI handler", "error", err)
+		os.Exit(1)
+	}
+	mux.Handle("/", uiHandler)
+
+	// Log final config and start the server
+	slog.Info("Configuration loaded and services initialized",
+		"version", Version,
+		"port", port,
+		"public_url", publicURL,
+		"frontend_url", frontendURL,
+		"dev_mode", isDevMode,
+		"storage_path", storagePath,
+	)
+
+	listenAddr := fmt.Sprintf(":%d", port)
+	slog.Info("Server starting...",
+		"listen_addr", listenAddr,
+		"public_url", publicURL,
+	)
+
+	corsHandler := api.WithCORS(mux, []string{frontendURL})
+	if err := http.ListenAndServe(listenAddr, corsHandler); err != nil {
+		slog.Error("Server failed to start", "error", err)
+		os.Exit(1)
+	}
+}
+
+// loadEnv handles loading the .env file.
+func loadEnv() {
 	if err := godotenv.Load(); err != nil {
 		slog.Info("No .env file found, relying on OS environment variables.")
 	} else {
 		slog.Info(".env file loaded.")
 	}
+}
 
-	// Define and parse flags
-	devmodePtr := flag.Bool("dev", false, "Enable dev mode (uses DEV_FRONTEND_BASE_URL)")
-	dbPtr := flag.String("db", "", "Path to the database file.")
-	flag.Parse()
-
-	// === Load Port Configuration ===
+// loadAppConfig consolidates the loading of port, URLs, and paths.
+func loadAppConfig(isDevMode bool, dbPathFromFlag string) (
+	port int, publicURL, frontendURL, storagePath string, err error,
+) {
+	// Port Configuration
 	portStr := os.Getenv("PORT")
-	port, err := strconv.Atoi(portStr)
+	port, err = strconv.Atoi(portStr)
 	if err != nil || portStr == "" {
 		slog.Info("PORT not set or invalid, defaulting to 8080")
 		port = 8080
 	}
 
-	// === Load Public URL Configuration ===
-	publicURL := os.Getenv("PUBLIC_URL")
+	// Public URL Configuration
+	publicURL = os.Getenv("PUBLIC_URL")
 	if publicURL == "" {
-		// Default to localhost based on the app port for convenience in dev
 		publicURL = fmt.Sprintf("http://localhost:%d", port)
 		slog.Warn("PUBLIC_URL not set, defaulting to app port", "url", publicURL)
 	}
-	// Ensure no trailing slash for consistent URL joining
 	publicURL = strings.TrimRight(publicURL, "/")
 
-	// === 3. Database and Dev Mode Setup ===
-	isDevMode := *devmodePtr
-	dbDir := *dbPtr
-	if dbDir != "" {
-		os.Setenv("STORAGE_PATH", dbDir)
-		slog.Info("Using custom database path from flag.", "db_path", dbDir)
+	// Storage Path
+	if dbPathFromFlag != "" {
+		os.Setenv("STORAGE_PATH", dbPathFromFlag)
+		slog.Info("Using custom database path from flag.", "db_path", dbPathFromFlag)
 	}
-
-	var frontendBaseURL string
-	// === 4. Frontend Base URL Configuration ===
-	if isDevMode {
-		// --- Development Mode ---
-		slog.Info("Dev mode enabled.")
-		frontendBaseURL = os.Getenv("DEV_FRONTEND_BASE_URL")
-
-		if frontendBaseURL == "" {
-			slog.Warn("DEV_FRONTEND_BASE_URL not set, defaulting to http://localhost:5173")
-			frontendBaseURL = "http://localhost:5173"
-		}
-	} else {
-		// --- Production Mode ---
-		slog.Info("Production mode enabled.")
-		// In production, the Go app serves the UI, so the
-		// frontend's base URL is the same as the app's public URL.
-		frontendBaseURL = publicURL
-	}
-
-	// === 5. Session Setup ===
-	sessionConfig, err := setupSession()
-	if err != nil {
-		slog.Error("failed to setup session", "error", err)
-		return
-	}
-
-	// google oauth client id/secret check
-	googleOAuthClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
-	googleOAuthClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-	smtp_password := os.Getenv("SMTP_PASSWORD")
-
-	var authMethod auth.AuthMethod
-	if (googleOAuthClientID == "" || googleOAuthClientSecret == "") && smtp_password == "" {
-		slog.Warn("either GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, or SMTP_PASSWORD must be set in environment variables for email functionality.")
-		authMethod = auth.AuthMethodNone
-	} else if smtp_password != "" {
-		slog.Warn("Using SMTP_PASSWORD is not recommended for security reasons.")
-		authMethod = auth.AuthMethodPlain
-	} else {
-		slog.Info("Google OAuth credentials loaded.")
-		authMethod = auth.AuthMethodOAuth2
-
-		// Use the clean publicURL to build the callback
-		callbackURL := fmt.Sprintf("%s/api/v1/auth/google/callback", publicURL)
-
-		auth.NewGoogleOAuth2(
-			googleOAuthClientID, googleOAuthClientSecret,
-			callbackURL, // Use the correctly constructed callback URL
-			*sessionConfig,
-		)
-	}
-
-	// storage path
-	storagePath := os.Getenv("STORAGE_PATH")
+	storagePath = os.Getenv("STORAGE_PATH")
 	if storagePath == "" {
-		exePath, err := os.Executable()
+		var exePath string
+		exePath, err = os.Executable()
 		if err != nil {
-			slog.Error("Failed to get executable path", "error", err)
+			err = fmt.Errorf("failed to get executable path: %w", err)
 			return
 		}
 		storagePath = filepath.Join(filepath.Dir(exePath), "db")
 		slog.Info("STORAGE_PATH not set, defaulting to executable directory", "storage_path", storagePath)
 	}
 
-	slog.Info("Configuration loaded",
-		"version", Version,
-		"port", port,
-		"frontend_url", frontendBaseURL,
-		"dev_mode", isDevMode,
-		"storage_path", storagePath,
-	)
-
-	mux := http.NewServeMux()
-	storageDir, err := storage.NewStorageDir(storagePath)
-	if err != nil {
-		slog.Error(err.Error())
-		return
-	}
-	handler := api.Handler{
-		Context:         context.Background(),
-		StorageDir:      *storageDir,
-		FrontendBaseURL: frontendBaseURL,
-		EmailAuthMethod: authMethod,
-		Version:         Version,
+	// Frontend Base URL
+	if isDevMode {
+		slog.Info("Dev mode enabled.")
+		frontendURL = os.Getenv("DEV_FRONTEND_BASE_URL")
+		if frontendURL == "" {
+			slog.Warn("DEV_FRONTEND_BASE_URL not set, defaulting to http://localhost:5173")
+			frontendURL = "http://localhost:5173"
+		}
+	} else {
+		slog.Info("Production mode enabled.")
+		frontendURL = publicURL
 	}
 
-	handler.RegisterRoutesV1(mux)
-
-	// Serve embedded UI
-	uiHandler, err := ui.NewHandler()
-	if err != nil {
-		slog.Error("Failed to initialize UI handler", "error", err)
-		return
-	}
-	mux.Handle("/", uiHandler)
-
-	slog.Info("Server listening", "url", fmt.Sprintf("http://localhost:%d", port))
-	http.ListenAndServe(":"+strconv.Itoa(port), api.WithCORS(mux, []string{frontendBaseURL}))
+	return port, publicURL, frontendURL, storagePath, nil
 }
 
+// setupAuth determines and configures the authentication method.
+func setupAuth(publicURL string, sessionConfig *auth.SessionConfig) (auth.AuthMethod, error) {
+	var authMethod auth.AuthMethod
+
+	// Read auth-specific env vars here
+	googleOAuthClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
+	googleOAuthClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+	smtpPassword := os.Getenv("SMTP_PASSWORD")
+
+	googleAuthAvailable := googleOAuthClientID != "" && googleOAuthClientSecret != ""
+	smtpAuthAvailable := smtpPassword != ""
+
+	if !googleAuthAvailable && !smtpAuthAvailable {
+		slog.Warn("Neither Google OAuth nor SMTP credentials are set. Email functionality will be disabled.")
+		authMethod = auth.AuthMethodNone
+	} else if smtpAuthAvailable {
+		slog.Warn("Using SMTP_PASSWORD is not recommended for security reasons. Prefer Google OAuth.")
+		authMethod = auth.AuthMethodPlain
+	} else {
+		// Google OAuth is available and preferred
+		slog.Info("Google OAuth credentials loaded.")
+		authMethod = auth.AuthMethodOAuth2
+
+		callbackURL := fmt.Sprintf("%s/api/v1/auth/google/callback", publicURL)
+
+		auth.NewGoogleOAuth2(
+			googleOAuthClientID,
+			googleOAuthClientSecret,
+			callbackURL,
+			*sessionConfig,
+		)
+	}
+
+	return authMethod, nil
+}
+
+// setupSession configures session parameters from the environment.
 func setupSession() (*auth.SessionConfig, error) {
 	var key []byte
 	keyStr := os.Getenv("SESSION_SECRET")
 	if keyStr == "" {
+		slog.Info("SESSION_SECRET not set, generating a temporary random key.")
 		var err error
 		key, err = crypto.GenerateSecureBytes(32)
 		if err != nil {
-			return nil, fmt.Errorf("error generating secure bytes: %v", err)
+			return nil, fmt.Errorf("error generating secure bytes: %w", err)
 		}
 	} else {
 		key = []byte(keyStr)
@@ -183,8 +224,7 @@ func setupSession() (*auth.SessionConfig, error) {
 	}
 
 	var isProd bool
-	prodStr := os.Getenv("IS_PROD")
-	prodStr = strings.ToLower(prodStr)
+	prodStr := strings.ToLower(os.Getenv("IS_PROD"))
 	if prodStr == "true" {
 		isProd = true
 	}
