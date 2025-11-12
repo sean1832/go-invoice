@@ -48,7 +48,7 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 			logger.Error("failed to parse SMTP_PORT to interger")
 		}
 
-		smtp := services.NewSMTPService(from, host, port, password)
+		smtp := services.NewSMTPService(from, host, port, password, auth.AuthMethodPlain)
 		// generate pdf attachment
 		chrome, err := services.NewChromeService()
 		if err != nil {
@@ -57,7 +57,7 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer chrome.Close()
-		pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second, services.PaperSizeA3, id,)
+		pdfData, err := chrome.GeneratePDF(fmt.Sprintf("%s/invoices/%s/print", h.FrontendBaseURL, id), 10*time.Second, services.PaperSizeA3, id)
 		if err != nil {
 			writeRespErr(w, "failed to generate pdf attachment", http.StatusInternalServerError)
 			logger.Error("failed to generate pdf attachment", "error", err)
