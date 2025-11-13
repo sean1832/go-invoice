@@ -8,6 +8,8 @@
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import type { EmailConfig, EmailContent } from '@/types/invoice';
 	import EmailAuthCard from '@/components/molecules/email-auth-card.svelte';
+	import { isAuthenticated } from '@/stores';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	interface Props {
 		children: () => any;
 		onSendEmail?: (data: EmailConfig) => Promise<void> | void;
@@ -77,7 +79,11 @@
 			<Dialog.Title>Send Email</Dialog.Title>
 		</Dialog.Header>
 		{#if requiredOAuth}
-			<EmailAuthCard class="mb-4" showCard={false} />
+			<EmailAuthCard
+				class="mb-4"
+				showCard={false}
+				notConnectedHelper="You must be authenticated to send email"
+			/>
 		{/if}
 		<div class="flex flex-col gap-2">
 			<div class="relative">
@@ -105,11 +111,15 @@
 			</div>
 		</div>
 		<Dialog.Footer>
-			<div class="flex gap-2">
+			<div class="flex justify-end gap-2">
 				<Dialog.Close>
 					<Button variant="outline" disabled={isSending}>Cancel</Button>
 				</Dialog.Close>
-				<Button type="submit" onclick={handleSubmit} disabled={isSending}>
+				<Button
+					type="submit"
+					onclick={handleSubmit}
+					disabled={isSending || (requiredOAuth && !$isAuthenticated)}
+				>
 					{#if isSending}
 						<Spinner class="mr-2 h-4 w-4" size={16} />
 					{/if}
