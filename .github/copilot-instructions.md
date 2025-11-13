@@ -39,9 +39,13 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 
 **Environment Variables** (optional `.env` in `backend/`):
 
+- `PORT`: Server port (default: `8080`)
+- `PUBLIC_URL`: Public-facing URL for OAuth callbacks (default: `http://localhost:{PORT}`)
 - `STORAGE_PATH`: Override default `db/` location (defaults to `{executable_dir}/db`)
 - `DEV_FRONTEND_BASE_URL`: Frontend URL in dev mode (default: `http://localhost:5173`)
+- Session: `SESSION_SECRET` (auto-generated if empty), `SESSION_MAX_AGE` (default: 2592000/30 days), `IS_PROD` (default: `false`)
 - Email config: `SMTP_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_PASSWORD` (plain auth) or `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` (OAuth2)
+- See `backend/.env.example` for complete reference with all options
 
 ## Critical Developer Workflows
 
@@ -68,10 +72,11 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 2. Add to navigation in `frontend/src/routes/+layout.svelte` if needed
 3. SPA routing handled automatically by SvelteKit adapter-static
 
-**Backend API Endpoint**:
+### Backend API Endpoint\*\*:
 
 1. Create handler in `backend/internal/api/handler_resource_{name}.go` or `handler_action_{name}.go`
-2. Register in `RegisterRoutesV1()` (e.g., `mux.HandleFunc("/api/v1/resource", h.handleResource)`)
+2. Register in `RegisterRoutesV1()` in `api.go` (e.g., `mux.HandleFunc("/api/v1/resource", h.handleResource)`)
+   - Use HTTP method prefixes for specific verbs: `mux.HandleFunc("POST /api/v1/resource", h.handleCreate)`
 3. Use helper functions: `getResourceByID()`, `createResource()`, `updateResourceByID()`, `deleteResourceByID()`
 
 **Adding PDF/Email Features**:
@@ -134,10 +139,11 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 
 ### API Handlers
 
-- Pattern: `Handler struct` with `Context`, `StorageDir`, `FrontendBaseURL`, `EmailAuthMethod` fields
-- Register routes in `RegisterRoutesV1()` using path patterns: `/api/v1/resource/{id}`
+- Pattern: `Handler struct` with `Context`, `StorageDir`, `FrontendBaseURL`, `EmailAuthMethod`, `Version` fields
+- Register routes in `RegisterRoutesV1()` in `api.go` using path patterns: `/api/v1/resource/{id}`
+  - Modern HTTP method routing: `mux.HandleFunc("POST /api/v1/resource", h.handleCreate)` (Go 1.22+)
+  - Legacy method routing: Check `r.Method` in handler functions for GET/POST/PUT/DELETE
 - JSON serialization with Go's built-in `encoding/json` (snake_case tags)
-- Method routing: Check `r.Method` in handler functions (GET/POST/PUT/DELETE)
 - Helper functions in `resource_helpers.go`: `getResourceByID()`, `createResource()`, `updateResourceByID()`, `deleteResourceByID()`
 
 ### Data Storage
