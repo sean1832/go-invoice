@@ -10,7 +10,7 @@ export {
 	authStore,
 	isAuthenticated,
 	currentUserEmail,
-	requiresOAuth,
+	authMethod,
 	currentUserAvatarURL,
 	currentUserName
 } from './auth';

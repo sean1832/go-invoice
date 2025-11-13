@@ -6,7 +6,7 @@
 	import Label from '@/components/ui/label/label.svelte';
 	import Button from '@/components/ui/button/button.svelte';
 	import Spinner from '@/components/atoms/spinner.svelte';
-	import type { EmailConfig, EmailContent } from '@/types/invoice';
+	import type { EmailConfig } from '@/types/invoice';
 	import EmailAuthCard from '@/components/molecules/email-auth-card.svelte';
 	import { isAuthenticated } from '@/stores';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
@@ -15,15 +15,9 @@
 		onSendEmail?: (data: EmailConfig) => Promise<void> | void;
 		templateData: EmailConfig;
 		isSending: boolean;
-		requiredOAuth: boolean;
+		authMethod: 'oauth2' | 'plain' | 'none' | null;
 	}
-	let {
-		children,
-		onSendEmail: onSubmit,
-		templateData,
-		isSending,
-		requiredOAuth = false
-	}: Props = $props();
+	let { children, onSendEmail: onSubmit, templateData, isSending, authMethod }: Props = $props();
 
 	// dialog open state
 	let open = $state(false);
@@ -78,11 +72,17 @@
 		<Dialog.Header>
 			<Dialog.Title>Send Email</Dialog.Title>
 		</Dialog.Header>
-		{#if requiredOAuth}
+		{#if authMethod === 'oauth2'}
 			<EmailAuthCard
 				class="mb-4"
 				showCard={false}
 				notConnectedHelper="You must be authenticated to send email"
+			/>
+		{:else if authMethod === 'none' || authMethod === null}
+			<ErrorAlert
+				class="mb-4"
+				message="No email authentication method is configured. Please set up email authentication in environment variable."
+				type="warning"
 			/>
 		{/if}
 		<div class="flex flex-col gap-2">
@@ -118,7 +118,10 @@
 				<Button
 					type="submit"
 					onclick={handleSubmit}
-					disabled={isSending || (requiredOAuth && !$isAuthenticated)}
+					disabled={isSending ||
+						(authMethod === 'oauth2' && !$isAuthenticated) || // disable if OAuth2 is required and not authenticated
+						authMethod === 'none' || // disable if no auth method is set
+						authMethod === null}
 				>
 					{#if isSending}
 						<Spinner class="mr-2 h-4 w-4" size={16} />

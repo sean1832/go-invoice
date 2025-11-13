@@ -2,7 +2,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider, requiresOAuth } from '@/stores';
+	import { activeProvider, authMethod } from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import { ProviderForm } from '@/components/organisms/profile-form';
 	import { EmailAuthCard } from '@/components/molecules';
@@ -94,7 +94,7 @@
 	{/if}
 
 	<!-- Email Authentication Section (only show if OAuth2 configured) -->
-	{#if $requiresOAuth}
+	{#if $authMethod === 'oauth2'}
 		<EmailAuthCard class="mt-8" onLoginError={handleAuthError} onLogoutError={handleAuthError} />
 	{/if}
 

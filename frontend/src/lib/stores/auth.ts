@@ -68,4 +68,4 @@ export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticat
 export const currentUserEmail = derived(authStore, ($auth) => $auth.userEmail);
 export const currentUserAvatarURL = derived(authStore, ($auth) => $auth.userAvatarURL);
 export const currentUserName = derived(authStore, ($auth) => $auth.userName);
-export const requiresOAuth = derived(authStore, ($auth) => $auth.authMethod === 'oauth2');
+export const authMethod = derived(authStore, ($auth) => $auth.authMethod);
