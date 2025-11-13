@@ -46,7 +46,7 @@
 			// Notify parent window and close popup
 			if (window.opener) {
 				window.opener.postMessage({ type: 'AUTH_SUCCESS' }, window.location.origin);
-				setTimeout(() => window.close(), 500);
+				setTimeout(() => window.close(), 1000); // Close after 1 second
 			} else {
 				// If not opened as popup, redirect to settings
 				setTimeout(() => (window.location.href = '/settings'), 1500);

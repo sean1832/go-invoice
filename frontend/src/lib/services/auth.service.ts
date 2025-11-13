@@ -54,9 +54,9 @@ export function loginWithGoogle(): Promise<void> {
 			if (event.origin !== window.location.origin) return;
 			if (event.data.type === 'AUTH_SUCCESS') {
 				window.removeEventListener('message', messageHandler);
-				popup?.close();
 
 				// Refresh session to update store
+				// Note: The popup will close itself via auth-success.html
 				checkSession(fetch)
 					.then(() => resolve())
 					.catch(reject);
