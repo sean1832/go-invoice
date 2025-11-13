@@ -4,37 +4,92 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"go-invoice/internal/auth"
+	"log/slog"
 	"mime/multipart"
 	"net/smtp"
 	"net/textproto"
 	"strings"
 )
 
+// AttachmentType represents the MIME type of the attachment
+type AttachmentType string
+
+const (
+	AttachmentTypePDF       AttachmentType = "application/pdf"          // pdf file
+	AttachmentTypeZIP       AttachmentType = "application/zip"          // zip file
+	AttachmentTypeJSON      AttachmentType = "application/json"         // json file
+	AttachmentTypeGeneric   AttachmentType = "application/octet-stream" // generic binary
+	AttachmentTypeImageJPEG AttachmentType = "image/jpeg"               // jpeg image
+	AttachmentTypeImagePNG  AttachmentType = "image/png"                // png image
+)
+
+// ========== OAuth2 SMTP Auth ==========
+
+type oauth2Auth struct {
+	username, accessToken string
+}
+
+func newOAuth2Auth(username, accessToken string) smtp.Auth {
+	return &oauth2Auth{username, accessToken}
+}
+func (a *oauth2Auth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	authStr := fmt.Sprintf("user=%s\x01auth=Bearer %s\x01\x01", a.username, a.accessToken)
+	slog.Info("OAuth2 SMTP auth starting",
+		"username", a.username,
+		"server", server.Name,
+		"token_length", len(a.accessToken))
+	return "XOAUTH2", []byte(authStr), nil
+}
+func (a *oauth2Auth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		// Gmail sends a challenge on failure, respond with empty line to get the actual error
+		slog.Warn("OAuth2 SMTP server challenge received", "challenge", string(fromServer))
+		return []byte{}, nil
+	}
+	return nil, nil
+}
+
+func (a *oauth2Auth) Close() error {
+	return nil
+}
+
+// ========== Email struct ==========
+
 // SMTPService is responsible for sending emails via direct SMTP
 type SMTPService struct {
-	From     string
-	Host     string
-	Port     int
-	Password string
+	from    string
+	address string
+	auth    smtp.Auth
 }
 
 // NewSMTPService creates a new SMTPService instance
-func NewSMTPService(from, host string, port int, password string) *SMTPService {
-	return &SMTPService{
-		From:     from,
-		Host:     host,
-		Port:     port,
-		Password: password,
+func NewSMTPService(from, host string, port int, credential string, authMethod auth.AuthMethod) *SMTPService {
+	address := fmt.Sprintf("%s:%d", host, port)
+	switch authMethod {
+	case auth.AuthMethodPlain:
+		auth := smtp.PlainAuth("", from, credential, host)
+		return &SMTPService{
+			from:    from,
+			address: address,
+			auth:    auth,
+		}
+	case auth.AuthMethodOAuth2:
+		auth := newOAuth2Auth(from, credential)
+		return &SMTPService{
+			from:    from,
+			address: address,
+			auth:    auth,
+		}
+	default:
+		return nil
 	}
 }
 
 // Send sends a basic plaintext email via SMTP
 func (s *SMTPService) Send(to []string, subject string, body string) error {
-	auth := smtp.PlainAuth("", s.From, s.Password, s.Host)
-	address := fmt.Sprintf("%s:%d", s.Host, s.Port)
-
 	header := make(map[string]string)
-	header["From"] = s.From
+	header["From"] = s.from
 	header["To"] = strings.Join(to, ", ")
 	header["Subject"] = subject
 	header["MIME-version"] = "1.0"
@@ -50,29 +105,17 @@ func (s *SMTPService) Send(to []string, subject string, body string) error {
 	msg := msgBuilder.String()
 
 	err := smtp.SendMail(
-		address,
-		auth,
-		s.From,
+		s.address,
+		s.auth,
+		s.from,
 		to,
 		[]byte(msg),
 	)
 	if err != nil {
-		return fmt.Errorf("smpt.SendMail failed: %v", err)
+		return fmt.Errorf("smtp.SendMail failed: %v", err)
 	}
 	return nil
 }
-
-// AttachmentType represents the MIME type of the attachment
-type AttachmentType string
-
-const (
-	AttachmentTypePDF       AttachmentType = "application/pdf"          // pdf file
-	AttachmentTypeZIP       AttachmentType = "application/zip"          // zip file
-	AttachmentTypeJSON      AttachmentType = "application/json"         // json file
-	AttachmentTypeGeneric   AttachmentType = "application/octet-stream" // generic binary
-	AttachmentTypeImageJPEG AttachmentType = "image/jpeg"               // jpeg image
-	AttachmentTypeImagePNG  AttachmentType = "image/png"                // png image
-)
 
 // SendWithAttachment sends an email with an attachment via SMTP
 func (s *SMTPService) SendWithAttachment(
@@ -83,15 +126,12 @@ func (s *SMTPService) SendWithAttachment(
 	attachmentData []byte,
 	attachmentType AttachmentType) error {
 
-	address := fmt.Sprintf("%s:%d", s.Host, s.Port)
-	auth := smtp.PlainAuth("", s.From, s.Password, s.Host)
-
 	var emailBuffer bytes.Buffer
 
 	mw := multipart.NewWriter(&emailBuffer)
 
 	header := make(map[string]string)
-	header["From"] = s.From
+	header["From"] = s.from
 	header["To"] = strings.Join(to, ", ")
 	header["Subject"] = subject
 	header["MIME-Version"] = "1.0"
@@ -134,9 +174,9 @@ func (s *SMTPService) SendWithAttachment(
 
 	// send the email
 	err = smtp.SendMail(
-		address,
-		auth,
-		s.From,
+		s.address,
+		s.auth,
+		s.from,
 		to,
 		emailBuffer.Bytes(),
 	)

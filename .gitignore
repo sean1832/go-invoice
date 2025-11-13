@@ -5,3 +5,5 @@ package-lock.json
 # Embedded frontend build
 backend/internal/ui/dist/
 .env
+
+*.sample.json

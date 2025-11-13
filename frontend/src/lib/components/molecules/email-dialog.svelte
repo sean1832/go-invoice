@@ -7,13 +7,23 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import type { EmailConfig, EmailContent } from '@/types/invoice';
+	import EmailAuthCard from '@/components/molecules/email-auth-card.svelte';
+	import { isAuthenticated } from '@/stores';
+	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	interface Props {
 		children: () => any;
-		onSubmit?: (data: EmailConfig) => Promise<void> | void;
+		onSendEmail?: (data: EmailConfig) => Promise<void> | void;
 		templateData: EmailConfig;
 		isSending: boolean;
+		requiredOAuth: boolean;
 	}
-	let { children, onSubmit, templateData, isSending }: Props = $props();
+	let {
+		children,
+		onSendEmail: onSubmit,
+		templateData,
+		isSending,
+		requiredOAuth = false
+	}: Props = $props();
 
 	// dialog open state
 	let open = $state(false);
@@ -68,6 +78,13 @@
 		<Dialog.Header>
 			<Dialog.Title>Send Email</Dialog.Title>
 		</Dialog.Header>
+		{#if requiredOAuth}
+			<EmailAuthCard
+				class="mb-4"
+				showCard={false}
+				notConnectedHelper="You must be authenticated to send email"
+			/>
+		{/if}
 		<div class="flex flex-col gap-2">
 			<div class="relative">
 				<Label for="email_to">To</Label>
@@ -94,11 +111,15 @@
 			</div>
 		</div>
 		<Dialog.Footer>
-			<div class="flex gap-2">
+			<div class="flex justify-end gap-2">
 				<Dialog.Close>
 					<Button variant="outline" disabled={isSending}>Cancel</Button>
 				</Dialog.Close>
-				<Button type="submit" onclick={handleSubmit} disabled={isSending}>
+				<Button
+					type="submit"
+					onclick={handleSubmit}
+					disabled={isSending || (requiredOAuth && !$isAuthenticated)}
+				>
 					{#if isSending}
 						<Spinner class="mr-2 h-4 w-4" size={16} />
 					{/if}

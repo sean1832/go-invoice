@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Authentication Successful</title>
+		<style>
+			body {
+				font-family:
+					system-ui,
+					-apple-system,
+					sans-serif;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				margin: 0;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+			}
+			.container {
+				text-align: center;
+				padding: 2rem;
+			}
+			.icon {
+				font-size: 4rem;
+				margin-bottom: 1rem;
+			}
+			h1 {
+				margin: 0 0 0.5rem 0;
+				font-size: 1.5rem;
+			}
+			p {
+				margin: 0;
+				opacity: 0.9;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="icon">✓</div>
+			<h1>Authentication Successful!</h1>
+			<p>You can close this window.</p>
+		</div>
+		<script>
+			// Notify parent window and close popup
+			if (window.opener) {
+				window.opener.postMessage({ type: 'AUTH_SUCCESS' }, window.location.origin);
+				setTimeout(() => window.close(), 1000); // Close after 1 second
+			} else {
+				// If not opened as popup, redirect to settings
+				setTimeout(() => (window.location.href = '/settings'), 1500);
+			}
+		</script>
+	</body>
+</html>

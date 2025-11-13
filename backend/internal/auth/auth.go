@@ -7,8 +7,3 @@ const (
 	AuthMethodOAuth2 AuthMethod = "oauth2"
 	AuthMethodPlain  AuthMethod = "plain"
 )
-
-type OAuth2 struct {
-	ClientID     string
-	ClientSecret string
-}

@@ -2,9 +2,10 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
 	import type { ProviderData } from '@/types/invoice';
-	import { activeProvider } from '@/stores';
+	import { activeProvider, requiresOAuth } from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import { ProviderForm } from '@/components/organisms/profile-form';
+	import { EmailAuthCard } from '@/components/molecules';
 	import { api } from '@/services';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import { updateProvider } from '@/stores/provider';
@@ -51,6 +52,10 @@
 	function navigateToNewProvider() {
 		window.location.href = '/providers/new';
 	}
+
+	function handleAuthError(error: Error) {
+		errorMessage = error.message;
+	}
 </script>
 
 <div class="container mx-auto max-w-4xl p-4">
@@ -86,6 +91,11 @@
 				<Button onclick={navigateToNewProvider}>Create Provider Profile</Button>
 			</Card.Content>
 		</Card.Root>
+	{/if}
+
+	<!-- Email Authentication Section (only show if OAuth2 configured) -->
+	{#if $requiresOAuth}
+		<EmailAuthCard class="mt-8" onLoginError={handleAuthError} onLogoutError={handleAuthError} />
 	{/if}
 
 	<!-- Version Info -->

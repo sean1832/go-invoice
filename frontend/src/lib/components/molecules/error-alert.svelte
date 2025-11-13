@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import Button from '@/components/ui/button/button.svelte';
+	import { cn } from '@/utils';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 
@@ -9,8 +10,11 @@
 		 * The error message to display
 		 */
 		message: string | null | undefined;
+
+		type?: 'error' | 'warning' | 'info' | undefined;
+
 		/**
-		 * The error title (default: "Error")
+		 * Alert title
 		 */
 		title?: string;
 		/**
@@ -45,7 +49,8 @@
 
 	let {
 		message,
-		title = 'Error',
+		type = 'error',
+		title: titleProp,
 		showBackButton = false,
 		backButtonText = 'Back',
 		onBack,
@@ -54,6 +59,10 @@
 		onRetry,
 		class: className = ''
 	}: Props = $props();
+
+	const title = $derived(
+		titleProp ?? (type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : 'Info')
+	);
 
 	function handleBack() {
 		if (onBack) {
@@ -65,14 +74,16 @@
 </script>
 
 {#if message}
-	<div class={`mb-6 ${className}`}>
+	<div class={cn('mb-6', className)}>
 		{#if showBackButton}
 			<Button variant="ghost" size="sm" onclick={handleBack} class="mb-4">
 				<ArrowLeftIcon class="mr-2 h-4 w-4" />
 				{backButtonText}
 			</Button>
 		{/if}
-		<Alert.Root variant="destructive">
+		<Alert.Root
+			variant={type === 'error' ? 'destructive' : type === 'warning' ? 'warn' : 'default'}
+		>
 			<AlertCircleIcon class="h-4 w-4" />
 			<Alert.Title>{title}</Alert.Title>
 			<Alert.Description>

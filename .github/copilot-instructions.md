@@ -39,9 +39,13 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 
 **Environment Variables** (optional `.env` in `backend/`):
 
+- `PORT`: Server port (default: `8080`)
+- `PUBLIC_URL`: Public-facing URL for OAuth callbacks (default: `http://localhost:{PORT}`)
 - `STORAGE_PATH`: Override default `db/` location (defaults to `{executable_dir}/db`)
 - `DEV_FRONTEND_BASE_URL`: Frontend URL in dev mode (default: `http://localhost:5173`)
+- Session: `SESSION_SECRET` (auto-generated if empty), `SESSION_MAX_AGE` (default: 2592000/30 days), `IS_PROD` (default: `false`)
 - Email config: `SMTP_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_PASSWORD` (plain auth) or `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` (OAuth2)
+- See `backend/.env.example` for complete reference with all options
 
 ## Critical Developer Workflows
 
@@ -68,10 +72,11 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 2. Add to navigation in `frontend/src/routes/+layout.svelte` if needed
 3. SPA routing handled automatically by SvelteKit adapter-static
 
-**Backend API Endpoint**:
+### Backend API Endpoint\*\*:
 
 1. Create handler in `backend/internal/api/handler_resource_{name}.go` or `handler_action_{name}.go`
-2. Register in `RegisterRoutesV1()` (e.g., `mux.HandleFunc("/api/v1/resource", h.handleResource)`)
+2. Register in `RegisterRoutesV1()` in `api.go` (e.g., `mux.HandleFunc("/api/v1/resource", h.handleResource)`)
+   - Use HTTP method prefixes for specific verbs: `mux.HandleFunc("POST /api/v1/resource", h.handleCreate)`
 3. Use helper functions: `getResourceByID()`, `createResource()`, `updateResourceByID()`, `deleteResourceByID()`
 
 **Adding PDF/Email Features**:
@@ -130,14 +135,36 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 - Date fields: always `string` (ISO format) in types
 - Validators in `src/lib/helpers/validators.ts`: `validateInvoice()`, `validateParty()`, `validateLineItem()`
 
+### Authentication & Sessions
+
+- **Auth Store** (`stores/auth.ts`): Centralized authentication state
+  - `authStore`: Main store with `isAuthenticated`, `userEmail`, `authMethod`, `loading`
+  - Derived stores: `isAuthenticated`, `currentUserEmail`, `requiresOAuth`
+- **Auth Service** (`services/auth.service.ts`): Authentication functions
+  - `checkSession(fetch)`: Check if user is authenticated (called on app load)
+  - `loginWithGoogle()`: Opens OAuth popup, returns promise on completion
+  - `logout(fetch)`: Clears session
+- **OAuth Flow**: Popup-based authentication
+  1. User clicks "Sign in with Google" → Opens `/api/v1/mailer/auth/google` in popup
+  2. User authenticates → Redirected to `/auth-success.html`
+  3. Success page posts message to parent window → Popup closes
+  4. Parent window refreshes session → Store updates
+- **Session Management**: Cookie-based sessions via gorilla/sessions
+  - Session name: `go-invoice-session`
+  - Session data: Email, name, access token, refresh token, expiry
+  - Persists for `SESSION_MAX_AGE` (default 30 days)
+  - **Critical**: Set `SESSION_SECRET` env var for production (sessions break on restart if not set)
+- **Conditional UI**: Show OAuth section only if `$requiresOAuth` is true (OAuth2 configured, not plain auth)
+
 ## Backend Patterns
 
 ### API Handlers
 
-- Pattern: `Handler struct` with `Context`, `StorageDir`, `FrontendBaseURL`, `EmailAuthMethod` fields
-- Register routes in `RegisterRoutesV1()` using path patterns: `/api/v1/resource/{id}`
+- Pattern: `Handler struct` with `Context`, `StorageDir`, `FrontendBaseURL`, `EmailAuthMethod`, `Version` fields
+- Register routes in `RegisterRoutesV1()` in `api.go` using path patterns: `/api/v1/resource/{id}`
+  - Modern HTTP method routing: `mux.HandleFunc("POST /api/v1/resource", h.handleCreate)` (Go 1.22+)
+  - Legacy method routing: Check `r.Method` in handler functions for GET/POST/PUT/DELETE
 - JSON serialization with Go's built-in `encoding/json` (snake_case tags)
-- Method routing: Check `r.Method` in handler functions (GET/POST/PUT/DELETE)
 - Helper functions in `resource_helpers.go`: `getResourceByID()`, `createResource()`, `updateResourceByID()`, `deleteResourceByID()`
 
 ### Data Storage
@@ -157,6 +184,11 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 - Query params: Support filtering via `?client_id={id}`, `?provider_id={id}`, `?status={status}`, `?date_from={iso}`, `?date_to={iso}`
   - Implemented in `internal/query/query_params.go` and `internal/query/invoice_filters.go`
   - Example: `/api/v1/invoices?status=draft&client_id=dingyu_xu&date_from=2025-01-01`
+- **Mailer endpoints**:
+  - `GET /api/v1/mailer/session`: Check authentication status and get auth method
+  - `POST /api/v1/mailer/logout`: Clear session
+  - `GET /api/v1/mailer/auth/google`: Start OAuth2 flow (opens in popup)
+  - `GET /api/v1/mailer/auth/google/callback`: OAuth2 callback (redirects to `/auth-success.html`)
 
 ### Service Integration
 
