@@ -8,7 +8,7 @@ export interface AuthState {
 }
 
 function createAuthStore() {
-	const { subscribe, set, update } = writable<AuthState>({
+	const { subscribe, update } = writable<AuthState>({
 		isAuthenticated: false,
 		userEmail: null,
 		authMethod: null,
@@ -42,12 +42,12 @@ function createAuthStore() {
 				loading
 			})),
 		reset: () =>
-			set({
+			update((state) => ({
 				isAuthenticated: false,
 				userEmail: null,
-				authMethod: null,
+				authMethod: state.authMethod, // Preserve authMethod so UI doesn't disappear
 				loading: false
-			})
+			}))
 	};
 }
 
