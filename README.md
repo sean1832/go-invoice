@@ -241,66 +241,6 @@ Add to `.env`:
 SESSION_SECRET=AbCdEf123456...  # Your generated secret
 ```
 
-### Data Backup
-
-All data is stored in the `db/` folder. To backup:
-
-```bash
-# Backup
-tar -czf invoice-backup-$(date +%Y%m%d).tar.gz db/
-
-# Restore
-tar -xzf invoice-backup-20251114.tar.gz
-```
-
-Or simply copy the `db/` folder to another location.
-
-### Reverse Proxy Configuration
-
-**Nginx Example:**
-
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-For HTTPS (recommended):
-
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-**Caddy (automatic HTTPS):**
-
-```caddy
-yourdomain.com {
-    reverse_proxy localhost:8080
-}
-```
 
 ### Environment Variables for Production
 
@@ -517,7 +457,6 @@ RESTful API available at `/api/v1/`:
 
 ## 🛠️ Development
 
-See [BUILD.md](BUILD.md) for detailed development and build instructions.
 
 **Quick Start:**
 

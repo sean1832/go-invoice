@@ -161,7 +161,8 @@ After clicking Create, a dialog will appear with your credentials:
 - **Client ID**: Looks like `123456789-abcdefghijklmnop.apps.googleusercontent.com`
 - **Client Secret**: Looks like `GOCSPX-abc123def456ghi789jkl`
 
-> [!WARNING] > **Copy both values immediately!** You can retrieve the Client ID later, but the Client Secret is only shown once. If you lose it, you'll need to create a new client secret.
+> [!WARNING]
+> **Copy both values immediately!** You can retrieve the Client ID later, but the Client Secret is only shown once. If you lose it, you'll need to create a new client secret.
 
 ## Step 5: Configure Your `.env` File
 
