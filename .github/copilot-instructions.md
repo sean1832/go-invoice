@@ -135,6 +135,27 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 - Date fields: always `string` (ISO format) in types
 - Validators in `src/lib/helpers/validators.ts`: `validateInvoice()`, `validateParty()`, `validateLineItem()`
 
+### Authentication & Sessions
+
+- **Auth Store** (`stores/auth.ts`): Centralized authentication state
+  - `authStore`: Main store with `isAuthenticated`, `userEmail`, `authMethod`, `loading`
+  - Derived stores: `isAuthenticated`, `currentUserEmail`, `requiresOAuth`
+- **Auth Service** (`services/auth.service.ts`): Authentication functions
+  - `checkSession(fetch)`: Check if user is authenticated (called on app load)
+  - `loginWithGoogle()`: Opens OAuth popup, returns promise on completion
+  - `logout(fetch)`: Clears session
+- **OAuth Flow**: Popup-based authentication
+  1. User clicks "Sign in with Google" → Opens `/api/v1/mailer/auth/google` in popup
+  2. User authenticates → Redirected to `/auth-success.html`
+  3. Success page posts message to parent window → Popup closes
+  4. Parent window refreshes session → Store updates
+- **Session Management**: Cookie-based sessions via gorilla/sessions
+  - Session name: `go-invoice-session`
+  - Session data: Email, name, access token, refresh token, expiry
+  - Persists for `SESSION_MAX_AGE` (default 30 days)
+  - **Critical**: Set `SESSION_SECRET` env var for production (sessions break on restart if not set)
+- **Conditional UI**: Show OAuth section only if `$requiresOAuth` is true (OAuth2 configured, not plain auth)
+
 ## Backend Patterns
 
 ### API Handlers
@@ -163,6 +184,11 @@ cd backend && go run . --dev   # http://localhost:8080 (with CORS for localhost:
 - Query params: Support filtering via `?client_id={id}`, `?provider_id={id}`, `?status={status}`, `?date_from={iso}`, `?date_to={iso}`
   - Implemented in `internal/query/query_params.go` and `internal/query/invoice_filters.go`
   - Example: `/api/v1/invoices?status=draft&client_id=dingyu_xu&date_from=2025-01-01`
+- **Mailer endpoints**:
+  - `GET /api/v1/mailer/session`: Check authentication status and get auth method
+  - `POST /api/v1/mailer/logout`: Clear session
+  - `GET /api/v1/mailer/auth/google`: Start OAuth2 flow (opens in popup)
+  - `GET /api/v1/mailer/auth/google/callback`: OAuth2 callback (redirects to `/auth-success.html`)
 
 ### Service Integration
 
