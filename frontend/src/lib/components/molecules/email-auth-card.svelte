@@ -1,7 +1,12 @@
 <script lang="ts">
 	import Button from '@/components/ui/button/button.svelte';
 	import * as Card from '@/components/ui/card';
-	import { isAuthenticated, currentUserEmail } from '@/stores';
+	import {
+		isAuthenticated,
+		currentUserEmail,
+		currentUserAvatarURL,
+		currentUserName
+	} from '@/stores';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
 	import { api } from '@/services';
@@ -87,6 +92,15 @@
 
 	let isLoggingIn = $state(false);
 	let isLoggingOut = $state(false);
+	let imageError = $state(false);
+
+	function handleImageError() {
+		imageError = true;
+	}
+
+	function handleImageLoad() {
+		imageError = false;
+	}
 
 	async function handleLogin() {
 		isLoggingIn = true;
@@ -128,9 +142,21 @@
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-3">
 						<div
-							class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900"
+							class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-green-100 dark:bg-green-900"
 						>
-							<CheckCircle2Icon class="h-5 w-5 text-green-600 dark:text-green-400" />
+							{#if $currentUserAvatarURL}
+								<img
+									src={$currentUserAvatarURL}
+									alt="User Avatar"
+									class="h-10 w-10 rounded-full object-cover"
+									onerror={handleImageError}
+									onload={handleImageLoad}
+									referrerpolicy="no-referrer"
+								/>
+							{/if}
+							{#if !$currentUserAvatarURL || imageError}
+								<CheckCircle2Icon class="h-5 w-5 text-green-600 dark:text-green-400" />
+							{/if}
 						</div>
 						<div>
 							<p class="text-sm font-medium">{connectedText}</p>
@@ -167,12 +193,24 @@
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900"
+						class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-green-100 dark:bg-green-900"
 					>
-						<CheckCircle2Icon class="h-5 w-5 text-green-600 dark:text-green-400" />
+						{#if $currentUserAvatarURL}
+							<img
+								src={$currentUserAvatarURL}
+								alt="User Avatar"
+								class="h-10 w-10 rounded-full object-cover"
+								onerror={handleImageError}
+								onload={handleImageLoad}
+								referrerpolicy="no-referrer"
+							/>
+						{/if}
+						{#if !$currentUserAvatarURL || imageError}
+							<CheckCircle2Icon class="h-5 w-5 text-green-600 dark:text-green-400" />
+						{/if}
 					</div>
 					<div>
-						<p class="text-sm font-medium">{connectedText}</p>
+						<p class="text-sm font-medium">{$currentUserName ? $currentUserName : connectedText}</p>
 						<p class="text-xs text-muted-foreground">{$currentUserEmail}</p>
 					</div>
 				</div>
@@ -184,7 +222,7 @@
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
 					<div
-						class="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900"
+						class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-yellow-100 dark:bg-yellow-900"
 					>
 						<AlertCircleIcon class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
 					</div>

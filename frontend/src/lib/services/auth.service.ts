@@ -5,6 +5,8 @@ interface SessionResponse {
 	authenticated: boolean;
 	email?: string;
 	method: 'oauth2' | 'plain' | 'none';
+	avatar_url?: string;
+	name?: string;
 }
 
 /**
@@ -15,7 +17,7 @@ export async function checkSession(fetchFn: typeof fetch): Promise<SessionRespon
 		const response = await http.get<SessionResponse>(fetchFn, '/mailer/session');
 
 		if (response.authenticated && response.email) {
-			authStore.setAuthenticated(response.email);
+			authStore.setAuthenticated(response.email, response.avatar_url || '', response.name || '');
 		} else {
 			authStore.setUnauthenticated();
 		}

@@ -8,4 +8,5 @@ type UserSessionData struct {
 	AccessToken  string
 	RefreshToken string
 	ExpiresAt    time.Time
+	AvatarURL    string
 }

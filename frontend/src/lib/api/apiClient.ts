@@ -16,7 +16,6 @@ export interface ApiClientOptions extends RequestInit {
 	 */
 	responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer';
 }
-// TODO: pdf support `application/pdf`
 
 export async function apiClient<T>(
 	KitFetch: typeof fetch,

@@ -6,7 +6,14 @@
  */
 
 // Auth store
-export { authStore, isAuthenticated, currentUserEmail, requiresOAuth } from './auth';
+export {
+	authStore,
+	isAuthenticated,
+	currentUserEmail,
+	requiresOAuth,
+	currentUserAvatarURL,
+	currentUserName
+} from './auth';
 
 // Provider store
 export { providers, activeProvider, providersLoading } from './provider';
