@@ -4,12 +4,18 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from 'svelte-sonner';
 	import { onMount } from 'svelte';
+	import { api } from '@/services';
 	let { children } = $props();
 	import Navbar from '@/components/organisms/navbar/navbar.svelte';
 
 	onMount(async () => {
-		// Initialize all stores when the app starts
-		//await Promise.all([initializeProviders()]);
+		// Check authentication status on app load
+		try {
+			await api.auth.checkSession(fetch);
+		} catch (error) {
+			console.error('Failed to check auth session:', error);
+			// Silently fail - user will see login prompt if needed
+		}
 	});
 </script>
 
