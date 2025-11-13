@@ -24,9 +24,16 @@
 	}
 
 	let { data }: Props = $props();
-	let invoice = $derived(data.invoice as Invoice);
+	let invoice = $state(data.invoice as Invoice);
 	let emailData = $derived(data.emailConfig as EmailTemplate);
 	let error = $derived(data.error);
+
+	// Sync invoice state with data changes
+	$effect(() => {
+		if (data.invoice) {
+			invoice = data.invoice as Invoice;
+		}
+	});
 
 	// Format email template with invoice data
 	let formattedEmail = $derived.by(() => {
@@ -121,6 +128,11 @@
 		try {
 			isSending = true;
 			await api.invoices.sendInvoiceEmail(fetch, invoice.id, emailConfig);
+
+			// Refetch the invoice to get updated status from backend
+			const updatedInvoice = await api.invoices.getInvoice(fetch, invoice.id);
+			invoice = updatedInvoice;
+
 			// Show success message
 			toast.success('Invoice email sent successfully');
 		} catch (error) {

@@ -1,6 +1,9 @@
 package invoice
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 )
@@ -32,4 +35,36 @@ func FindMaxSuffixFromFilename(filenames []string) int {
 	}
 
 	return maxSuffix
+}
+
+func LoadInvoice(invoiceRoot string, id string) (*Invoice, error) {
+	inv := &Invoice{}
+	filepath := filepath.Join(invoiceRoot, id+".json")
+	err := loadResourceFromFile(filepath, inv)
+	if err != nil {
+		return nil, err
+	}
+	return inv, nil
+}
+
+func SaveInvoice(invoiceRoot string, inv *Invoice) error {
+	filepath := filepath.Join(invoiceRoot, inv.ID+".json")
+	data, err := json.MarshalIndent(inv, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal invoice '%s': %w", inv.ID, err)
+	}
+	err = os.WriteFile(filepath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write invoice file '%s': %w", filepath, err)
+	}
+	return nil
+}
+
+func loadResourceFromFile(filepath string, resource any) error {
+	// read json
+	file, err := os.ReadFile(filepath)
+	if err != nil {
+		return fmt.Errorf("failed to read file '%s': %w", filepath, err)
+	}
+	return json.Unmarshal(file, resource)
 }
