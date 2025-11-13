@@ -9,7 +9,7 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
-func (h *Handler) handleOAuth2Begin(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleMailerOAuth2Begin(w http.ResponseWriter, r *http.Request) {
 	// Extract provider from path parameter
 	provider := r.PathValue("provider")
 	if provider == "" {
@@ -24,7 +24,7 @@ func (h *Handler) handleOAuth2Begin(w http.ResponseWriter, r *http.Request) {
 	gothic.BeginAuthHandler(w, r)
 }
 
-func (h *Handler) handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 	// Extract provider from path parameter
 	provider := r.PathValue("provider")
 	if provider == "" {

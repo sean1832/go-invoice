@@ -194,7 +194,7 @@ func setupAuth(publicURL string, sessionConfig *auth.SessionConfig) (auth.AuthMe
 		slog.Info("Google OAuth credentials loaded.")
 		authMethod = auth.AuthMethodOAuth2
 
-		callbackURL := fmt.Sprintf("%s/api/v1/auth/google/callback", publicURL)
+		callbackURL := fmt.Sprintf("%s/api/v1/mailer/auth/google/callback", publicURL)
 
 		auth.ConfigureGoogleOAuth2(
 			googleOAuthClientID,

@@ -36,9 +36,10 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	mux.HandleFunc(fmt.Sprintf("POST %s/invoices/{id}/email", prefix), h.handleSendEmail)
 	mux.HandleFunc(fmt.Sprintf("GET %s/email_templates/{id}", prefix), h.handleEmailTemplate)
 
-	// oauth2
-	mux.HandleFunc(prefix+"/auth/{provider}", h.handleOAuth2Begin)
-	mux.HandleFunc(prefix+"/auth/{provider}/callback", h.handleOAuth2Callback)
+	// mailer
+	mux.HandleFunc(prefix+"/mailer/auth/{provider}", h.handleMailerOAuth2Begin)
+	mux.HandleFunc(prefix+"/mailer/auth/{provider}/callback", h.handleMailerOAuth2Callback)
+	mux.HandleFunc(fmt.Sprintf("GET %s/mailer/config", prefix), h.handleMailerAuthConfig)
 }
 
 func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
