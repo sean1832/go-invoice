@@ -78,6 +78,11 @@ func (h *Handler) handleMailerLogout(w http.ResponseWriter, r *http.Request) {
 		userEmail = userData.Email
 	}
 
+	// Clear Gothic's OAuth provider session cache (forces re-authentication)
+	if err := gothic.Logout(w, r); err != nil {
+		slog.Warn("error clearing gothic session", "error", err)
+	}
+
 	// Clear session
 	session.Values[userKey] = types.UserSessionData{}
 	session.Options.MaxAge = -1 // Delete cookie
