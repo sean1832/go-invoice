@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="design/favicon.svg" alt="go-invoice logo" width="120" height="120">
+<img src=".design/favicon.svg" alt="go-invoice logo" width="120" height="120">
 
 # go-invoice
 
