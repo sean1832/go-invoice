@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           # Extract version from tag (e.g., v1.2.3 -> 1.2.3)
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${GITHUB_REF_NAME#v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
 
