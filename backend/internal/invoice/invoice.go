@@ -9,7 +9,7 @@ type InvoiceStatus string
 
 const (
 	StatusDraft InvoiceStatus = "draft"
-	StatusSend  InvoiceStatus = "send"
+	StatusSent  InvoiceStatus = "send"
 )
 
 // Invoice represents the core invoice domain model

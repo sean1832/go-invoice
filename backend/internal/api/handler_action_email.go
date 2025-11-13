@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-invoice/internal/auth"
+	"go-invoice/internal/invoice"
 	"go-invoice/internal/services"
 	"go-invoice/internal/types"
 	"log/slog"
@@ -151,6 +152,22 @@ func (h *Handler) handleSendEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// update sent status
+	inv, err := invoice.LoadInvoice(h.StorageDir.Invoices, id)
+	if err != nil {
+		writeRespErr(w, fmt.Sprintf("failed to load invoice '%s' to update sent status: %v", id, err), http.StatusInternalServerError)
+		logger.Error("failed to load invoice to update sent status", "invoice", id, "error", err)
+		return
+	}
+	inv.Status = invoice.StatusSent // <-- mark as sent
+	if err := invoice.SaveInvoice(h.StorageDir.Invoices, inv); err != nil {
+		writeRespErr(w, fmt.Sprintf("failed to save invoice '%s' to update sent status: %v", id, err), http.StatusInternalServerError)
+		logger.Error("failed to save invoice to update sent status", "invoice", id, "error", err)
+		return
+	}
+	logger.Info("invoice sent status updated", "invoice", id)
+
+	// success
 	writeRespOk(w, fmt.Sprintf("email sent for invoice '%s'", id), emailMessage)
 	logger.Info("invoice successfully sent", "invoice", id, "from", from, "to", emailMessage.To)
 }
