@@ -5,6 +5,9 @@
  * import { invoices, loadInvoices, saveInvoice } from '@/stores';
  */
 
+// Auth store
+export { authStore, isAuthenticated, currentUserEmail, requiresOAuth } from './auth';
+
 // Provider store
 export { providers, activeProvider, providersLoading } from './provider';
 
