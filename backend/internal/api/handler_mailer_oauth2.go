@@ -67,5 +67,8 @@ func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Requ
 	}
 
 	slog.Info("logged in", "user", user.Email)
-	writeRespOk(w, "logged in", nil)
+
+	// Redirect to auth success page (will close popup)
+	w.Header().Set("Location", fmt.Sprintf("%s/auth-success.html", h.FrontendBaseURL))
+	w.WriteHeader(http.StatusFound)
 }

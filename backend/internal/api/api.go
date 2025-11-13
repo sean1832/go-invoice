@@ -39,7 +39,8 @@ func (h *Handler) RegisterRoutesV1(mux *http.ServeMux) {
 	// mailer
 	mux.HandleFunc(prefix+"/mailer/auth/{provider}", h.handleMailerOAuth2Begin)
 	mux.HandleFunc(prefix+"/mailer/auth/{provider}/callback", h.handleMailerOAuth2Callback)
-	mux.HandleFunc(fmt.Sprintf("GET %s/mailer/config", prefix), h.handleMailerAuthConfig)
+	mux.HandleFunc(fmt.Sprintf("GET %s/mailer/session", prefix), h.handleMailerSession)
+	mux.HandleFunc(fmt.Sprintf("POST %s/mailer/logout", prefix), h.handleMailerLogout)
 }
 
 func (h *Handler) Root(w http.ResponseWriter, r *http.Request) {
