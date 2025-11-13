@@ -4,10 +4,10 @@
 
 # go-invoice
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![GitHub License](https://img.shields.io/github/license/sean1832/go-invoice)
 [![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://golang.org/)
 [![SvelteKit](https://img.shields.io/badge/SvelteKit-5.0-FF3E00?logo=svelte)](https://kit.svelte.dev/)
-[![Release](https://img.shields.io/github/v/release/sean1832/go-invoice)](https://github.com/sean1832/go-invoice/releases/latest)
+![GitHub Release](https://img.shields.io/github/v/release/sean1832/go-invoice)
 
 **A simple, no-nonsense invoice management application.**  
 Create, manage, and send professional invoices without the bloat of traditional accounting software.
