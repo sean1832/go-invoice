@@ -101,6 +101,7 @@ func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Requ
 		AccessToken:  user.AccessToken,
 		RefreshToken: user.RefreshToken,
 		ExpiresAt:    user.ExpiresAt,
+		AvatarURL:    user.AvatarURL,
 	}
 	sessions.Values[userKey] = sessionData
 

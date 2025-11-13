@@ -14,6 +14,8 @@ type SessionResponse struct {
 	Authenticated bool   `json:"authenticated"`
 	Email         string `json:"email,omitempty"`
 	Method        string `json:"method"`
+	AvatarURL     string `json:"avatar_url,omitempty"`
+	Name          string `json:"name,omitempty"`
 }
 
 // handleMailerSession checks if the user is authenticated and returns session info
@@ -58,6 +60,8 @@ func (h *Handler) handleMailerSession(w http.ResponseWriter, r *http.Request) {
 		Authenticated: true,
 		Email:         userData.Email,
 		Method:        methodStr,
+		AvatarURL:     userData.AvatarURL,
+		Name:          userData.Name,
 	})
 }
 

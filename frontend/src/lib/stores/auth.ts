@@ -3,6 +3,8 @@ import { writable, derived } from 'svelte/store';
 export interface AuthState {
 	isAuthenticated: boolean;
 	userEmail: string | null;
+	userAvatarURL: string | null;
+	userName: string | null;
 	authMethod: 'oauth2' | 'plain' | 'none' | null;
 	loading: boolean;
 }
@@ -11,17 +13,21 @@ function createAuthStore() {
 	const { subscribe, update } = writable<AuthState>({
 		isAuthenticated: false,
 		userEmail: null,
+		userAvatarURL: null,
+		userName: null,
 		authMethod: null,
 		loading: true
 	});
 
 	return {
 		subscribe,
-		setAuthenticated: (email: string) =>
+		setAuthenticated: (email: string, avatarURL: string, name: string) =>
 			update((state) => ({
 				...state,
 				isAuthenticated: true,
 				userEmail: email,
+				userAvatarURL: avatarURL,
+				userName: name,
 				loading: false
 			})),
 		setUnauthenticated: () =>
@@ -29,6 +35,8 @@ function createAuthStore() {
 				...state,
 				isAuthenticated: false,
 				userEmail: null,
+				userAvatarURL: null,
+				userName: null,
 				loading: false
 			})),
 		setAuthMethod: (method: 'oauth2' | 'plain' | 'none') =>
@@ -45,6 +53,8 @@ function createAuthStore() {
 			update((state) => ({
 				isAuthenticated: false,
 				userEmail: null,
+				userAvatarURL: null,
+				userName: null,
 				authMethod: state.authMethod, // Preserve authMethod so UI doesn't disappear
 				loading: false
 			}))
@@ -56,4 +66,6 @@ export const authStore = createAuthStore();
 // Derived stores for convenience
 export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticated);
 export const currentUserEmail = derived(authStore, ($auth) => $auth.userEmail);
+export const currentUserAvatarURL = derived(authStore, ($auth) => $auth.userAvatarURL);
+export const currentUserName = derived(authStore, ($auth) => $auth.userName);
 export const requiresOAuth = derived(authStore, ($auth) => $auth.authMethod === 'oauth2');
