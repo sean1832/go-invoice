@@ -7,13 +7,21 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import type { EmailConfig, EmailContent } from '@/types/invoice';
+	import EmailAuthCard from '@/components/molecules/email-auth-card.svelte';
 	interface Props {
 		children: () => any;
 		onSendEmail?: (data: EmailConfig) => Promise<void> | void;
 		templateData: EmailConfig;
 		isSending: boolean;
+		requiredOAuth: boolean;
 	}
-	let { children, onSendEmail: onSubmit, templateData, isSending }: Props = $props();
+	let {
+		children,
+		onSendEmail: onSubmit,
+		templateData,
+		isSending,
+		requiredOAuth = false
+	}: Props = $props();
 
 	// dialog open state
 	let open = $state(false);
@@ -68,6 +76,9 @@
 		<Dialog.Header>
 			<Dialog.Title>Send Email</Dialog.Title>
 		</Dialog.Header>
+		{#if requiredOAuth}
+			<EmailAuthCard class="mb-4" showCard={false} />
+		{/if}
 		<div class="flex flex-col gap-2">
 			<div class="relative">
 				<Label for="email_to">To</Label>

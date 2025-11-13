@@ -13,6 +13,7 @@
 	import { formatEmailTemplate, validateEmailConfig } from '$lib/helpers';
 	import { toast } from 'svelte-sonner';
 	import Spinner from '@/components/atoms/spinner.svelte';
+	import { requiresOAuth } from '@/stores';
 
 	interface Props {
 		data: {
@@ -172,7 +173,12 @@
 						{isDownloading ? 'Downloading...' : 'Download'}
 					</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail} {onSendEmail} {isSending}>
+				<EmailDialog
+					templateData={formattedEmail}
+					{onSendEmail}
+					{isSending}
+					requiredOAuth={$requiresOAuth}
+				>
 					<Button variant="outline" size="sm" disabled={isDownloading}>
 						<SendIcon class="h-4 w-4 sm:mr-1" />
 						<span class="hidden sm:inline">Send Invoice</span>
