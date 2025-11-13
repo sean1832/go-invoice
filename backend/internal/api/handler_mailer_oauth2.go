@@ -2,11 +2,14 @@ package api
 
 import (
 	"fmt"
+	"go-invoice/internal/auth"
 	"go-invoice/internal/types"
 	"log/slog"
 	"net/http"
 
+	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"golang.org/x/oauth2"
 )
 
 func (h *Handler) handleMailerOAuth2Begin(w http.ResponseWriter, r *http.Request) {
@@ -17,11 +20,53 @@ func (h *Handler) handleMailerOAuth2Begin(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Set provider in query for gothic
+	// Set provider in query for gothic (needed for session state)
 	q := r.URL.Query()
 	q.Add("provider", provider)
 	r.URL.RawQuery = q.Encode()
-	gothic.BeginAuthHandler(w, r)
+
+	// Get state using Gothic's SetState (generates if not present)
+	state := gothic.SetState(r)
+
+	// Manually construct OAuth URL with prompt=select_account to force account selection
+	if auth.GoogleOAuthConfig == nil {
+		writeRespErr(w, "OAuth2 not configured", http.StatusInternalServerError)
+		slog.Error("GoogleOAuthConfig is nil")
+		return
+	}
+
+	authURL := auth.GoogleOAuthConfig.AuthCodeURL(
+		state,
+		oauth2.SetAuthURLParam("prompt", "select_account"),
+		oauth2.AccessTypeOffline,
+	)
+
+	// Create a session object with the auth URL
+	// This needs to be stored so CompleteUserAuth can find it later
+	gothProvider, err := goth.GetProvider(provider)
+	if err != nil {
+		writeRespErr(w, fmt.Sprintf("error getting provider: %v", err), http.StatusInternalServerError)
+		slog.Error("error getting provider", "error", err)
+		return
+	}
+
+	sess, err := gothProvider.BeginAuth(state)
+	if err != nil {
+		writeRespErr(w, fmt.Sprintf("error beginning auth: %v", err), http.StatusInternalServerError)
+		slog.Error("error beginning auth", "error", err)
+		return
+	}
+
+	// Store the session
+	err = gothic.StoreInSession(provider, sess.Marshal(), r, w)
+	if err != nil {
+		writeRespErr(w, fmt.Sprintf("error storing session: %v", err), http.StatusInternalServerError)
+		slog.Error("error storing session", "error", err)
+		return
+	}
+
+	// Redirect to our custom auth URL with prompt=select_account
+	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
 }
 
 func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Request) {
