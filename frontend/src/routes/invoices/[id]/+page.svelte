@@ -103,7 +103,7 @@
 
 	let isSending = $state(false);
 
-	async function onSubmit(emailConfig: EmailConfig) {
+	async function onSendEmail(emailConfig: EmailConfig) {
 		// validate first
 		const validation = validateEmailConfig(emailConfig);
 		if (!validation.isValid) {
@@ -172,7 +172,7 @@
 						{isDownloading ? 'Downloading...' : 'Download'}
 					</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail} {onSubmit} {isSending}>
+				<EmailDialog templateData={formattedEmail} {onSendEmail} {isSending}>
 					<Button variant="outline" size="sm" disabled={isDownloading}>
 						<SendIcon class="h-4 w-4 sm:mr-1" />
 						<span class="hidden sm:inline">Send Invoice</span>

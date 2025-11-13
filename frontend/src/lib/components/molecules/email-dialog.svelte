@@ -9,11 +9,11 @@
 	import type { EmailConfig, EmailContent } from '@/types/invoice';
 	interface Props {
 		children: () => any;
-		onSubmit?: (data: EmailConfig) => Promise<void> | void;
+		onSendEmail?: (data: EmailConfig) => Promise<void> | void;
 		templateData: EmailConfig;
 		isSending: boolean;
 	}
-	let { children, onSubmit, templateData, isSending }: Props = $props();
+	let { children, onSendEmail: onSubmit, templateData, isSending }: Props = $props();
 
 	// dialog open state
 	let open = $state(false);
