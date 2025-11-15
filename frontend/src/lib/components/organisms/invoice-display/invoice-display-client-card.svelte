@@ -41,6 +41,9 @@
 			{#if client.email}
 				<p>Email: {client.email}</p>
 			{/if}
+			{#if client.url}
+				<p>Website: {client.url}</p>
+			{/if}
 		</div>
 	</div>
 </div>

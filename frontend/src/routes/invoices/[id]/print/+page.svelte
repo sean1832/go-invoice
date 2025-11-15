@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
+	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display.svelte';
 	// this route is for backend to fetch printable invoice view for PDF generation
 	// no edit buttons or other actions here
 	// return 500 error if invoice not found

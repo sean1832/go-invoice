@@ -57,6 +57,9 @@
 			{#if invoice.provider.email}
 				<p>Email: {invoice.provider.email}</p>
 			{/if}
+			{#if invoice.provider.url}
+				<p>Website: {invoice.provider.url}</p>
+			{/if}
 		</div>
 	</div>
 </div>
