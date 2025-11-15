@@ -97,7 +97,8 @@
 				email: $activeProvider.email || '',
 				abn: $activeProvider.abn || '',
 				address: $activeProvider.address || '',
-				phone: $activeProvider.phone || ''
+				phone: $activeProvider.phone || '',
+				url: $activeProvider.url || ''
 			};
 			selectedProviderId = $activeProvider.id;
 			if ($activeProvider.payment_info) {
@@ -130,7 +131,8 @@
 					email: updatedProvider.email || '',
 					abn: updatedProvider.abn || '',
 					address: updatedProvider.address || '',
-					phone: updatedProvider.phone || ''
+					phone: updatedProvider.phone || '',
+					url: updatedProvider.url || ''
 				};
 				if (updatedProvider.payment_info) {
 					paymentInfo = { ...updatedProvider.payment_info };
@@ -150,7 +152,8 @@
 					email: updatedClient.email || '',
 					abn: updatedClient.abn || '',
 					address: updatedClient.address || '',
-					phone: updatedClient.phone || ''
+					phone: updatedClient.phone || '',
+					url: updatedClient.url || ''
 				};
 				if (updatedClient.tax_rate !== undefined) {
 					taxRate = updatedClient.tax_rate;
@@ -170,7 +173,8 @@
 				email: selected.email || '',
 				abn: selected.abn || '',
 				address: selected.address || '',
-				phone: selected.phone || ''
+				phone: selected.phone || '',
+				url: selected.url || ''
 			};
 			if (selected.payment_info) {
 				paymentInfo = { ...selected.payment_info };
@@ -188,7 +192,8 @@
 				email: selected.email || '',
 				abn: selected.abn || '',
 				address: selected.address || '',
-				phone: selected.phone || ''
+				phone: selected.phone || '',
+				url: selected.url || ''
 			};
 			if (selected.tax_rate !== undefined) {
 				taxRate = selected.tax_rate;

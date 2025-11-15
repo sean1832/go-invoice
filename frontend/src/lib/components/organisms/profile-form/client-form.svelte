@@ -28,7 +28,8 @@
 			phone: '',
 			abn: '',
 			tax_rate: 0,
-			email_target: ''
+			email_target: '',
+			url: ''
 		}
 	);
 
@@ -158,6 +159,17 @@
 					placeholder="123 Business Street, Sydney NSW 2000"
 					disabled={disable}
 					bind:value={formData.address}
+				/>
+			</div>
+
+			<div class="space-y-2">
+				<Label for="website">Website</Label>
+				<Input
+					id="website"
+					type="text"
+					placeholder="https://www.acme.com"
+					disabled={disable}
+					bind:value={formData.url}
 				/>
 			</div>
 		</div>

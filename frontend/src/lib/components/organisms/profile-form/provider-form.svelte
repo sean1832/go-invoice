@@ -172,6 +172,16 @@
 					bind:value={formData.address}
 				/>
 			</div>
+
+			<div class="space-y-2">
+				<Label for="website">Website</Label>
+				<Input
+					id="website"
+					type="text"
+					placeholder="https://www.acme.com"
+					bind:value={formData.url}
+				/>
+			</div>
 		</div>
 
 		<!-- Payment Information Section -->
