@@ -1,6 +1,5 @@
 ## Features
 
-- [ ] Oauth2 support
 - [ ] Authentication and user management
 - [ ] Database integration (currently uses local file storage)
 - [ ] Description field for clients
