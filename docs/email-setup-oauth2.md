@@ -240,9 +240,6 @@ The app requests these OAuth2 scopes:
 | `https://www.googleapis.com/auth/userinfo.email`   | Read your email address - used to display who's authenticated |
 | `https://www.googleapis.com/auth/userinfo.profile` | Read your basic profile info - used to display your name      |
 
-> [!NOTE]
-> The `https://mail.google.com/` scope is required for SMTP access. More restrictive scopes like `gmail.send` don't work with SMTP authentication.
-
 ## Token Refresh
 
 OAuth2 access tokens expire after a short time (typically 1 hour). The app automatically:
