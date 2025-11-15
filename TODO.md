@@ -5,6 +5,7 @@
 - [ ] Description field for clients
 - [ ] International payment support (IBAN, SWIFT, Bank name fetching based on BSB)
 - [ ] Support URL field in provider and client profiles
+- [ ] support api route for update invoice status manually
 
 ## Backend API
 
