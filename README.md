@@ -86,12 +86,9 @@ VERSION=$(curl -s "https://api.github.com/repos/sean1832/go-invoice/releases/lat
 ```bash
 git clone https://github.com/sean1832/go-invoice.git
 cd go-invoice/frontend
-cd go-invoice/frontend
 npm install
 cd ..
-cd ..
 npm run build
-./backend/bin/go-invoice  # or .\backend\bin\go-invoice.exe
 ./backend/bin/go-invoice  # or .\backend\bin\go-invoice.exe
 ```
 
