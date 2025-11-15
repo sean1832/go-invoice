@@ -16,7 +16,7 @@
 	import { cn } from '@/utils';
 	import * as Card from '@/components/ui/card';
 	import InvoiceDisplayHeader from './invoice-display-header.svelte';
-	import InvoiceDisplayParties from './invoice-display-parties.svelte';
+	import InvoiceDisplayParties from './invoice-display-client-card.svelte';
 	import InvoiceDisplayItemsTable from './invoice-display-items-table.svelte';
 	import InvoiceDisplayItemsMobile from './invoice-display-items-mobile.svelte';
 	import InvoiceDisplayPaymentInfo from './invoice-display-payment-info.svelte';
