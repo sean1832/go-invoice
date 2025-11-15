@@ -75,8 +75,6 @@ chmod +x go-invoice  # Make executable (first time only)
 
 This command downloads the latest release, extracts it, makes it executable, and sets up a sample `.env` file:
 
-This command downloads the latest release, extracts it, makes it executable, and sets up a sample `.env` file:
-
 ```bash
 VERSION=$(curl -s "https://api.github.com/repos/sean1832/go-invoice/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') && curl -L -o go-invoice.zip "https://github.com/sean1832/go-invoice/releases/download/$VERSION/go-invoice-linux-amd64.zip" && unzip go-invoice.zip && chmod +x go-invoice && curl -O https://raw.githubusercontent.com/sean1832/go-invoice/main/.env.example && mv .env.example .env
 ```
@@ -86,12 +84,9 @@ VERSION=$(curl -s "https://api.github.com/repos/sean1832/go-invoice/releases/lat
 ```bash
 git clone https://github.com/sean1832/go-invoice.git
 cd go-invoice/frontend
-cd go-invoice/frontend
 npm install
 cd ..
-cd ..
 npm run build
-./backend/bin/go-invoice  # or .\backend\bin\go-invoice.exe
 ./backend/bin/go-invoice  # or .\backend\bin\go-invoice.exe
 ```
 
