@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
-	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
+	import { InvoiceDisplay } from '@/components/organisms/invoice-display';
 	import type { EmailConfig, EmailTemplate, Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
@@ -153,7 +153,7 @@
 		<ErrorAlert message={downloadError} showBackButton={true} />
 	{:else}
 		<!-- Invoice Display Component -->
-		<InvoiceDisplayCard {invoice} />
+		<InvoiceDisplay {invoice} />
 
 		<!-- Action Buttons Bar -->
 		<div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -185,7 +185,12 @@
 						{isDownloading ? 'Downloading...' : 'Download'}
 					</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail} {onSendEmail} {isSending} authMethod={$authMethod}>
+				<EmailDialog
+					templateData={formattedEmail}
+					{onSendEmail}
+					{isSending}
+					authMethod={$authMethod}
+				>
 					<Button variant="outline" size="sm" disabled={isDownloading}>
 						<SendIcon class="h-4 w-4 sm:mr-1" />
 						<span class="hidden sm:inline">Send Invoice</span>
