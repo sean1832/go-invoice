@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Badge } from '@/components/ui/badge';
 	import Button from '@/components/ui/button/button.svelte';
-	import InvoiceDisplayCard from '@/components/organisms/invoice-display/invoice-display-card.svelte';
+	import { InvoiceDisplay } from '@/components/organisms/invoice-display';
 	import type { EmailConfig, EmailTemplate, Invoice } from '@/types/invoice';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DownloadIcon from '@lucide/svelte/icons/download';
@@ -13,7 +13,7 @@
 	import { formatEmailTemplate, validateEmailConfig } from '$lib/helpers';
 	import { toast } from 'svelte-sonner';
 	import Spinner from '@/components/atoms/spinner.svelte';
-	import { authMethod } from '@/stores';
+	import { authMethod, invoices } from '@/stores';
 
 	interface Props {
 		data: {
@@ -144,6 +144,32 @@
 			isSending = false;
 		}
 	}
+
+	let isStatusUpdating = $state(false);
+	async function onStatusBadgeClick() {
+		// send back invoice with toggled status
+		const currentInvoice = { ...invoice }; // shallow copy
+		if (currentInvoice.status === 'draft') {
+			currentInvoice.status = 'send';
+		} else {
+			currentInvoice.status = 'draft';
+		}
+
+		try {
+			isStatusUpdating = true;
+
+			const updatedInvoice = await api.invoices.updateInvoice(fetch, invoice.id, currentInvoice);
+			invoice = updatedInvoice;
+			toast.success('Invoice status updated.');
+		} catch (error) {
+			console.error('Error updating invoice status: ', error);
+			toast.error('Failed to update invoice status', {
+				description: error instanceof Error ? error.message : 'Please try again.'
+			});
+		} finally {
+			isStatusUpdating = false;
+		}
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl p-4">
@@ -153,11 +179,12 @@
 		<ErrorAlert message={downloadError} showBackButton={true} />
 	{:else}
 		<!-- Invoice Display Component -->
-		<InvoiceDisplayCard {invoice} />
+		<InvoiceDisplay {invoice} />
 
 		<!-- Action Buttons Bar -->
 		<div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 			<Button
+				id="back"
 				variant="ghost"
 				size="sm"
 				onclick={goBack}
@@ -168,25 +195,59 @@
 				Back
 			</Button>
 			<div class="flex flex-wrap gap-2">
-				<Badge variant={getStatusVariant(invoice.status)} class="px-3 py-1 text-sm">
-					{getStatusLabel(invoice.status)}
-				</Badge>
-				<Button variant="default" size="sm" onclick={editInvoice} disabled={isDownloading}>
+				<button
+					id="status"
+					class="flex min-w-[60px] cursor-pointer items-center justify-center hover:opacity-90"
+					onclick={onStatusBadgeClick}
+					disabled={isDownloading || isStatusUpdating}
+				>
+					{#if isStatusUpdating}
+						<Spinner size={16} />
+					{:else}
+						<Badge variant={getStatusVariant(invoice.status)} class="px-3 py-1 text-sm">
+							{getStatusLabel(invoice.status)}
+						</Badge>
+					{/if}
+				</button>
+
+				<Button
+					id="edit"
+					variant="default"
+					size="sm"
+					onclick={editInvoice}
+					disabled={isDownloading || isStatusUpdating}
+				>
 					<EditIcon class="h-4 w-4 sm:mr-1" />
 					<span class="hidden sm:inline">Edit</span>
 				</Button>
-				<Button variant="outline" size="sm" onclick={downloadInvoice} disabled={isDownloading}>
+				<Button
+					id="download"
+					variant="outline"
+					size="sm"
+					onclick={downloadInvoice}
+					disabled={isDownloading || isStatusUpdating}
+					class="justify-center"
+				>
 					{#if isDownloading}
-						<Spinner class="mr-2 h-4 w-4" size={16} />
+						<Spinner class="h-4 w-4" size={16} />
+						<span class="hidden sm:inline">Downloading...</span>
 					{:else}
 						<DownloadIcon class="h-4 w-4 sm:mr-1" />
+						<span class="hidden sm:inline">Download</span>
 					{/if}
-					<span class="hidden sm:inline">
-						{isDownloading ? 'Downloading...' : 'Download'}
-					</span>
 				</Button>
-				<EmailDialog templateData={formattedEmail} {onSendEmail} {isSending} authMethod={$authMethod}>
-					<Button variant="outline" size="sm" disabled={isDownloading}>
+				<EmailDialog
+					templateData={formattedEmail}
+					{onSendEmail}
+					{isSending}
+					authMethod={$authMethod}
+				>
+					<Button
+						id="send"
+						variant="outline"
+						size="sm"
+						disabled={isDownloading || isStatusUpdating}
+					>
 						<SendIcon class="h-4 w-4 sm:mr-1" />
 						<span class="hidden sm:inline">Send Invoice</span>
 					</Button>

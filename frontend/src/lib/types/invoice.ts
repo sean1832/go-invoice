@@ -19,6 +19,7 @@ export interface Party {
 	email?: string;
 	phone?: string;
 	abn?: string; // Australian Business Number
+	url?: string; // website URL
 }
 
 // Service item represents a single line item in the invoice

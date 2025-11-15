@@ -54,6 +54,7 @@ type Party struct {
 	Email   string `json:"email,omitempty"`   // (optional) email address
 	Phone   string `json:"phone,omitempty"`   // (optional) phone number
 	ABN     string `json:"abn,omitempty"`     // (optional) Australian Business Number
+	URL     string `json:"url,omitempty"`     // (optional) website URL
 }
 
 func (p *Party) HasRequiredFields() bool {
