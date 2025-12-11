@@ -9,24 +9,8 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build and Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            binary: go-invoice.exe
-            archive_name: go-invoice-windows-amd64.zip
-          - os: ubuntu-latest
-            binary: go-invoice
-            archive_name: go-invoice-linux-amd64.zip
-          - os: macos-13 # This runner uses Intel architecture
-            binary: go-invoice
-            archive_name: go-invoice-macos-amd64.zip
-          - os: macos-14 # This runner is Apple Silicon
-            binary: go-invoice
-            archive_name: go-invoice-macos-arm64.zip
-
+    name: Cross-Compile and Release
+    runs-on: ubuntu-latest # Single runner handles all OS builds
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,30 +29,49 @@ jobs:
         id: version
         shell: bash
         run: |
-          # Extract version from tag (e.g., v1.2.3 -> 1.2.3)
           VERSION=${GITHUB_REF_NAME#v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
 
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm install
+        run: npm ci
 
-      - name: Build application
+      - name: Build All Targets
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
-        run: node build.js all
+        run: |
+          # 1. Linux (Run 'all' to build frontend once + Linux binary)
+          echo "Building Linux..."
+          node build.js all --platform=linux --arch=amd64 --version=$VERSION
 
-      - name: Create release archive
-        shell: bash
+          # 2. Windows (Reuse frontend)
+          echo "Building Windows..."
+          node build.js backend --platform=windows --arch=amd64 --version=$VERSION
+
+          # 3. macOS Apple Silicon (Reuse frontend)
+          echo "Building macOS..."
+          node build.js backend --platform=macos --arch=arm64 --version=$VERSION
+
+      - name: Archive Binaries
         run: |
           cd backend/bin
-          7z a ${{ matrix.archive_name }} ${{ matrix.binary }}
 
-      - name: Upload Release Asset
+          # Zip Linux
+          zip go-invoice-linux-amd64.zip go-invoice-linux-amd64
+
+          # Zip Windows
+          zip go-invoice-windows-amd64.zip go-invoice-windows-amd64.exe
+
+          # Zip macOS
+          zip go-invoice-macos-arm64.zip go-invoice-darwin-arm64
+
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            backend/bin/${{ matrix.archive_name }}
+            backend/bin/go-invoice-linux-amd64.zip
+            backend/bin/go-invoice-windows-amd64.zip
+            backend/bin/go-invoice-macos-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
