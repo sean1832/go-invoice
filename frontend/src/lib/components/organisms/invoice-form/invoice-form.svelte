@@ -90,6 +90,7 @@
 
 	// Initialize from activeProvider in create mode
 	$effect(() => {
+		// Case 1: Fresh Create (no duplicate source)
 		if ($activeProvider && !invoice && mode === 'create' && !provider.id) {
 			provider = {
 				id: $activeProvider.id,
@@ -104,7 +105,9 @@
 			if ($activeProvider.payment_info) {
 				paymentInfo = { ...$activeProvider.payment_info };
 			}
-		} else if (mode === 'edit' && invoice) {
+		}
+		// Case 2: Edit Mode OR Duplicate Mode (Invoice data provided)
+		else if (invoice) {
 			selectedProviderId = invoice.provider.id;
 			selectedClientId = invoice.client.id;
 			if (invoice.payment) {

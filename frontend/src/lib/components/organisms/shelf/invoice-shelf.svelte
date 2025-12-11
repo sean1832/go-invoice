@@ -20,6 +20,7 @@
 		data,
 		onError,
 		onEdit,
+		onDuplicate,
 		onDelete,
 		onDownload,
 		deletingInvoiceId = null,
@@ -66,6 +67,7 @@
 						{item}
 						{onError}
 						{onEdit}
+						{onDuplicate}
 						{onDelete}
 						{onDownload}
 						{isDeleting}

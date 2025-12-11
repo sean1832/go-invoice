@@ -124,6 +124,10 @@
 		}
 	}
 
+	async function handleDuplicate(invoice: Invoice) {
+		window.location.href = `/invoices/new?duplicate_from=${invoice.id}`;
+	}
+
 	function handleOOBEComplete() {
 		// Reload the page to check setup and show invoices
 		window.location.reload();
@@ -161,6 +165,7 @@
 						<InvoiceShelf
 							data={$filteredInvoices}
 							onError={handleError}
+							onDuplicate={handleDuplicate}
 							onDelete={handleDelete}
 							onEdit={handleEdit}
 							onDownload={handleDownload}

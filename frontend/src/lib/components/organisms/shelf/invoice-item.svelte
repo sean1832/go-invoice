@@ -4,8 +4,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import { ConfirmDialog } from '@/components/molecules';
 	import type { Invoice } from '@/types/invoice';
-	import EditIcon from '@lucide/svelte/icons/pencil';
-	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { CopyIcon, TrashIcon, PencilIcon } from '@lucide/svelte/icons';
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import Spinner from '@/components/atoms/spinner.svelte';
 
@@ -13,6 +12,7 @@
 		item: Invoice;
 		onError?: (message: string) => void;
 		onEdit: (item: Invoice) => void;
+		onDuplicate: (item: Invoice) => void;
 		onDelete: (item: Invoice) => void;
 		onDownload?: (item: Invoice) => void;
 		isDeleting?: boolean;
@@ -23,6 +23,7 @@
 		item: invoice,
 		onError,
 		onEdit,
+		onDuplicate,
 		onDelete,
 		onDownload,
 		isDeleting = false,
@@ -60,6 +61,10 @@
 
 	function editInvoice() {
 		onEdit(invoice);
+	}
+
+	function duplicateInvoice() {
+		onDuplicate(invoice);
 	}
 
 	function openDeleteDialog() {
@@ -115,7 +120,16 @@
 
 	<Item.Actions class="flex gap-1">
 		<Button variant="ghost" size="sm" onclick={editInvoice} title="Edit" disabled={isDeleting}>
-			<EditIcon class="h-4 w-4" />
+			<PencilIcon class="h-4 w-4" />
+		</Button>
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={duplicateInvoice}
+			title="duplicate"
+			disabled={isDeleting}
+		>
+			<CopyIcon class="h-4 w-4" />
 		</Button>
 		<Button
 			variant="ghost"

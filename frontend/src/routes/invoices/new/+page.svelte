@@ -4,9 +4,13 @@
 	import { api } from '@/services';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
 	import type { Invoice } from '@/types/invoice';
+	import { page } from '$app/state';
+	import { getDefaultDueDate, getTodayISOString } from '@/helpers';
 
 	let isSaving = $state(false);
 	let saveError = $state<string | null>(null);
+
+	let duplicatedInvoice = $state<Invoice | undefined>(undefined);
 
 	async function handleSave(data: Invoice) {
 		console.warn(data);
@@ -47,7 +51,7 @@
 	let isLoading = $state(true);
 	let loadError = $state<string | null>(null);
 
-	// Fetch both clients and providers data
+	// Fetch data and check for duplication request
 	async function loadData() {
 		try {
 			isLoading = true;
@@ -58,6 +62,33 @@
 
 			clients.set(clientsData);
 			providers.set(providersData);
+
+			// check url for duplication_from parameter
+			const duplicateId = page.url.searchParams.get('duplicate_from');
+			if (duplicateId) {
+				const sourceInvoice = await api.invoices.getInvoice(fetch, duplicateId);
+
+				// prepare items: join description and details for the form editor
+				// (the editor splits them on save, so must join here to show full content)
+				const preparedItems = sourceInvoice.items.map((item) => ({
+					...item,
+					date: getTodayISOString(),
+					description: item.description_detail
+						? `${item.description}\n${item.description_detail}`
+						: item.description
+				}));
+
+				// tramsform source invoice into a new draft
+				duplicatedInvoice = {
+					...sourceInvoice,
+					id: '', // reset id to trigger 'new' mode
+					date: getTodayISOString(), // reset issue date
+					due: getDefaultDueDate(),
+					status: 'draft',
+					items: preparedItems,
+					email_template_id: sourceInvoice.email_template_id || 'default'
+				};
+			}
 		} catch (err) {
 			console.error('Failed to load data:', err);
 			loadError = err instanceof Error ? err.message : 'Failed to load data. Please try again.';
@@ -83,6 +114,12 @@
 				<ErrorAlert message={saveError} />
 			</div>
 		{/if}
-		<InvoiceForm mode="create" {isSaving} onSave={handleSave} onCancel={handleCancel} />
+		<InvoiceForm
+			mode="create"
+			invoice={duplicatedInvoice}
+			{isSaving}
+			onSave={handleSave}
+			onCancel={handleCancel}
+		/>
 	{/if}
 </div>
