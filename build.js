@@ -114,23 +114,56 @@ function copyFrontend(buildDir, distDir) {
 /**
  * Build backend
  */
-function buildBackend(backendDir, version = "dev") {
-  logStep("Building Go backend...");
-  log(`Version: ${version}`);
+function buildBackend(backendDir, version = "dev", targetOS = null, targetArch = "amd64") {
+  // Normalize Inputs
+  // If targetOS is not provided, use the host OS (development mode)
+  // Map friendly names (macos) to Go standards (darwin)
+  const hostOS =
+    process.platform === "win32" ? "windows" : process.platform === "darwin" ? "darwin" : "linux";
+  let goos = targetOS ? targetOS.toLowerCase() : hostOS;
 
-  const isWindows = process.platform === "win32";
-  const binaryName = isWindows ? "go-invoice.exe" : "go-invoice";
-  const ldflags = `-X 'main.Version=${version}'`;
-  const buildCmd = `go build -ldflags "${ldflags}" -o bin/${binaryName} .`;
+  if (goos === "macos") goos = "darwin";
+  if (goos === "win") goos = "windows";
 
-  if (!exec(buildCmd, backendDir)) {
-    logError("Go build failed!");
+  // Define Output Name
+  // Windows binaries require .exe extension
+  const ext = goos === "windows" ? ".exe" : "";
+  const binaryName = `go-invoice-${goos}-${targetArch}${ext}`;
+  const outputPath = path.join(backendDir, "bin", binaryName);
+
+  logStep(`Building Backend [${version}] for ${goos}/${targetArch}...`);
+
+  // Configure Build Environment
+  // CGO_ENABLED=0 is critical for portability (Alpine support) and easy cross-compilation
+  const buildEnv = {
+    ...process.env,
+    CGO_ENABLED: "0",
+    GOOS: goos,
+    GOARCH: targetArch,
+  };
+
+  // Linker Flags
+  // -s -w: Strip debug symbols for non-dev builds to reduce size
+  let ldflags = `-X 'main.Version=${version}'`;
+  if (version !== "dev") {
+    ldflags += " -s -w";
+  }
+
+  const buildCmd = `go build -ldflags "${ldflags}" -o "${outputPath}" .`;
+
+  try {
+    execSync(buildCmd, {
+      cwd: backendDir,
+      env: buildEnv,
+      stdio: "inherit", // Stream compiler output to terminal
+    });
+    logSuccess(`Artifact created: bin/${binaryName}`);
+  } catch (error) {
+    logError(`Build failed for ${goos}/${targetArch}`);
     process.exit(1);
   }
-  logSuccess("Backend built successfully");
 
-  const binaryPath = path.join(backendDir, "bin", binaryName);
-  return binaryPath;
+  return outputPath;
 }
 
 /**
@@ -154,6 +187,31 @@ function getVersion(rootDir) {
 }
 
 /**
+ * Helper to parse named flags from process.argv
+ * e.g., --platform=linux becomes { platform: "linux" }
+ */
+function parseFlags() {
+  const flags = {
+    // Defaults: null indicates "detect host environment" later
+    platform: null,
+    arch: "amd64",
+    version: null,
+  };
+
+  // Skip "node" and "build.js"
+  const args = process.argv.slice(2);
+  const command = args[0] && !args[0].startsWith("-") ? args[0] : "all";
+
+  args.forEach((arg) => {
+    if (arg.startsWith("--platform=")) flags.platform = arg.split("=")[1];
+    if (arg.startsWith("--arch=")) flags.arch = arg.split("=")[1];
+    if (arg.startsWith("--version=")) flags.version = arg.split("=")[1];
+  });
+
+  return { command, ...flags };
+}
+
+/**
  * Main build process
  */
 function build() {
@@ -163,10 +221,12 @@ function build() {
   const buildDir = path.join(frontendDir, "build");
   const distDir = path.join(backendDir, "internal", "ui", "dist");
 
-  const command = process.argv[2] || "all";
-  const version = getVersion(rootDir);
+  // Parse CLI flags
+  const { command, platform, arch, version: flagVersion } = parseFlags();
 
-  log(`${colors.bright}${colors.green}Building go-invoice${colors.reset}\n`);
+  const version = flagVersion || getVersion(rootDir);
+
+  log(`${colors.bright}${colors.green}Building go-invoice [${command}]${colors.reset}\n`);
 
   switch (command) {
     case "frontend":
@@ -178,7 +238,7 @@ function build() {
       break;
 
     case "backend":
-      const binaryPath = buildBackend(backendDir, version);
+      const binaryPath = buildBackend(backendDir, version, platform, arch);
       log(`\n${colors.bright}${colors.green}✓ Backend build complete!${colors.reset}`);
       log(`\nRun the application:`);
       log(`  ${colors.cyan}${binaryPath}${colors.reset}\n`);

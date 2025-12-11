@@ -87,10 +87,17 @@ cd go-invoice/frontend
 npm install
 cd ..
 npm run build
-./backend/bin/go-invoice  # or .\backend\bin\go-invoice.exe
+./backend/bin/go-invoice-linux-amd64  # or .\backend\bin\go-invoice-windows-amd64.exe
 ```
 
 The server will start at http://localhost:8080
+
+### Build for Different Platforms
+
+```bash
+node build.js backend --platform=linux --arch=amd64
+node build.js backend --platform=macos --arch=arm64
+```
 
 ## ⚙️ Configuration
 
@@ -152,8 +159,7 @@ See [`.env.example`](.env.example) for all available configuration options inclu
 - `SESSION_MAX_AGE` - Session duration in seconds (default: 2592000 = 30 days)
 - `IS_PROD` - Enable production mode (default: `false`)
 
-> [!IMPORTANT]
-> **For Production:** Set a persistent `SESSION_SECRET` to prevent users from being logged out when the server restarts:
+> [!IMPORTANT] > **For Production:** Set a persistent `SESSION_SECRET` to prevent users from being logged out when the server restarts:
 >
 > ```bash
 > # Generate a secure secret
