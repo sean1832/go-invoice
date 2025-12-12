@@ -102,7 +102,7 @@ func main() {
 		"public_url", publicURL,
 	)
 
-	corsHandler := api.WithCORS(mux, []string{frontendURL})
+	corsHandler := api.WithCORS(mux, []string{frontendURL, "http://localhost:8080", "http://127.0.0.1:8080", "http://0.0.0.0:8080"})
 	if err := http.ListenAndServe(listenAddr, corsHandler); err != nil {
 		slog.Error("Server failed to start", "error", err)
 		os.Exit(1)

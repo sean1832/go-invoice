@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
+	cdpruntime "github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 )
 
@@ -36,14 +38,37 @@ func NewChromeService() (*ChromeService, error) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Headless,
 		chromedp.DisableGPU,
-		// STRICTLY REQUIRED for running in Docker/Linux without a display
-		chromedp.NoSandbox,
-		chromedp.Flag("disable-dev-shm-usage", true), // prevents OOM in container /dev/shm
-
-		// reduce memory usage for long-running services
 		chromedp.Flag("disable-extensions", true),
 		chromedp.Flag("disable-background-networking", true),
+		chromedp.Flag("mute-audio", true),
+		chromedp.Flag("ignore-certificate-errors", true),
 	)
+	// os specific options
+	if runtime.GOOS == "linux" {
+		// linux
+		log.Printf("ChromeService: Deteced Linux environment. Applying stability patches.")
+		opts = append(opts,
+			chromedp.NoSandbox,
+			chromedp.Flag("disable-setuid-sandbox", true),
+			chromedp.Flag("disable-dev-shm-usage", true),
+			chromedp.Flag("disable-software-rasterizer", true),
+
+			// These "Nuclear" flags are great for Alpine but CRASH Windows
+			chromedp.Flag("no-zygote", true),
+			chromedp.Flag("single-process", true),
+
+			// Fix DBus & Temp paths on Linux containers
+			chromedp.Env(
+				"XDG_CONFIG_HOME=/tmp",
+				"XDG_CACHE_HOME=/tmp",
+				"HOME=/tmp",
+				"DBUS_SESSION_BUS_ADDRESS=/dev/null",
+			),
+		)
+	} else {
+		// Windows needs very little configuration.
+		log.Println("ChromeService: Detected Windows/Mac environment. Using standard configuration.")
+	}
 
 	// detect custom chrome path
 	chromePath := getChromePath()
@@ -59,6 +84,7 @@ func NewChromeService() (*ChromeService, error) {
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	if err := chromedp.Run(ctx); err != nil {
+		cancel()
 		return nil, fmt.Errorf("could not launch browser: %v", err)
 	}
 
@@ -80,6 +106,17 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration, paperSize
 
 	tabCtx, cancelTimemout := context.WithTimeout(tabCtx, timeout)
 	defer cancelTimemout()
+
+	chromedp.ListenTarget(tabCtx, func(ev interface{}) {
+		if ev, ok := ev.(*cdpruntime.EventExceptionThrown); ok {
+			log.Printf("[CHROME EXCEPTION] %s", ev.ExceptionDetails.Text)
+		}
+		if ev, ok := ev.(*cdpruntime.EventConsoleAPICalled); ok {
+			for _, arg := range ev.Args {
+				log.Printf("[CHROME CONSOLE] %s: %s", ev.Type, string(arg.Value))
+			}
+		}
+	})
 
 	var pdfBuffer []byte
 
@@ -129,9 +166,13 @@ func getChromePath() string {
 	var chromePath string
 	if v := os.Getenv("CHROME_BIN"); v != "" {
 		chromePath = v
-	} else if path, err := exec.LookPath("chrome-browser"); err == nil {
+	} else if path, err := exec.LookPath("chromium-browser"); err == nil {
+		// ^ FIXED: Alpine/Ubuntu uses "chromium-browser", not "chrome-browser"
 		chromePath = path
 	} else if path, err := exec.LookPath("google-chrome"); err == nil {
+		chromePath = path
+	} else if path, err := exec.LookPath("chromium"); err == nil {
+		// Fallback for some other distros
 		chromePath = path
 	}
 	return chromePath
