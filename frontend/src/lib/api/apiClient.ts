@@ -25,7 +25,7 @@ export async function apiClient<T>(
 	const url = `${BASE_URL}${path}`;
 
 	// destructure custom timeout with option
-	const { timeout = 5000, responseType = 'json', ...fetchOptions } = options;
+	const { timeout = 15000, responseType = 'json', ...fetchOptions } = options;
 
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), timeout);
