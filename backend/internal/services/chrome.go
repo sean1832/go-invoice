@@ -91,7 +91,7 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration, paperSize
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			// check if error element exists
 			var errorNodes []*cdp.Node
-			err := chromedp.Nodes(`#pdf-reader-error`, &errorNodes, chromedp.ByQuery, chromedp.AtLeast(0)).Do(ctx)
+			err := chromedp.Nodes(`#pdf-render-error`, &errorNodes, chromedp.ByQuery, chromedp.AtLeast(0)).Do(ctx)
 			if err != nil {
 				// error querying the DOM, not an application error
 				return fmt.Errorf("could not check for error node: %v", err)
