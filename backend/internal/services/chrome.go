@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -34,12 +36,26 @@ func NewChromeService() (*ChromeService, error) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Headless,
 		chromedp.DisableGPU,
+		// STRICTLY REQUIRED for running in Docker/Linux without a display
+		chromedp.NoSandbox,
+		chromedp.Flag("disable-dev-shm-usage", true), // prevents OOM in container /dev/shm
+
 		// reduce memory usage for long-running services
 		chromedp.Flag("disable-extensions", true),
 		chromedp.Flag("disable-background-networking", true),
 	)
-	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 
+	// detect custom chrome path
+	chromePath := getChromePath()
+	if chromePath != "" {
+		opts = append(opts, chromedp.ExecPath(chromePath))
+		log.Printf("using chrome executable at: %s", chromePath)
+	} else {
+		log.Printf("using default chrome executable")
+	}
+
+	// initialize context
+	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	if err := chromedp.Run(ctx); err != nil {
@@ -107,4 +123,16 @@ func (s *ChromeService) GeneratePDF(url string, timeout time.Duration, paperSize
 	}
 
 	return pdfBuffer, nil
+}
+
+func getChromePath() string {
+	var chromePath string
+	if v := os.Getenv("CHROME_BIN"); v != "" {
+		chromePath = v
+	} else if path, err := exec.LookPath("chrome-browser"); err == nil {
+		chromePath = path
+	} else if path, err := exec.LookPath("google-chrome"); err == nil {
+		chromePath = path
+	}
+	return chromePath
 }
