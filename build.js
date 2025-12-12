@@ -248,7 +248,7 @@ function build() {
     default:
       buildFrontend(frontendDir);
       copyFrontend(buildDir, distDir);
-      const fullBinaryPath = buildBackend(backendDir, version);
+      const fullBinaryPath = buildBackend(backendDir, version, platform, arch);
 
       log(`\n${colors.bright}${colors.green}✓ Build complete!${colors.reset}`);
       log(`\nRun the application:`);
