@@ -247,21 +247,6 @@ SMTP_PORT=587
 STORAGE_PATH=/var/lib/go-invoice/db
 ```
 
-### Reverse Proxy Setup (Optional)
-
-For production deployments, it's recommended to run `go-invoice` behind a reverse proxy like Nginx or Caddy for SSL termination and better performance.
-Recommended Nginx custom configuration:
-
-```nginx
-client_max_body_size 0;
-proxy_request_buffering off;
-proxy_buffering off;
-proxy_buffer_size 16k;
-proxy_buffers 4 16k;
-```
-
-This ensures large invoice PDFs are handled correctly.
-
 ## 📝 License
 
 GPL-3.0 License. See [LICENSE](LICENSE) for details.

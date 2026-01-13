@@ -235,13 +235,9 @@ func setupSession() (*auth.SessionConfig, error) {
 		isProd = true
 	}
 
-	// Cookie domain for subdomain support (e.g., ".ztecs.com")
-	domain := os.Getenv("COOKIE_DOMAIN")
-
 	return &auth.SessionConfig{
 		Key:    key,
 		MaxAge: maxAge,
 		IsProd: isProd,
-		Domain: domain,
 	}, nil
 }
