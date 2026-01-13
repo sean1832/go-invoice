@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -34,6 +35,13 @@ func ConfigureGoogleOAuth2(clientId, clientSecret, callbackURL string, config Se
 		Domain:   config.Domain, // Set domain for subdomain cookie sharing
 	}
 	gothic.Store = store
+
+	slog.Info("OAuth2 cookie settings configured",
+		"secure", config.IsProd,
+		"domain", config.Domain,
+		"samesite", "Lax",
+		"callback_url", callbackURL,
+	)
 
 	GoogleOAuthConfig = &oauth2.Config{
 		ClientID:     clientId,
