@@ -69,10 +69,12 @@ func main() {
 	}
 
 	// Initialize API handler
+	localBaseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
 	apiHandler := api.Handler{
 		Context:         context.Background(),
 		StorageDir:      *storageDir,
 		FrontendBaseURL: frontendURL,
+		LocalBaseURL:    localBaseURL,
 		EmailAuthMethod: authMethod,
 		Version:         Version,
 	}
