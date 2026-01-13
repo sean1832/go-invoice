@@ -20,6 +20,8 @@ func (h *Handler) handleMailerOAuth2Begin(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	slog.Debug("OAuth2 begin", "provider", provider, "remote_addr", r.RemoteAddr, "host", r.Host)
+
 	// Set provider in query for gothic (needed for session state)
 	q := r.URL.Query()
 	q.Add("provider", provider)
@@ -27,6 +29,7 @@ func (h *Handler) handleMailerOAuth2Begin(w http.ResponseWriter, r *http.Request
 
 	// Get state using Gothic's SetState (generates if not present)
 	state := gothic.SetState(r)
+	slog.Debug("OAuth2 state generated", "state_length", len(state))
 
 	// Manually construct OAuth URL with prompt=select_account to force account selection
 	if auth.GoogleOAuthConfig == nil {
@@ -77,6 +80,15 @@ func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	slog.Debug("OAuth2 callback received", "provider", provider, "remote_addr", r.RemoteAddr, "host", r.Host)
+
+	// Log cookies for debugging (names only, not values for security)
+	var cookieNames []string
+	for _, c := range r.Cookies() {
+		cookieNames = append(cookieNames, c.Name)
+	}
+	slog.Debug("OAuth2 callback cookies", "cookie_names", cookieNames)
+
 	// Set provider in query for gothic
 	q := r.URL.Query()
 	q.Add("provider", provider)
@@ -85,7 +97,7 @@ func (h *Handler) handleMailerOAuth2Callback(w http.ResponseWriter, r *http.Requ
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		writeRespErr(w, fmt.Sprintf("error complete user auth: %v", err), http.StatusUnauthorized)
-		slog.Error("error complete user auth", "error", err)
+		slog.Error("error complete user auth", "error", err, "cookies_present", len(r.Cookies()))
 		return
 	}
 
