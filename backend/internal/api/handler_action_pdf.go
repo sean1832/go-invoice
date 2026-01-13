@@ -30,8 +30,7 @@ func (h *Handler) handleInvoicePDF(w http.ResponseWriter, r *http.Request) {
 	}
 	defer chromeService.Close() // <- finally close
 
-	localhost := fmt.Sprintf("%s:%s", "http://127.0.0.1", "8080")
-	url := fmt.Sprintf("%s/invoices/%s/print", localhost, id)
+	url := fmt.Sprintf("%s/invoices/%s/print", h.LocalBaseURL, id)
 	slog.Info("generating pdf", "url", url)
 	pdf, err := chromeService.GeneratePDF(url, 30*time.Second, services.PaperSizeA3, id)
 	if err != nil {

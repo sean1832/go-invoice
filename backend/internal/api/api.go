@@ -17,6 +17,7 @@ type Handler struct {
 	Context         context.Context
 	StorageDir      storage.StorageDir
 	FrontendBaseURL string
+	LocalBaseURL    string // localhost URL for internal PDF generation (ChromeDP)
 	EmailAuthMethod auth.AuthMethod
 	Version         string
 }
