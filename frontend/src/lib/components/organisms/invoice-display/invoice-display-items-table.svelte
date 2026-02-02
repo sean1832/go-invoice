@@ -29,11 +29,11 @@
 	<table class="w-full">
 		<thead>
 			<tr class="bg-primary text-primary-foreground">
-				<th class="w-36 px-6 py-4 text-left font-semibold">Date</th>
+				<th class="w-36 px-4 py-4 text-left font-semibold">Date</th>
 				<th class="px-6 py-4 text-left font-semibold">Description</th>
-				<th class="w-28 px-6 py-4 text-center font-semibold">Qty</th>
-				<th class="w-36 px-6 py-4 text-right font-semibold">Unit Price</th>
-				<th class="w-36 px-6 py-4 text-right font-semibold">Amount</th>
+				<th class="w-28 px-4 py-4 text-center font-semibold">Qty</th>
+				<th class="w-36 px-4 py-4 text-right font-semibold">Unit Price</th>
+				<th class="w-36 px-4 py-4 text-right font-semibold">Amount</th>
 			</tr>
 		</thead>
 		<tbody class="bg-card">
@@ -43,7 +43,7 @@
 						? 'border-b-2 border-border' // add border except for last row
 						: ''}"
 				>
-					<td class="px-6 py-4 text-left">
+					<td class="px-4 py-4 text-left">
 						<DateDisplay date={item.date} format="short" class="text-muted-foreground" />
 					</td>
 					<td class="px-6 py-4">
