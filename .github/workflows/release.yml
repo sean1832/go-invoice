@@ -83,25 +83,19 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/go-invoice:${{ steps.version.outputs.VERSION }}
             ${{ secrets.DOCKERHUB_USERNAME }}/go-invoice:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Pull and Export Docker Images
+      - name: Pull and Export Docker Image
         env:
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/go-invoice:${{ steps.version.outputs.VERSION }}
         run: |
-          # Pull and save amd64
           docker pull --platform linux/amd64 $IMAGE
           docker save $IMAGE | gzip > backend/bin/go-invoice-docker-amd64.tar.gz
-
-          # Remove cached image, then pull and save arm64
-          docker rmi $IMAGE
-          docker pull --platform linux/arm64 $IMAGE
-          docker save $IMAGE | gzip > backend/bin/go-invoice-docker-arm64.tar.gz
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
@@ -111,6 +105,5 @@ jobs:
             backend/bin/go-invoice-windows-amd64.zip
             backend/bin/go-invoice-macos-arm64.zip
             backend/bin/go-invoice-docker-amd64.tar.gz
-            backend/bin/go-invoice-docker-arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
