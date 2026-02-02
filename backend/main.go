@@ -69,7 +69,11 @@ func main() {
 	}
 
 	// Initialize API handler
-	localBaseURL := fmt.Sprintf("http://127.0.0.1:%d", port)
+	// CHROME_RENDER_URL is for Docker: Chrome container needs to access app via network
+	localBaseURL := os.Getenv("CHROME_RENDER_URL")
+	if localBaseURL == "" {
+		localBaseURL = fmt.Sprintf("http://127.0.0.1:%d", port)
+	}
 	apiHandler := api.Handler{
 		Context:         context.Background(),
 		StorageDir:      *storageDir,
@@ -104,7 +108,7 @@ func main() {
 		"public_url", publicURL,
 	)
 
-	corsHandler := api.WithCORS(mux, []string{frontendURL, "http://localhost:8080", "http://127.0.0.1:8080", "http://0.0.0.0:8080"})
+	corsHandler := api.WithCORS(mux, []string{frontendURL, localBaseURL})
 	if err := http.ListenAndServe(listenAddr, corsHandler); err != nil {
 		slog.Error("Server failed to start", "error", err)
 		os.Exit(1)
