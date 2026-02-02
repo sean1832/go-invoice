@@ -1,0 +1,73 @@
+services:
+  app:
+    build: .
+    container_name: go-invoice-app
+    environment:
+      - CHROME_REMOTE_URL=http://chrome:9222
+      - CHROME_RENDER_URL=http://app:8080
+      - STORAGE_PATH=/data
+      - PORT=8080
+      # # The full public URL where this server will be accessible. 
+      # # This will be the callback URL for Google OAuth.
+      # - PUBLIC_URL=http://localhost:8080 
+
+      # # --------------------------------
+      # # SESSION CONFIGURATION (Optional)
+      # # --------------------------------
+      # - IS_PROD="true" # Uncomment for production
+      # - SESSION_SECRET="" # Set a secure session secret (openssl rand -base64 32)
+      # - SESSION_MAX_AGE=2592000 # Optional: Session max age in seconds (default 30 days: 86400 * 30)
+
+      # # --------------------------------
+      # # EMAIL CONFIGURATION (Optional)
+      # # --------------------------------
+      # # --- METHOD 1: Google OAuth2 (Recommended) ---
+      # - GOOGLE_OAUTH_CLIENT_ID=""
+      # - GOOGLE_OAUTH_CLIENT_SECRET=""
+      # - SMTP_HOST="smtp.gmail.com"
+      # - SMTP_PORT=587
+
+      # # --- METHOD 2: App Password (Simple, less secure) ---
+      # - SMTP_FROM="" # e.g., your-email@gmail.com
+      # - SMTP_PASSWORD="" # App Password generated in Google Account "https://myaccount.google.com/apppasswords"
+      # - SMTP_HOST=smtp.gmail.com
+      # - SMTP_PORT=587
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./db:/data
+    networks:
+      - invoice-network
+    depends_on:
+      - chrome
+
+  chrome:
+    image: gcr.io/zenika-hub/alpine-chrome:latest
+    container_name: go-invoice-chrome
+    # Run as root to allow apk add
+    user: root
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        echo "Installing fonts..."
+        apk add --no-cache font-noto font-noto-cjk ttf-dejavu font-noto-emoji terminus-font
+        fc-cache -f
+        echo "Starting Chromium..."
+        chromium-browser \
+        --no-sandbox \
+        --disable-dev-shm-usage \
+        --disable-gpu \
+        --headless \
+        --remote-debugging-address=0.0.0.0 \
+        --remote-debugging-port=9222 \
+        --remote-allow-origins=*
+    ports:
+      - "9222:9222"
+    shm_size: '2gb'
+    networks:
+      - invoice-network
+
+networks:
+  invoice-network:
+    driver: bridge

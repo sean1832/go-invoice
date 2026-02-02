@@ -1,0 +1,26 @@
+# Version Control
+.git
+.gitignore
+
+# Build Artifacts
+backend/bin
+backend/internal/ui/dist
+frontend/build
+frontend/.svelte-kit
+
+# Dependencies
+frontend/node_modules
+
+# Data
+backend/db
+data
+*.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea

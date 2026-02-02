@@ -6,3 +6,7 @@ backend/internal/ui/dist/
 .env
 
 *.sample.json
+
+*.tar.gz
+*.tar
+db
