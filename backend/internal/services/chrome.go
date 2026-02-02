@@ -31,8 +31,9 @@ var (
 
 // ChromeService manages a headless Chrome browser instance
 type ChromeService struct {
-	browserCtx context.Context
-	cancel     context.CancelFunc
+	browserCtx  context.Context
+	cancel      context.CancelFunc
+	allocCancel context.CancelFunc
 }
 
 // NewChromeService initializes a ChromeService instance. Uses remote Chrome if CHROME_REMOTE_URL is set.
@@ -93,7 +94,7 @@ func NewLocalChromeService() (*ChromeService, error) {
 	}
 
 	// initialize context
-	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	if err := chromedp.Run(ctx); err != nil {
@@ -102,14 +103,16 @@ func NewLocalChromeService() (*ChromeService, error) {
 	}
 
 	return &ChromeService{
-		browserCtx: ctx,
-		cancel:     cancel,
+		browserCtx:  ctx,
+		cancel:      cancel,
+		allocCancel: allocCancel,
 	}, nil
 }
 
 // Close shuts down the browser context
 func (s *ChromeService) Close() {
 	s.cancel()
+	s.allocCancel()
 }
 
 // NewRemoteChromeService creates a ChromeService that connects to a remote Chrome instance
@@ -120,7 +123,7 @@ func NewRemoteChromeService(remoteURL string) (*ChromeService, error) {
 	}
 
 	// create a remote allocator
-	allocCtx, _ := chromedp.NewRemoteAllocator(context.Background(), wsURL)
+	allocCtx, allocCancel := chromedp.NewRemoteAllocator(context.Background(), wsURL)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	// initialize the browser
@@ -130,8 +133,9 @@ func NewRemoteChromeService(remoteURL string) (*ChromeService, error) {
 	}
 
 	return &ChromeService{
-		browserCtx: ctx,
-		cancel:     cancel,
+		browserCtx:  ctx,
+		cancel:      cancel,
+		allocCancel: allocCancel,
 	}, nil
 }
 
