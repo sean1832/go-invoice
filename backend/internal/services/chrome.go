@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -140,11 +141,33 @@ func NewRemoteChromeService(remoteURL string) (*ChromeService, error) {
 }
 
 func getWebSocketURL(remoteURL string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("%s/json/version", remoteURL))
+	// Create a custom HTTP client that overrides the Host header to "localhost"
+	// because Chrome rejects requests with Host headers that aren't localhost or IP
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/json/version", remoteURL), nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+
+	// Override Host header to satisfy Chrome's security check
+	// Chrome only accepts "localhost", "127.0.0.1", or actual IP addresses in the Host header
+	// Extract the port from remoteURL (e.g., http://chrome:9222 -> 9222)
+	remoteHost := extractHost(remoteURL)
+	port := "9222" // default
+	if idx := strings.Index(remoteHost, ":"); idx != -1 {
+		port = remoteHost[idx+1:]
+	}
+	req.Host = fmt.Sprintf("localhost:%s", port)
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to get remote chrome version info: %v", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("remote chrome returned status %d", resp.StatusCode)
+	}
 
 	var result map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
@@ -155,7 +178,29 @@ func getWebSocketURL(remoteURL string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("json/version response missing 'webSocketDebuggerUrl'")
 	}
+
+	// Replace localhost with the actual remote host for container networking
+	// Chrome reports ws://localhost:PORT/... but we need ws://chrome:PORT/...
+	if remoteHost != "" {
+		// Replace "localhost:PORT" with the actual hostname:port from remoteURL
+		localHostPort := fmt.Sprintf("localhost:%s", port)
+		wsURL = strings.Replace(wsURL, localHostPort, remoteHost, 1)
+		log.Printf("Replaced localhost in WebSocket URL: %s", wsURL)
+	}
+
 	return wsURL, nil
+}
+
+// extractHost extracts the host:port from a URL (e.g., "http://chrome:9222" -> "chrome:9222")
+func extractHost(urlStr string) string {
+	// Remove protocol
+	urlStr = strings.TrimPrefix(urlStr, "http://")
+	urlStr = strings.TrimPrefix(urlStr, "https://")
+	// Remove trailing slash and path
+	if idx := strings.Index(urlStr, "/"); idx != -1 {
+		urlStr = urlStr[:idx]
+	}
+	return urlStr
 }
 
 // GeneratePDF navigates to the specified URL and generates a PDF of the page

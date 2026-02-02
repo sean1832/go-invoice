@@ -3,11 +3,10 @@ services:
     build: .
     container_name: go-invoice-app
     environment:
-      - CHROME_REMOTE_URL=http://chrome:3000
+      - CHROME_REMOTE_URL=http://chrome:9222
       - CHROME_RENDER_URL=http://app:8080
       - STORAGE_PATH=/data
       - PORT=8080
-
       # # The full public URL where this server will be accessible. 
       # # This will be the callback URL for Google OAuth.
       # - PUBLIC_URL=http://localhost:8080 
@@ -43,12 +42,19 @@ services:
       - chrome
 
   chrome:
-    image: browserless/chrome:latest
+    image: gcr.io/zenika-hub/alpine-chrome:latest
     container_name: go-invoice-chrome
-    environment:
-      - CONNECTION_TIMEOUT=60000
+    command:
+      - --no-sandbox
+      - --disable-dev-shm-usage
+      - --disable-gpu
+      - --headless
+      - --remote-debugging-address=0.0.0.0
+      - --remote-debugging-port=9222
+      - --remote-allow-origins=*
     ports:
-      - "9222:3000"
+      - "9222:9222"
+    shm_size: '2gb'
     networks:
       - invoice-network
 
