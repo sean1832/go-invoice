@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -29,12 +31,24 @@ var (
 
 // ChromeService manages a headless Chrome browser instance
 type ChromeService struct {
-	browserCtx context.Context
-	cancel     context.CancelFunc
+	browserCtx  context.Context
+	cancel      context.CancelFunc
+	allocCancel context.CancelFunc
 }
 
-// NewChromeService initializes a new ChromeService with a headless browser context
+// NewChromeService initializes a ChromeService instance. Uses remote Chrome if CHROME_REMOTE_URL is set.
 func NewChromeService() (*ChromeService, error) {
+	remoteURL := os.Getenv("CHROME_REMOTE_URL")
+	if remoteURL != "" {
+		log.Printf("ChromeService: Mode=Remote, URL=%s", remoteURL)
+		return NewRemoteChromeService(remoteURL)
+	}
+	log.Printf("ChromeService: Mode=Local")
+	return NewLocalChromeService()
+}
+
+// NewLocalChromeService initializes a local ChromeService instance
+func NewLocalChromeService() (*ChromeService, error) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Headless,
 		chromedp.DisableGPU,
@@ -80,7 +94,7 @@ func NewChromeService() (*ChromeService, error) {
 	}
 
 	// initialize context
-	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
 
 	if err := chromedp.Run(ctx); err != nil {
@@ -89,14 +103,59 @@ func NewChromeService() (*ChromeService, error) {
 	}
 
 	return &ChromeService{
-		browserCtx: ctx,
-		cancel:     cancel,
+		browserCtx:  ctx,
+		cancel:      cancel,
+		allocCancel: allocCancel,
 	}, nil
 }
 
 // Close shuts down the browser context
 func (s *ChromeService) Close() {
 	s.cancel()
+	s.allocCancel()
+}
+
+// NewRemoteChromeService creates a ChromeService that connects to a remote Chrome instance
+func NewRemoteChromeService(remoteURL string) (*ChromeService, error) {
+	wsURL, err := getWebSocketURL(remoteURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remote chrome websocket: %v", err)
+	}
+
+	// create a remote allocator
+	allocCtx, allocCancel := chromedp.NewRemoteAllocator(context.Background(), wsURL)
+	ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
+
+	// initialize the browser
+	if err := chromedp.Run(ctx); err != nil {
+		cancel()
+		return nil, fmt.Errorf("could not launch/connect to browser: %v", err)
+	}
+
+	return &ChromeService{
+		browserCtx:  ctx,
+		cancel:      cancel,
+		allocCancel: allocCancel,
+	}, nil
+}
+
+func getWebSocketURL(remoteURL string) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("%s/json/version", remoteURL))
+	if err != nil {
+		return "", fmt.Errorf("failed to get remote chrome version info: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var result map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	wsURL, ok := result["webSocketDebuggerUrl"].(string)
+	if !ok {
+		return "", fmt.Errorf("json/version response missing 'webSocketDebuggerUrl'")
+	}
+	return wsURL, nil
 }
 
 // GeneratePDF navigates to the specified URL and generates a PDF of the page
