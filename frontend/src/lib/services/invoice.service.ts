@@ -2,12 +2,40 @@ import { http } from '@/api/http';
 import type { EmailConfig, Invoice } from '@/types/invoice';
 
 /**
+ * PaginatedInvoices represents a paginated response of invoices
+ */
+export interface PaginatedInvoices {
+	items: Invoice[];
+	page: number;
+	page_size: number;
+	total_count: number;
+	total_pages: number;
+}
+
+/**
  * retrieves all invoices using the provided fetch function.
  * @param KitFetch - `KitFetch` is a parameter that represents the fetch function provided by SvelteKit.
  * @returns A Promise that resolves to an array of Invoice objects.
+ * @deprecated Use getInvoicesPaginated for better performance with large datasets
  */
 export async function getAllInvoices(KitFetch: typeof fetch): Promise<Invoice[]> {
-	return http.get<Invoice[]>(KitFetch, '/invoices');
+	const result = await http.get<PaginatedInvoices>(KitFetch, '/invoices?page_size=100');
+	return result.items;
+}
+
+/**
+ * retrieves invoices with pagination support.
+ * @param KitFetch - `KitFetch` is a parameter that represents the fetch function provided by SvelteKit.
+ * @param page - The page number (1-indexed, default: 1)
+ * @param pageSize - The number of items per page (default: 20, max: 100)
+ * @returns A Promise that resolves to a PaginatedInvoices object with items and pagination metadata.
+ */
+export async function getInvoicesPaginated(
+	KitFetch: typeof fetch,
+	page: number = 1,
+	pageSize: number = 20
+): Promise<PaginatedInvoices> {
+	return http.get<PaginatedInvoices>(KitFetch, `/invoices?page=${page}&page_size=${pageSize}`);
 }
 
 /**
