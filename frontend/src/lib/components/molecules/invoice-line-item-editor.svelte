@@ -33,6 +33,7 @@
 	import Button from '@/components/ui/button/button.svelte';
 	import DatePicker from '@/components/atoms/date-picker.svelte';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import ConfirmDialog from '@/components/molecules/confirm-dialog.svelte';
 
 	interface Props {
 		item: ServiceItem;
@@ -51,6 +52,9 @@
 		onRemove,
 		class: customClass = ''
 	}: Props = $props();
+	
+	// Confirmation dialog state
+	let showDeleteDialog = $state(false);
 
 	// Collapsed state for mobile (defaults to false/collapsed)
 	let isExpanded = $state(false);
@@ -103,9 +107,7 @@
 				class="h-8 w-8 p-0 text-destructive hover:text-destructive"
 				onclick={(e) => {
 					e.stopPropagation();
-					if (confirm('Remove this item?')) {
-						onRemove();
-					}
+					showDeleteDialog = true;
 				}}
 				disabled={!canRemove}
 				title="Remove item"
@@ -183,9 +185,7 @@
 			variant="ghost"
 			size="sm"
 			onclick={() => {
-				if (confirm('Remove this item?')) {
-					onRemove();
-				}
+				showDeleteDialog = true;
 			}}
 			disabled={!canRemove}
 			class="hidden w-full md:mt-8 md:flex md:w-auto"
@@ -193,5 +193,13 @@
 		>
 			<TrashIcon class="h-4 w-4 text-destructive" />
 		</Button>
+		<ConfirmDialog
+			bind:open={showDeleteDialog}
+			title="Remove Item"
+			description="Are you sure you want to remove this item? This action cannot be undone."
+			confirmText="Remove"
+			confirmVariant="destructive"
+			onConfirm={onRemove}
+		/>
 	</div>
 </div>
