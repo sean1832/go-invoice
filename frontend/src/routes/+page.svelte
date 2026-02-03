@@ -5,7 +5,7 @@
 	import { api } from '$lib/services';
 	import Spinner from '@/components/atoms/spinner.svelte';
 	import ErrorAlert from '@/components/molecules/error-alert.svelte';
-	import type { Invoice } from '@/types/invoice';
+	import type { Invoice, InvoiceStatus } from '@/types/invoice';
 	import { onMount } from 'svelte';
 
 	let isLoading = $state(false);
@@ -17,6 +17,9 @@
 	let pageSize = $state(8);
 	let totalCount = $state(0);
 	let totalPages = $state(1);
+
+	// Filter state (moved from invoice-shelf for server-side filtering)
+	let activeStatus = $state<InvoiceStatus | 'all'>('all');
 
 	// Check if provider and client exist on mount - show OOBE if not
 	onMount(async () => {
@@ -49,12 +52,14 @@
 		await loadInvoices();
 	});
 
-	async function loadInvoices(page: number = 1) {
+	async function loadInvoices(page: number = 1, status: InvoiceStatus | 'all' = activeStatus) {
 		isLoading = true;
 		errorMessage = null;
 
 		try {
-			const data = await api.invoices.getInvoicesPaginated(fetch, page, pageSize);
+			// Convert 'all' to undefined for the API (no filter)
+			const statusFilter = status === 'all' ? undefined : status;
+			const data = await api.invoices.getInvoicesPaginated(fetch, page, pageSize, statusFilter);
 
 			// Update pagination state
 			currentPage = data.page;
@@ -79,6 +84,12 @@
 
 	async function handlePageChange(page: number) {
 		await loadInvoices(page);
+	}
+
+	async function handleStatusChange(status: InvoiceStatus | 'all') {
+		activeStatus = status;
+		// Reset to page 1 when changing filters
+		await loadInvoices(1, status);
 	}
 
 	function handleError(message: string) {
@@ -198,6 +209,8 @@
 							{totalPages}
 							{totalCount}
 							onPageChange={handlePageChange}
+							{activeStatus}
+							onStatusChange={handleStatusChange}
 						/>
 					{/if}
 				</div>
@@ -205,4 +218,5 @@
 		</div>
 	</div>
 </div>
+
 

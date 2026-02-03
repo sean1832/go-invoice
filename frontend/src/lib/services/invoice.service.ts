@@ -28,14 +28,20 @@ export async function getAllInvoices(KitFetch: typeof fetch): Promise<Invoice[]>
  * @param KitFetch - `KitFetch` is a parameter that represents the fetch function provided by SvelteKit.
  * @param page - The page number (1-indexed, default: 1)
  * @param pageSize - The number of items per page (default: 20, max: 100)
+ * @param status - Optional status filter ('draft', 'send', or undefined for all)
  * @returns A Promise that resolves to a PaginatedInvoices object with items and pagination metadata.
  */
 export async function getInvoicesPaginated(
 	KitFetch: typeof fetch,
 	page: number = 1,
-	pageSize: number = 20
+	pageSize: number = 20,
+	status?: string
 ): Promise<PaginatedInvoices> {
-	return http.get<PaginatedInvoices>(KitFetch, `/invoices?page=${page}&page_size=${pageSize}`);
+	let url = `/invoices?page=${page}&page_size=${pageSize}`;
+	if (status) {
+		url += `&status=${status}`;
+	}
+	return http.get<PaginatedInvoices>(KitFetch, url);
 }
 
 /**

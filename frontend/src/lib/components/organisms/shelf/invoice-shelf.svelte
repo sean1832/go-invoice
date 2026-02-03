@@ -19,6 +19,9 @@
 		totalPages?: number;
 		totalCount?: number;
 		onPageChange?: (page: number) => void;
+		// Status filter props (controlled by parent for server-side filtering)
+		activeStatus?: InvoiceStatus | 'all';
+		onStatusChange?: (status: InvoiceStatus | 'all') => void;
 	}
 
 	const {
@@ -33,14 +36,10 @@
 		page = 1,
 		totalPages = 1,
 		totalCount = 0,
-		onPageChange
+		onPageChange,
+		activeStatus = 'all',
+		onStatusChange
 	} = $props();
-
-	let activeTab = $state<InvoiceStatus | 'all'>('all');
-
-	const filteredByStatus = $derived(
-		activeTab === 'all' ? data : data.filter((invoice: Invoice) => invoice.status === activeTab)
-	);
 
 	// Show pagination only if there's more than one page
 	const showPagination = $derived(totalPages > 1);
@@ -54,11 +53,17 @@
 			onPageChange(newPage);
 		}
 	}
+
+	function handleTabChange(value: string) {
+		if (onStatusChange) {
+			onStatusChange(value as InvoiceStatus | 'all');
+		}
+	}
 </script>
 
 <div>
 	<!-- Status tabs wrapper for invoices -->
-	<Tabs.Root bind:value={activeTab}>
+	<Tabs.Root value={activeStatus} onValueChange={handleTabChange}>
 		<div class="flex items-center justify-between gap-4">
 			<Tabs.List class="grid flex-1 grid-cols-3 md:w-auto md:flex-initial">
 				<Tabs.Trigger value="all">All</Tabs.Trigger>
@@ -73,9 +78,9 @@
 			</Button>
 		</div>
 
-		<Tabs.Content value={activeTab} class="mt-4">
+		<Tabs.Content value={activeStatus} class="mt-4">
 			<Shelf
-				data={filteredByStatus}
+				{data}
 				searchFields={['id', 'client.name']}
 				emptyMessage="No invoices found"
 				searchPlaceholder="Search invoices by number or client..."
@@ -153,4 +158,5 @@
 		<PlusIcon class="h-6 w-6" />
 	</Button>
 </div>
+
 
