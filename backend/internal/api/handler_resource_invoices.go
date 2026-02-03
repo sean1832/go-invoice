@@ -5,6 +5,7 @@ import (
 	"go-invoice/internal/query"
 	"net/http"
 	"os"
+	"sort"
 )
 
 // PaginatedInvoices represents a paginated response of invoices
@@ -51,6 +52,11 @@ func (h *Handler) handleInvoicesCollection(w http.ResponseWriter, r *http.Reques
 		if queryParams.HasFilters() {
 			invoices = query.FilterInvoices(invoices, queryParams)
 		}
+
+		// Sort invoices by date descending (newest first)
+		sort.Slice(invoices, func(i, j int) bool {
+			return invoices[i].Date.After(invoices[j].Date.Time)
+		})
 
 		// Calculate pagination
 		totalCount := len(invoices)
