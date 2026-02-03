@@ -52,6 +52,9 @@
 		class: customClass = ''
 	}: Props = $props();
 
+	// Collapsed state for mobile (defaults to false/collapsed)
+	let isExpanded = $state(false);
+
 	// Local date state for date picker
 	let dateValue = $state<DateValue | undefined>(safeParseDate(item.date));
 
@@ -71,8 +74,61 @@
 	});
 </script>
 
-<div class={cn('space-y-4 rounded-lg border p-4', customClass)}>
-	<div class="flex items-start gap-2">
+<div class={cn('space-y-4 rounded-lg border p-3 md:p-4', customClass)}>
+	<!-- Mobile Collapsed Header -->
+	<div
+		class="flex cursor-pointer items-center justify-between md:hidden"
+		onclick={() => (isExpanded = !isExpanded)}
+		role="button"
+		tabindex="0"
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				isExpanded = !isExpanded;
+			}
+		}}
+	>
+		<div class="flex flex-col">
+			<span class="font-medium">{item.description || 'New Item'}</span>
+			<div class="text-sm text-muted-foreground">
+				{item.quantity} x {formatCurrency(item.unit_price)}
+			</div>
+		</div>
+		<div class="flex items-center gap-2">
+			<span class="font-bold">{formatCurrency(item.total_price)}</span>
+			
+			<Button 
+				variant="ghost" 
+				size="sm" 
+				class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+				onclick={(e) => {
+					e.stopPropagation();
+					if (confirm('Remove this item?')) {
+						onRemove();
+					}
+				}}
+				disabled={!canRemove}
+				title="Remove item"
+			>
+				<TrashIcon class="h-4 w-4" />
+			</Button>
+
+			<Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+				{#if isExpanded}
+					<span class="text-xs">▼</span>
+				{:else}
+					<span class="text-xs">▶</span>
+				{/if}
+			</Button>
+		</div>
+	</div>
+
+	<div
+		class={cn(
+			'flex flex-col items-start gap-4 md:flex-row md:gap-2',
+			!isExpanded && 'hidden md:flex'
+		)}
+	>
 		<div class="flex-1 space-y-4">
 			<!-- Date -->
 			<div class="space-y-2">
@@ -92,7 +148,7 @@
 			</div>
 
 			<!-- Quantity, Unit Price, Amount -->
-			<div class="grid grid-cols-3 gap-4">
+			<div class="grid grid-cols-2 gap-4 md:grid-cols-3">
 				<div class="space-y-2">
 					<Label>Quantity</Label>
 					<Input
@@ -115,7 +171,7 @@
 					/>
 				</div>
 
-				<div class="space-y-2">
+				<div class="col-span-2 space-y-2 md:col-span-1">
 					<Label>Amount</Label>
 					<Input value={formatCurrency(item.total_price)} disabled class="bg-muted font-semibold" />
 				</div>
@@ -126,9 +182,13 @@
 		<Button
 			variant="ghost"
 			size="sm"
-			onclick={onRemove}
+			onclick={() => {
+				if (confirm('Remove this item?')) {
+					onRemove();
+				}
+			}}
 			disabled={!canRemove}
-			class="mt-8"
+			class="hidden w-full md:mt-8 md:flex md:w-auto"
 			title={canRemove ? 'Remove item' : 'At least one item required'}
 		>
 			<TrashIcon class="h-4 w-4 text-destructive" />

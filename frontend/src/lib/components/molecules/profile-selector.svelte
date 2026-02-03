@@ -111,14 +111,14 @@
 			<Item.Title>{title}</Item.Title>
 		</Item.Content>
 		<Item.Actions class="w-full">
-			<div class="flex w-full flex-nowrap items-center gap-2">
+			<div class="flex w-full items-center gap-2">
 				<Select.Root
 					type="single"
 					bind:open={selectOpen}
 					value={selectedProfileId}
 					onValueChange={(v) => v && handleSelect(v)}
 				>
-					<Select.Trigger class="w-[280px] md:w-[200px] lg:w-[330px]">
+					<Select.Trigger class="flex-1 min-w-0 md:w-[200px] lg:w-[330px]">
 						<span class="block truncate">
 							{profiles.find((p) => p.id === selectedProfileId)?.name || placeholder}
 						</span>
@@ -144,7 +144,7 @@
 						>
 							<InfoIcon class="h-4 w-4" />
 						</Popover.Trigger>
-						<Popover.Content class="w-[400px]">
+						<Popover.Content class="w-[85vw] max-w-[400px]">
 							<div class="grid gap-4">
 								<div class="space-y-2">
 									<h4 class="leading-none font-medium">{title} Details</h4>

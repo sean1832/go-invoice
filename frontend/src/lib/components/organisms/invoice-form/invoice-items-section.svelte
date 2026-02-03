@@ -67,7 +67,7 @@
 			</Button>
 		</div>
 	</Card.Header>
-	<Card.Content class="space-y-4">
+	<Card.Content class="space-y-4 px-2 sm:px-6">
 		<!-- Line Items -->
 		{#each items as item, index (index)}
 			<InvoiceLineItemEditor
@@ -83,7 +83,7 @@
 
 		<!-- Totals -->
 		<div class="flex justify-end">
-			<InvoiceDisplayTotalSummary {pricing} class="w-64" />
+			<InvoiceDisplayTotalSummary {pricing} class="w-full sm:w-64" />
 		</div>
 	</Card.Content>
 </Card.Root>
