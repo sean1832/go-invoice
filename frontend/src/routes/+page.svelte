@@ -12,6 +12,12 @@
 	let errorMessage = $state<string | null>(null);
 	let showOOBE = $state(false);
 
+	// Pagination state
+	let currentPage = $state(1);
+	let pageSize = $state(8);
+	let totalCount = $state(0);
+	let totalPages = $state(1);
+
 	// Check if provider and client exist on mount - show OOBE if not
 	onMount(async () => {
 		try {
@@ -43,20 +49,25 @@
 		await loadInvoices();
 	});
 
-	async function loadInvoices() {
+	async function loadInvoices(page: number = 1) {
 		isLoading = true;
 		errorMessage = null;
 
 		try {
-			const data = await api.invoices.getAllInvoices(fetch);
+			const data = await api.invoices.getInvoicesPaginated(fetch, page, pageSize);
+
+			// Update pagination state
+			currentPage = data.page;
+			totalCount = data.total_count;
+			totalPages = data.total_pages;
 
 			// empty store if no invoice data
-			if (!data || data.length === 0) {
+			if (!data.items || data.items.length === 0) {
 				invoices.set([]);
 				return;
 			}
 
-			invoices.set(data);
+			invoices.set(data.items);
 		} catch (error) {
 			console.error('Failed to load invoices:', error);
 			errorMessage =
@@ -64,6 +75,10 @@
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	async function handlePageChange(page: number) {
+		await loadInvoices(page);
 	}
 
 	function handleError(message: string) {
@@ -82,6 +97,14 @@
 			await api.invoices.deleteInvoice(fetch, invoice.id);
 			// Remove from store - UI updates automatically
 			removeInvoice(invoice.id);
+			// Update total count
+			totalCount = Math.max(0, totalCount - 1);
+			totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+			// If we deleted the last item on the current page, go to previous page
+			if ($filteredInvoices.length === 0 && currentPage > 1) {
+				await loadInvoices(currentPage - 1);
+			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : `Failed to delete invoice ${invoice.id}`;
 			console.error('Failed to delete invoice:', err);
@@ -171,6 +194,10 @@
 							onDownload={handleDownload}
 							{deletingInvoiceId}
 							{isDownloading}
+							page={currentPage}
+							{totalPages}
+							{totalCount}
+							onPageChange={handlePageChange}
 						/>
 					{/if}
 				</div>
@@ -178,3 +205,4 @@
 		</div>
 	</div>
 </div>
+

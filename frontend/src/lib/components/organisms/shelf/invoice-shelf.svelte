@@ -14,6 +14,11 @@
 		onDownload?: (item: Invoice) => void;
 		deletingInvoiceId?: string | null;
 		isDownloading: boolean;
+		// Pagination props
+		page?: number;
+		totalPages?: number;
+		totalCount?: number;
+		onPageChange?: (page: number) => void;
 	}
 
 	const {
@@ -24,7 +29,11 @@
 		onDelete,
 		onDownload,
 		deletingInvoiceId = null,
-		isDownloading
+		isDownloading,
+		page = 1,
+		totalPages = 1,
+		totalCount = 0,
+		onPageChange
 	} = $props();
 
 	let activeTab = $state<InvoiceStatus | 'all'>('all');
@@ -32,8 +41,18 @@
 	const filteredByStatus = $derived(
 		activeTab === 'all' ? data : data.filter((invoice: Invoice) => invoice.status === activeTab)
 	);
+
+	// Show pagination only if there's more than one page
+	const showPagination = $derived(totalPages > 1);
+
 	function createNewInvoice() {
 		window.location.href = '/invoices/new';
+	}
+
+	function handlePageChange(newPage: number) {
+		if (onPageChange && newPage >= 1 && newPage <= totalPages) {
+			onPageChange(newPage);
+		}
 	}
 </script>
 
@@ -75,6 +94,52 @@
 					/>
 				{/snippet}
 			</Shelf>
+
+			<!-- Pagination Controls -->
+			{#if showPagination}
+				<div class="mt-6 flex flex-col items-center gap-2">
+					<div class="flex items-center gap-1">
+						<Button
+							variant="outline"
+							size="icon"
+							onclick={() => handlePageChange(page - 1)}
+							disabled={page <= 1}
+							aria-label="Previous page"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+						</Button>
+
+						{#each { length: totalPages } as _, i}
+							{@const pageNum = i + 1}
+							{#if pageNum === 1 || pageNum === totalPages || (pageNum >= page - 1 && pageNum <= page + 1)}
+								<Button
+									variant={pageNum === page ? 'default' : 'outline'}
+									size="icon"
+									onclick={() => handlePageChange(pageNum)}
+									aria-current={pageNum === page ? 'page' : undefined}
+								>
+									{pageNum}
+								</Button>
+							{:else if pageNum === page - 2 || pageNum === page + 2}
+								<span class="text-muted-foreground px-2">...</span>
+							{/if}
+						{/each}
+
+						<Button
+							variant="outline"
+							size="icon"
+							onclick={() => handlePageChange(page + 1)}
+							disabled={page >= totalPages}
+							aria-label="Next page"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+						</Button>
+					</div>
+					<p class="text-muted-foreground text-sm">
+						Showing page {page} of {totalPages} ({totalCount} invoices)
+					</p>
+				</div>
+			{/if}
 		</Tabs.Content>
 	</Tabs.Root>
 
@@ -88,3 +153,4 @@
 		<PlusIcon class="h-6 w-6" />
 	</Button>
 </div>
+
